@@ -285,6 +285,7 @@
 			try {
 				var reader = transport.datagrams.readable.getReader();
 				addToEventLog('Datagram reader ready.');
+				WebTransportSendData('PLAYER_READY');
 			} catch (e) {
 				addToEventLog('Receiving datagrams not supported: ' + e, 'error');
 				return;

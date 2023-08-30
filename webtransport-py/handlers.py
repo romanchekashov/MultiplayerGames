@@ -11,6 +11,8 @@ from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
+from broadsock import send_message_others
+
 logger = logging.getLogger(__name__)
 
 # CounterHandler implements a really simple protocol:
@@ -24,11 +26,12 @@ logger = logging.getLogger(__name__)
 #     datagram that was just received.
 class CounterHandler:
 
-    def __init__(self, session_id, http: H3Connection) -> None:
+    def __init__(self, session_id, http: H3Connection, client_uid: int) -> None:
         self._session_id = session_id
         self._http = http
         self._counters = defaultdict(int)
         self._encoding = 'ascii'
+        self.client_uid = client_uid
         # self._encoding = 'utf-8'
     
     def send_datagram(self, data) -> None:
@@ -37,6 +40,10 @@ class CounterHandler:
 
     def h3_event_received(self, event: H3Event) -> None:
         if isinstance(event, DatagramReceived):
+            if 'PLAYER_READY' == str(event.data):
+                send_message_others(f'{self.client_uid}|CONNECT_OTHER', self.client_uid)
+                self.send_datagram(f'{self.client_uid}|CONNECT_SELF')
+
             self.send_datagram(event.data)
 
         if isinstance(event, WebTransportStreamDataReceived):
