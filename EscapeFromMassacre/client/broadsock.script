@@ -1,6 +1,12 @@
 local broadsock = require "client.broadsock"
 local stream = require "client.stream"
 
+local function js_listener(self, message_id, message)
+	if message_id == "ServerMsg" then
+		print(message)
+	end
+end
+
 local function on_disconnected(self)
 	print("On disconnected")
 	msg.post(self.creator, "disconnected")
@@ -35,6 +41,12 @@ local function connect(self, ip, port)
 		return
 	end
 	self.client = client
+end
+
+function init(self)
+	if jstodef then
+	  jstodef.add_listener(js_listener)
+	end
 end
 
 function final(self)

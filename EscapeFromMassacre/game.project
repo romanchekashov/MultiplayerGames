@@ -5,6 +5,7 @@ dependencies#0 = https://github.com/defold/extension-websocket/archive/refs/tags
 dependencies#1 = https://github.com/heroiclabs/nakama-defold/archive/refs/tags/3.1.0.zip
 dependencies#2 = https://github.com/britzl/defold-input/archive/master.zip
 dependencies#3 = https://github.com/britzl/broadsock/archive/1.1.1.zip
+dependencies#4 = https://github.com/AGulev/jstodef/archive/refs/tags/2.0.0.zip
 
 [bootstrap]
 main_collection = /src/main.collectionc
@@ -57,4 +58,7 @@ max_particle_count = 2048
 max_sound_buffers = 64
 max_sound_sources = 32
 max_component_count = 64
+
+[html5]
+htmlfile = /client/engine_template.html
 
