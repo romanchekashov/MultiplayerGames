@@ -1,6 +1,6 @@
 module starling/webtransport-bridge
 
-go 1.19
+go 1.17
 
 require github.com/adriancable/webtransport-go v0.1.0
 
