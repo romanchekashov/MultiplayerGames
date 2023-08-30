@@ -17,10 +17,10 @@ def get_next_uid_sequence() -> int:
     global uid_sequence
     return uid_sequence + 1
 
-def handle_client_connected(http: H3Connection):
+def handle_client_connected(stream_id: int, http: H3Connection):
     global uid_sequence, clients
     uid_sequence += 1
-    client = Client(uid_sequence, CounterHandler(uid_sequence, http), None)
+    client = Client(uid_sequence, CounterHandler(stream_id, http), None)
     print(f'add_client {client.uid}')
     print(client.handler)
     print(f'CounterHandler({client.handler.__dict__}')
