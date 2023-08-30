@@ -1,5 +1,3 @@
-from handlers import CounterHandler
-
 uid_sequence = 0
 clients = []
 
@@ -16,7 +14,7 @@ def get_next_uid_sequence() -> int:
     global uid_sequence
     return uid_sequence + 1
 
-def handle_client_connected(handler: CounterHandler):
+def handle_client_connected(handler: any):
     global uid_sequence, clients
     uid_sequence += 1
     client = Client(uid_sequence, handler, None)
