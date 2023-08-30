@@ -3,13 +3,19 @@ from handlers import CounterHandler
 uid_sequence = 0
 clients = []
 
-def create_client(uid, handler, data):
-    return {uid, handler, data}
+class Client:
+    def __init__(self, uid, handler, data):
+        self.uid = uid
+        self.handler = handler
+        self.data = data
+
+    def __str__(self):
+        return f'Client({self.__dict__}'
 
 def handle_client_connected(handler: CounterHandler):
     global uid_sequence, clients
     uid_sequence += 1
-    client = create_client(uid_sequence, handler, None)
+    client = Client(uid_sequence, handler, None)
     print(f'add_client {client.uid}')
     clients.append(client)
     send_message_others(client.uid + '|CONNECT_OTHER')
