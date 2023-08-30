@@ -197,6 +197,8 @@ class WebTransportProtocol(QuicConnectionProtocol):
         self._http.send_headers(
             stream_id=stream_id, headers=headers, end_stream=end_stream)
 
+DEFAULT_certFile =  "/etc/letsencrypt/live/look.ovh/fullchain.pem"
+DEFAULT_keyFile =  "/etc/letsencrypt/live/look.ovh/privkey.pem"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -209,7 +211,7 @@ if __name__ == '__main__':
         is_client=False,
         max_datagram_frame_size=65536,
     )
-    configuration.load_cert_chain(args.certificate, args.key)
+    configuration.load_cert_chain(args.certificate or DEFAULT_certFile, args.key or DEFAULT_keyFile)
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(
