@@ -12,7 +12,7 @@ from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
 from handlers import CounterHandler
-from broadsock import handle_client_connected
+from broadsock import handle_client_connected, get_next_uid_sequence
 import threading
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
             assert(self._handler is None)
             client = handle_client_connected(self._http)
             self._handler = client.handler
-            self._send_response(stream_id, 200)
+            self._send_response(client.uid, 200)
         else:
             self._send_response(stream_id, 404, end_stream=True)
 

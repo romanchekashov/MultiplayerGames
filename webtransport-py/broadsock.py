@@ -13,6 +13,10 @@ class Client:
     def __str__(self):
         return f'Client({self.__dict__}'
 
+def get_next_uid_sequence() -> int:
+    global uid_sequence
+    return uid_sequence + 1
+
 def handle_client_connected(http: H3Connection):
     global uid_sequence, clients
     uid_sequence += 1
