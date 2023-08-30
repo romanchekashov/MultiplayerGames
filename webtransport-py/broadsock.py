@@ -18,7 +18,7 @@ def handle_client_connected(handler: CounterHandler):
     client = Client(uid_sequence, handler, None)
     print(f'add_client {client.uid}')
     clients.append(client)
-    send_message_others(f'{client.uid}|CONNECT_OTHER')
+    send_message_others(f'{client.uid}|CONNECT_OTHER', client.uid)
     handler.send_datagram(f'{client.uid}|CONNECT_SELF')
 
 def handle_client_disconnected(client):
