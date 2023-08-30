@@ -15,5 +15,5 @@ func main() {
     mux.HandleFunc("/counter", func(w http.ResponseWriter, r *http.Request) {
         w.Write([]byte("Hello, HTTP/3!"))
     })
-    log.Fatal(http3.ListenAndServe("0.0.0.0:4433", certFile, keyFile, mux))
+    log.Fatal(http3.ListenAndServe("game.look.ovh:4433", certFile, keyFile, mux))
 }
