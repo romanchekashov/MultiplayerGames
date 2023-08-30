@@ -68,8 +68,8 @@ class WebTransportProtocol(QuicConnectionProtocol):
             return
         if path == b"/counter":
             assert(self._handler is None)
-            self._handler = CounterHandler(stream_id, self._http)
-            handle_client_connected(self._handler)
+            client = handle_client_connected(self._http)
+            self._handler = client.handler
             self._send_response(stream_id, 200)
         else:
             self._send_response(stream_id, 404, end_stream=True)
