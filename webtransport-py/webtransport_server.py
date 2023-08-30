@@ -87,7 +87,8 @@ from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
-BIND_ADDRESS = '::1'
+# BIND_ADDRESS = '::1'
+BIND_ADDRESS = 'game.look.ovh'
 BIND_PORT = 4433
 
 logger = logging.getLogger(__name__)
