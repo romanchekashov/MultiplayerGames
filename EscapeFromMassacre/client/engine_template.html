@@ -298,7 +298,8 @@
 						return;
 					}
 					let data = decoder.decode(value);
-					addToEventLog('Datagram received: ' + data);
+					// addToEventLog('Datagram received: ' + data);
+					addToEventLog(data);
 				}
 			} catch (e) {
 				addToEventLog('Error while reading datagrams: ' + e, 'error');

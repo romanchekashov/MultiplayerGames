@@ -28,9 +28,11 @@ class CounterHandler:
         self._session_id = session_id
         self._http = http
         self._counters = defaultdict(int)
+        # self._encoding = 'ascii'
+        self._encoding = 'utf-8'
     
     def send_datagram(self, data) -> None:
-        payload = str(data).encode('ascii')
+        payload = str(data).encode(self._encoding)
         self._http.send_datagram(self._session_id, payload)
 
     def h3_event_received(self, event: H3Event) -> None:
@@ -45,7 +47,7 @@ class CounterHandler:
                         self._session_id, is_unidirectional=True)
                 else:
                     response_id = event.stream_id
-                payload = str(self._counters[event.stream_id]).encode('ascii')
+                payload = str(self._counters[event.stream_id]).encode(self._encoding)
                 self._http._quic.send_stream_data(
                     response_id, payload, end_stream=True)
                 self.stream_closed(event.stream_id)
