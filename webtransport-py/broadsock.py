@@ -18,12 +18,12 @@ def handle_client_connected(handler: CounterHandler):
     client = Client(uid_sequence, handler, None)
     print(f'add_client {client.uid}')
     clients.append(client)
-    send_message_others(client.uid + '|CONNECT_OTHER')
-    handler.send_datagram(client.uid + '|CONNECT_SELF')
+    send_message_others(f'{client.uid}|CONNECT_OTHER')
+    handler.send_datagram(f'{client.uid}|CONNECT_SELF')
 
 def handle_client_disconnected(client):
     global clients
-    send_message_all(client.uid + '|DISCONNECT')
+    send_message_all(f'{client.uid}|DISCONNECT')
     for c in clients:
         if c.uid == client.uid:
             clients.remove(c)
