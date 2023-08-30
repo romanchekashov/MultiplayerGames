@@ -9,7 +9,7 @@ def create_client(uid, handler, data):
 def handle_client_connected(handler: CounterHandler):
     global uid_sequence, clients
     uid_sequence += 1
-    client = create_client(uid_sequence, handler)
+    client = create_client(uid_sequence, handler, None)
     print("add_client", client.uid)
     clients.append(client)
     send_message_others(client.uid + '|CONNECT_OTHER')
