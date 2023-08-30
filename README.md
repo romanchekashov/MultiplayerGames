@@ -3,6 +3,12 @@
 
 ### Development:
 
+### WebTransport HTTP/3 + QUIC (datagrams over UDP):
+```sh
+./install.sh # python dependencies
+./run.sh # webtransport_server.py
+```
+
 ### Multiplayer server:
 - Nakama server available at `127.0.0.1:7350`
 - [Nakama Console](http://127.0.0.1:7351/)
