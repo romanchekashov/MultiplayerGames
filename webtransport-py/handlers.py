@@ -33,7 +33,7 @@ class CounterHandler:
     
     def send_datagram(self, data) -> None:
         payload = str(data).encode(self._encoding)
-        self._http.send_datagram(self._session_id, payload)
+        self._http.send_datagram(self._session_id, str(data))
 
     def h3_event_received(self, event: H3Event) -> None:
         if isinstance(event, DatagramReceived):
