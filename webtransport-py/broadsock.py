@@ -1,5 +1,4 @@
 from handlers import CounterHandler
-from aioquic.h3.connection import H3_ALPN, H3Connection
 
 uid_sequence = 0
 clients = []
@@ -17,10 +16,10 @@ def get_next_uid_sequence() -> int:
     global uid_sequence
     return uid_sequence + 1
 
-def handle_client_connected(stream_id: int, http: H3Connection):
+def handle_client_connected(handler: CounterHandler):
     global uid_sequence, clients
     uid_sequence += 1
-    client = Client(uid_sequence, CounterHandler(stream_id, http, uid_sequence), None)
+    client = Client(uid_sequence, handler, None)
     print(f'add_client {client.uid}')
     print(client.handler)
     print(f'CounterHandler({client.handler.__dict__}')
