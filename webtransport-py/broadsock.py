@@ -7,7 +7,8 @@ def create_client(uid, handler, data):
     return {uid, handler, data}
 
 def handle_client_connected(handler: CounterHandler):
-    uid_sequence = uid_sequence + 1
+    global uid_sequence, clients
+    uid_sequence += 1
     client = create_client(uid_sequence, handler)
     print("add_client", client.uid)
     clients.append(client)
@@ -15,6 +16,7 @@ def handle_client_connected(handler: CounterHandler):
     handler.send_datagram(client.uid + '|CONNECT_SELF')
 
 def handle_client_disconnected(client):
+    global clients
     send_message_all(client.uid + '|DISCONNECT')
     for c in clients:
         if c.uid == client.uid:
@@ -22,10 +24,12 @@ def handle_client_disconnected(client):
             break
 
 def send_message_all(msg: str) -> None:
+    global clients
     for client in clients:
         client.handler.send_datagram(msg)
 
 def send_message_others(msg: str, c_uid: int) -> None:
+    global clients
     for client in clients:
         if client.uid != c_uid:
             client.handler.send_datagram(msg)
