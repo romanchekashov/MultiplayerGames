@@ -28,8 +28,8 @@ class CounterHandler:
         self._session_id = session_id
         self._http = http
         self._counters = defaultdict(int)
-        # self._encoding = 'ascii'
-        self._encoding = 'utf-8'
+        self._encoding = 'ascii'
+        # self._encoding = 'utf-8'
     
     def send_datagram(self, data) -> None:
         payload = str(data).encode(self._encoding)
