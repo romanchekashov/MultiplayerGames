@@ -128,9 +128,9 @@ func main() {
 	// "" in AllowedOrigins lets you access the server from JavaScript loaded from disk (i.e. via a file:// URL)
 	server := &webtransport.Server{
 		ListenAddr:     ":4433",
-		TLSCert:        webtransport.CertFile{Path: "cert.pem"},
-		TLSKey:         webtransport.CertFile{Path: "cert.key"},
-		AllowedOrigins: []string{"googlechrome.github.io", "127.0.0.1:8000", "localhost:8000", "new-tab-page", ""},
+		TLSCert:        webtransport.CertFile{Path: "/etc/letsencrypt/live/look.ovh/fullchain.pem"},
+		TLSKey:         webtransport.CertFile{Path: "/etc/letsencrypt/live/look.ovh/privkey.pem"},
+		AllowedOrigins: []string{"game.look.ovh", "127.0.0.1:8000", "localhost:8000", "new-tab-page", ""},
 		QuicConfig: &webtransport.QuicConfig{
 			KeepAlive:      true,
 			MaxIdleTimeout: 30 * time.Second,
