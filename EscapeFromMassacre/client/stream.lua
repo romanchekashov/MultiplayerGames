@@ -1,3 +1,9 @@
+local debugUtils = require "src.utils.debug-utils"
+
+local function log(...)
+	print("[BROADSOCK STREAM]", ...)
+end
+
 local M = {}
 
 function M.dump(bytes)
@@ -19,11 +25,12 @@ end
 -- @param number The number to convert, only the integer part will be converted
 -- @return String with 4 bytes representing the number
 function M.number_to_int32(number)
-	local b1 = bit.rshift(bit.band(number, 0xFF000000), 24)
-	local b2 = bit.rshift(bit.band(number, 0x00FF0000), 16)
-	local b3 = bit.rshift(bit.band(number, 0x0000FF00), 8)
-	local b4 = bit.band(number, 0x000000FF)
-	return string.char(b1, b2, b3, b4)
+	return tostring(math.floor(number))
+	-- local b1 = bit.rshift(bit.band(number, 0xFF000000), 24)
+	-- local b2 = bit.rshift(bit.band(number, 0x00FF0000), 16)
+	-- local b3 = bit.rshift(bit.band(number, 0x0000FF00), 8)
+	-- local b4 = bit.band(number, 0x000000FF)
+	-- return string.char(b1, b2, b3, b4)
 end
 
 --- Convert an int32 to a Lua number
@@ -146,7 +153,7 @@ function M.writer()
 	-- @param number The number to write
 	-- @return The stream instance
 	function instance.number(number)
-		local str = tostring(number)
+		local str = tostring(math.floor(number))
 		strings[#strings + 1] = M.number_to_int32(#str) .. str
 		return instance
 	end
@@ -187,6 +194,7 @@ function M.writer()
 	-- to disk
 	-- @return The stream as a string
 	function instance.tostring()
+		-- debugUtils.printTable(strings)
 		return table.concat(strings, "")
 	end
 

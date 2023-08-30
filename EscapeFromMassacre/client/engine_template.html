@@ -263,11 +263,12 @@
 				addToEventLog('Sending datagrams not supported: ' + e, 'error');
 				return;
 			}
-			readDatagrams(transport);
+			WebTransportReadDatagrams(transport);
 		}
 
 		// "Send data" button handler.
 		async function WebTransportSendData(rawData) {
+			console.log('WebTransportSendData: ', rawData)
 			let encoder = new TextEncoder('utf-8');
 			let data = encoder.encode(rawData);
 			let transport = currentTransport;

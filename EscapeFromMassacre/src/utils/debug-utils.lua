@@ -70,4 +70,15 @@ function M.print(arguments)
     end
 end
 
+function M.printTable(tbl)
+    for index, data in ipairs(tbl) do
+        print(index)
+    
+        for key, value in pairs(data) do
+            -- print('\t', key, value)
+            print(', ', key, value)
+        end
+    end
+end
+
 return M

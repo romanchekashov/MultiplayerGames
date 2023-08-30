@@ -1,7 +1,7 @@
 local stream = require "client.stream"
 
 local server_nakama = require "client.server_nakama"
-local DebugUtils = require "src.utils.debug-utils"
+local debugUtils = require "src.utils.debug-utils"
 local MainState = require "src.main_state"
 
 
@@ -9,7 +9,7 @@ local M = {}
 
 
 local function log(...)
-	-- print("[BROADSOCK CLIENT]", ...)
+	print("[BROADSOCK CLIENT]", ...)
 end
 
 --- Create a broadsock instance
@@ -67,7 +67,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		return client_count
 	end
 
-	local function on_data(data)
+	function instance.on_data(data)
 		local data_length = string.len(data)
 		local sr = stream.reader(data, data_length)
 		local from_uid = sr.number()
@@ -208,8 +208,13 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- @param data
 	function instance.send(data)
 		if connection.connected then
-			print("send", #data, "data:", data)
-			server_nakama.send_player_move(stream.number_to_int32(#data) .. data)
+			-- log("send", #data, "data:", data)
+			local msg = stream.number_to_int32(#data) .. data
+			if html5 then
+				log(msg)
+				html5.run("WebTransportSendData('".. msg .."')")
+			end
+			-- server_nakama.send_player_move(stream.number_to_int32(#data) .. data)
 		end
 	end
 
@@ -218,7 +223,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- This will also send any other queued data
 	function instance.update()
 		if connection.connected then
-			print("update - sending game objects", instance.gameobject_count())
+			-- log("update - sending game objects", instance.gameobject_count(), debugUtils.printTable(gameobjects))
 			local sw = stream.writer()
 			sw.string("GO")
 			sw.number(gameobject_count)
@@ -231,7 +236,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				sw.vector3(pos)
 				sw.quat(rot)
 				sw.vector3(scale)
-				print(gouid, gameobject.id, pos, sw.tostring())
+				-- log(gouid, gameobject.id, rot, scale, tostring(sw.tostring()))
 			end
 			instance.send(sw.tostring())
 
@@ -293,14 +298,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			msg.post("gui#menu", "set_username", {username = MainState.username})
 			-- xoxo.show_menu()
 
-			log("created client")
 			connection.connected = true
+			log("created client", connection.connected)
 		else
 			print(err)
 		end
 	end)
 
-	server_nakama.on_handle_match_data(on_data)
+	-- server_nakama.on_handle_match_data(on_data)
 
 	return instance
 end

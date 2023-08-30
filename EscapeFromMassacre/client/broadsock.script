@@ -3,7 +3,8 @@ local stream = require "client.stream"
 
 local function js_listener(self, message_id, message)
 	if message_id == "ServerMsg" then
-		print(message)
+		print("ServerMsg: ", message)
+		self.client.on_data(message)
 	end
 end
 

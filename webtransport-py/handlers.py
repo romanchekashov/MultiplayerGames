@@ -30,7 +30,7 @@ class CounterHandler:
         self._counters = defaultdict(int)
     
     def send_datagram(self, data) -> None:
-        payload = str(len(data)).encode('ascii')
+        payload = str(data).encode('ascii')
         self._http.send_datagram(self._session_id, payload)
 
     def h3_event_received(self, event: H3Event) -> None:
