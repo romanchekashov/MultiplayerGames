@@ -1,0 +1,151 @@
+local Utils = require "src.utils.utils"
+local _wall = Utils.wall
+
+go.property("remote", true)
+go.property("speed", 50)
+
+local COLLISION_RESPONSE = hash("collision_response")
+local CONTACT_POINT_RESPONSE = hash("contact_point_response")
+local PLAYER = hash("player")
+local WALL = hash("wall")
+local BULLET = hash("bullet")
+
+local random_position_walls = {
+	[1] = vmath.vector3(0, math.random(_wall.offset.y, _wall.y), 0),
+	[2] = vmath.vector3(_wall.x + 1000, math.random(_wall.offset.y, _wall.y), 0),
+	[3] = vmath.vector3(math.random(_wall.offset.x, _wall.x), 0, 0),
+	[4] = vmath.vector3(math.random(_wall.offset.x, _wall.x), _wall.y + 1000, 0)
+}
+
+local function random_position_on_wall(self)
+	local random = math.random(1, 4)
+	-- if random == self.target_random then
+	-- 	for i = 1, 4 do
+	-- 		if i ~= self.target_random then
+	-- 			random = i
+	-- 			break
+	-- 		end
+	-- 	end
+	-- end
+	self.target_random = random
+	self.target_position = random_position_walls[self.target_random]
+	-- print("random_position_on_wall " .. tostring(random))
+end
+
+function init(self)
+	if not self.remote then
+		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = "zombie" })
+	end
+
+	self.target_id = nil
+	self.wall_hit_cooldown = 0
+	random_position_on_wall(self)
+	self.player_id_detected_cooldown = 0
+	self.player_id_detected_maybe = nil
+	self.player_id_detected = nil
+end
+
+function final(self)
+	if not self.remote then
+		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
+	end
+end
+
+function update(self, dt)
+
+	if self.player_id_detected_cooldown < 0 then
+		self.player_id_detected_maybe = nil
+		self.player_id_detected = nil
+	end
+
+	if self.player_id_detected_maybe ~= nil and self.player_id_detected == nil then
+		-- request ray cast
+		local my_start = go.get_position()
+		local my_end = go.get_position(self.player_id_detected_maybe)
+		local my_groups = { WALL, PLAYER }
+
+		local result = physics.raycast(my_start, my_end, my_groups)
+		if result and self.player_id_detected_maybe == result.id then
+			-- act on the hit (see 'ray_cast_response' message for all values)
+			print("ray_cast_response " .. result.id)
+			self.player_id_detected = result.id
+		end
+	end
+
+	local pos = go.get_world_position()
+	local x = self.target_position.x - pos.x
+	local y = self.target_position.y - pos.y
+	
+	local target_angle = -math.atan2(x, y)
+	-- print(string.format("%d %d %d", x, y, target_angle))
+	local target_quat = vmath.quat_rotation_z(target_angle)
+	local current_quat = go.get_rotation()
+	
+	-- rotate towards target
+	local q = vmath.slerp(0.08, current_quat, target_quat)
+	go.set_rotation(q)
+	
+	-- move towards target
+	local d = vmath.rotate(q, vmath.vector3(0, 1, 0))
+	go.set_position(pos + d * self.speed * dt)
+
+	-- if we have a target id we assume that it will die this frame and pick a random
+	-- target position and reset the target id flag.
+	-- if the target is still alive the next frame we will get a new collision and
+	-- we'll be able to set the target position again. 
+	if self.target_id then
+		random_position_on_wall(self)
+
+		-- self.player_id_detected_maybe = nil
+		-- self.player_id_detected = nil
+	end
+	self.target_id = nil
+
+	self.wall_hit_cooldown = self.wall_hit_cooldown - dt
+
+	if self.player_id_detected_cooldown > 0 then
+		self.player_id_detected_cooldown = self.player_id_detected_cooldown - dt
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == COLLISION_RESPONSE then
+		if message.group == PLAYER then
+			local my_pos = go.get_world_position()
+			local other_pos = go.get_world_position(message.other_id)
+			local distance_to_target = vmath.length(my_pos - self.target_position)
+			local distance_to_collision = vmath.length(my_pos - other_pos)
+
+			if distance_to_collision < distance_to_target or not self.target_id then
+				self.player_id_detected_cooldown = 0.2
+				self.player_id_detected_maybe = message.other_id
+				-- print(string.format("zombie %s see player %s in distance %s", go.get_id(), message.other_id, distance_to_collision))
+				if self.player_id_detected ~= nil then
+					self.target_random = nil
+					self.target_position = other_pos
+					self.target_id = message.other_id
+
+				end
+			end
+		-- elseif message.group == WALL then
+		-- 	local my_pos = go.get_world_position()
+		-- 	local other_pos = go.get_world_position(message.other_id)
+		-- 	local distance_to_collision = vmath.length(my_pos - other_pos)
+		-- 	print(string.format("zombie %s see wall %s in distance %s", go.get_id(), message.other_id, distance_to_collision))
+		elseif message.group == BULLET then
+			msg.post("spawner-zombie#script", "remove_zombie", {zombie_id = go.get_id()})
+		end
+	elseif message_id == CONTACT_POINT_RESPONSE then
+		if message.group == WALL and self.wall_hit_cooldown <= 0 then
+			self.wall_hit_cooldown = 0.2
+			go.set_position(go.get_position() + message.normal * message.distance)
+			random_position_on_wall(self)
+			-- print("zombie wall hit " .. )
+		end
+	end
+end
+
+function on_reload(self)
+    -- Add reload-handling code here
+    -- Remove this function if not needed
+end

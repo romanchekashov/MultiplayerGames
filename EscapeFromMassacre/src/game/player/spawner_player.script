@@ -1,0 +1,83 @@
+local MainState = require "src.main_state"
+local Utils = require "src.utils.utils"
+local random_position = Utils.random_position
+
+function init(self)
+	-- Add initialization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+
+    math.randomseed(socket.gettime())
+
+    self.w = tonumber(sys.get_config("display.width")) - 300
+    self.h = tonumber(sys.get_config("display.height")) - 200
+	-- print("w " .. self.w .. " h " .. self.h)
+	self.players = MainState.players
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function fixed_update(self, dt)
+	-- This function is called if 'Fixed Update Frequency' is enabled in the Engine section of game.project
+	-- Can be coupled with fixed updates of the physics simulation if 'Use Fixed Timestep' is enabled in
+	-- Physics section of game.project
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+	-- Add message-handling code here
+	-- Learn more: https://defold.com/manuals/message-passing/
+	-- Remove this function if not needed
+	if message_id == hash("add_player") then
+		-- start position outside screen edge
+		local player_id = factory.create("#factory-player", random_position(), nil, {remote = false})
+		print("player joined: " .. player_id)
+		local obj = MainState.createGameObject(player_id)
+		self.players:put(obj.id, obj)
+		msg.post("gui#menu", "set_online_players", {online_players = self.players.length})
+	elseif message_id == hash("remove_player") then
+		local player_id = message.player_id
+
+		if self.players:has(player_id) then
+			print("Player killed with bullet", player_id)
+			go.delete(player_id)
+			
+			self.players:remove(player_id)
+			msg.post("gui#menu", "set_online_players", {online_players = self.players.length})
+		end
+		-- for m, _ in pairs(self.players) do
+        --     go.delete(m)
+        -- end
+        -- self.players = {}
+	end
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here. The game object this script is attached to
+	-- must have acquired input focus:
+	--
+	--    msg.post(".", "acquire_input_focus")
+	--
+	-- All mapped input bindings will be received. Mouse and touch input will
+	-- be received regardless of where on the screen it happened.
+	-- Learn more: https://defold.com/manuals/input/
+	-- Remove this function if not needed
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end

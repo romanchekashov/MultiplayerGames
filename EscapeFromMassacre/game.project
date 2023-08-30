@@ -1,0 +1,60 @@
+[project]
+title = Escape from Massacre
+custom_resources = 
+dependencies#0 = https://github.com/defold/extension-websocket/archive/refs/tags/3.1.0.zip
+dependencies#1 = https://github.com/heroiclabs/nakama-defold/archive/refs/tags/3.1.0.zip
+dependencies#2 = https://github.com/britzl/defold-input/archive/master.zip
+dependencies#3 = https://github.com/britzl/broadsock/archive/1.1.1.zip
+
+[bootstrap]
+main_collection = /src/main.collectionc
+render = /builtins/render/default.renderc
+
+[input]
+game_binding = /input/game.input_bindingc
+gamepads = /builtins/input/default.gamepadsc
+
+[display]
+width = 1136
+height = 640
+variable_dt = 1
+
+[physics]
+scale = 0.02
+debug = 0
+max_collisions = 256
+max_contacts = 256
+gravity_y = -100
+max_collision_object_count = 256
+
+[script]
+shared_state = 1
+
+[android]
+iap_provider = GooglePlay
+package = com.britzl.publicexamples.rotate_and_move
+
+[sprite]
+max_count = 1000
+
+[resource]
+max_resources = 1000
+
+[osx]
+bundle_identifier = com.britzl.publicexamples.rotate_and_move
+
+[ios]
+bundle_identifier = com.britzl.publicexamples.rotate_and_move
+
+[tilemap]
+max_tile_count = 10000
+
+[particle_fx]
+max_count = 128
+max_particle_count = 2048
+
+[sound]
+max_sound_buffers = 64
+max_sound_sources = 32
+max_component_count = 64
+

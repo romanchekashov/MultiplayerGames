@@ -1,0 +1,25 @@
+local BROADSOCK = msg.url("default:/broadsock#script")
+-- local BROADSOCK = msg.url("default:/server#broadsock")
+
+function init(self)
+	math.randomseed(os.time())
+	-- msg.post("@render:", "clear_color", { color = vmath.vector4(0.4, 0.5, 0.8, 1.0) })
+	msg.post(BROADSOCK, "connect", { ip = "127.0.0.1", port = 5001 })
+	msg.post(BROADSOCK, "register_factory", { url = "/spawner-player#factory-player", type = "player" })
+	msg.post(BROADSOCK, "register_factory", { url = "/spawner-zombie#factory-zombie", type = "zombie" })
+	msg.post(BROADSOCK, "register_factory", { url = "#bulletfactory", type = "bullet" })
+end
+
+function on_message(self, message_id, message, sender)
+	print("game", message_id)
+	if message_id == hash("connected") then
+		if sender == BROADSOCK then
+			print("connected: create player")
+			-- factory.create("/factories#player", random_position(), nil, { remote = false })	
+		end
+	elseif message_id == hash("disconnected") then
+		if sender == BROADSOCK then
+			print("disconnected")
+		end
+	end
+end

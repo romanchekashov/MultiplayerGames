@@ -1,0 +1,95 @@
+local MainState = require "src.main_state"
+local Buttons = require "src.utils.buttons"
+local btnAction = Buttons.action
+local server_nakama = require "client.server_nakama"
+
+local function set_is_joined(self, is_joined)
+	self.is_joined = is_joined
+	gui.set_enabled(gui.get_node("panel-join"), not is_joined)
+	gui.set_enabled(gui.get_node("btn-exit"), is_joined)
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+
+	MainState.pause = true
+	set_is_joined(self, false)
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+	msg.post(".", "release_input_focus")
+end
+
+function update(self, dt)
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+	-- Add message-handling code here
+	-- Learn more: https://defold.com/manuals/message-passing/
+	-- Remove this function if not needed
+	if message_id == hash("set_online_players") then
+		local nodeId = gui.get_node("players-online")
+        -- format score like: 006 with leading zeros
+        gui.set_text(nodeId, string.format("Online: %03d", message.online_players))
+	elseif message_id == hash("set_username") then
+		local nodeId = gui.get_node("username")
+        -- format max 30 characters
+        gui.set_text(nodeId, string.format("Wellcome %.30s!", message.username))
+	end
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here. The game object this script is attached to
+	-- must have acquired input focus:
+	--
+	--    msg.post(".", "acquire_input_focus")
+	--
+	-- All mapped input bindings will be received. Mouse and touch input will
+	-- be received regardless of where on the screen it happened.
+	-- Learn more: https://defold.com/manuals/input/
+	-- Remove this function if not needed
+
+	if action_id == hash("touch") then
+		if self.is_joined then
+			btnAction(action, "btn-exit", nil, nil, function ()
+				-- msg.post("spawner-player#script", "remove_player")
+				set_is_joined(self, false)
+				MainState.pause = true
+			end)
+		else
+			btnAction(action, "btn-join", nil, nil, function ()
+				msg.post("spawner-player#script", "add_player")
+
+				local nodeBtnExit = gui.get_node("btn-exit")
+				MainState.setPauseBound(gui.get_screen_position(nodeBtnExit), gui.get_size(nodeBtnExit))
+				MainState.pause = false
+
+				set_is_joined(self, true)
+
+				server_nakama.find_opponent_and_join_match(function(success, message)
+					msg.post(".", "acquire_input_focus")
+					-- timer.cancel(timeout_handle)
+					if success then
+						-- show_message("Found a match!")
+						-- on_start_game()
+					else
+						print(message)
+						-- on_ready_to_join(message)
+					end
+				end)
+			end)
+		end
+	end
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end

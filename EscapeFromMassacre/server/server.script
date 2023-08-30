@@ -1,0 +1,31 @@
+go.property("port", 5000)
+
+local broadsock = require "server.broadsock"
+
+local broadsock_update = broadsock.update
+local handle_client_connected = broadsock.handle_client_connected
+local handle_client_disconnected = broadsock.handle_client_disconnected
+local handle_client_message = broadsock.handle_client_message
+
+
+local function log(...)
+	print("[ESCAPE_SERVER]", ...)
+end
+
+function init(self)
+	local ok, err = broadsock.start(self.port)
+	if ok then
+		log("start", self.port)
+	else
+		log(err)
+		os.exit(1)
+	end
+end
+
+function final(self)
+	broadsock.stop()
+end
+
+function update(self, dt)
+	broadsock_update()
+end

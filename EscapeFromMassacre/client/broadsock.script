@@ -1,0 +1,84 @@
+local broadsock = require "client.broadsock"
+local stream = require "client.stream"
+
+local function on_disconnected(self)
+	print("On disconnected")
+	msg.post(self.creator, "disconnected")
+	self.client = nil
+end
+
+local function on_connected(self)
+	print("On connected")
+	msg.post(self.creator, "connected")
+end
+
+local function on_custom_message(self, msg_id, from_uid, stream_reader)
+	print("On custom message")
+	msg.post(self.creator, "message", { msg_id = msg_id, from = from_uid })
+end
+
+local function connect(self, ip, port)
+	-- wrap callback function and pass self as first argument
+	local function callback(fn)
+		return function(...) fn(self, ...) end
+	end
+
+	local client, err = broadsock.create(
+		ip, port,
+		callback(on_custom_message),
+		callback(on_connected),
+		callback(on_disconnected))
+
+	if err then
+		print("Unable to connect to server", err)
+		msg.post(self.creator, "disconnected")
+		return
+	end
+	self.client = client
+end
+
+function final(self)
+	if self.client then
+		self.client.destroy()
+	end
+end
+
+function update(self, dt)
+	if self.client then
+		self.client.update()
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if not self.client then
+		if message_id == hash("connect") then
+			self.creator = sender
+			connect(self, message.ip, message.port)
+		end
+	else
+		if message_id == hash("register_gameobject") then
+			self.client.register_gameobject(message.id, message.type)
+		elseif message_id == hash("unregister_gameobject") then
+			self.client.unregister_gameobject(message.id)
+		elseif message_id == hash("register_factory") then
+			self.client.register_factory(message.url, message.type)
+		elseif message_id == hash("send_message") then
+			local sw = stream.writer()
+			for _,value in ipairs(message) do
+				if type(value) == "string" then
+					sw.string(value)
+				elseif type(value) == "number" then
+					sw.number(value)
+				else
+					error("Invalid type when writing to stream")
+				end
+			end
+			self.client.send(sw.tostring())
+		end
+	end
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Remove this function if not needed
+end

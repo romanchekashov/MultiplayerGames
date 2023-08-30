@@ -1,0 +1,149 @@
+local MainState = require "src.main_state"
+local insidePauseBound = MainState.insidePauseBound
+
+go.property("angular_velocity", 5)
+go.property("linear_velocity", 200)
+go.property("remote", true)
+
+local LEFT = hash("left")
+local RIGHT = hash("right")
+local UP = hash("up")
+local DOWN = hash("down")
+
+local COLLISION_RESPONSE = hash("collision_response")
+local CONTACT_POINT_RESPONSE = hash("contact_point_response")
+local WALL = hash("wall")
+local ZOMBIE = hash("zombie")
+local BULLET = hash("bullet")
+
+function init(self)
+	if self.remote then
+		return
+	end
+
+	msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = "player" })
+
+	msg.post(".", "acquire_input_focus")
+	msg.post("camera", "acquire_camera_focus")
+
+	self.move = 0		-- direction of movement (0 = standing still, 1 = forward, -1 = backward)
+	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)	
+
+	label.set_text("#name", string.format("%.30s", MainState.player.username))
+end
+
+function final(self)
+	if self.remote then
+		return
+	end
+	msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
+
+	msg.post(".", "release_input_focus")
+	msg.post("camera", "release_camera_focus")
+end
+
+function update(self, dt)
+	if self.remote then
+		return
+	end
+	
+	msg.post("@render:", "draw_text", { text = "Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
+
+	local rotation = go.get_rotation()
+	-- handle rotation from key input left/right
+	if self.rotate ~= 0 then
+		rotation = rotation * vmath.quat_rotation_z(self.angular_velocity * self.rotate * dt)
+		go.set_rotation(rotation)
+	-- rotate towards the latest mouse/touch location
+	-- take into account camera position
+	elseif self.touch then
+		local to = go.get_position() - go.get_position("camera")
+		local from = vmath.vector3(self.touch.x, self.touch.y, 0)
+		local angle = math.atan2(to.x - from.x, from.y - to.y)
+		rotation = vmath.quat_rotation_z(angle)
+		go.set_rotation(rotation)
+		self.touch = nil
+	end
+	
+	-- move in direction of rotation
+	local pos = go.get_position()
+	if self.move ~= 0 then
+		local distance = self.linear_velocity * self.move * dt
+		local direction = vmath.rotate(rotation, vmath.vector3(0, distance, 0))
+		pos = pos + direction
+		go.set_position(pos)
+	end
+	
+	-- update camera position
+	go.set_position(pos + vmath.vector3(-568, - 320, 0), "camera")
+end
+
+function on_input(self, action_id, action)
+	if MainState.pause or insidePauseBound(action) then
+        return
+    end
+
+	if action_id == LEFT then
+		self.rotate = action.released and 0 or 1
+		-- the above one-liner is equivalent to the if-elseif case below
+		if action.released then
+			self.rotate = 0
+		else
+			self.rotate = 1
+		end
+	elseif action_id == RIGHT then
+		self.rotate = action.released and 0 or -1
+	end
+	
+	if action_id == UP then
+		self.move = action.released and 0 or 1
+	elseif action_id == DOWN then
+		self.move = action.released and 0 or -1
+	end
+
+	-- handle touch/mouse movement by holding down the finger/mouse button
+	if (action_id == hash("trigger") or action_id == hash("touch")) then
+		if action.pressed then
+			self.move = 1
+			self.pressed_time = socket.gettime()
+		elseif action.released then
+			self.move = 0
+			-- fire a bullet if the time between press and release is sufficiently short
+			if socket.gettime() - self.pressed_time < 0.2 then
+				local rotation = go.get_rotation()
+				local position = go.get_position() + vmath.rotate(rotation, vmath.vector3(10, 50, 0))
+				local to = position + vmath.rotate(rotation, vmath.vector3(0, 1000, 0))
+				local bullet = factory.create("#bulletfactory", position, rotation, {remote = false})
+				
+				if not self.remote then
+					msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = "bullet" })
+				end
+				
+				go.animate(bullet, "position", go.PLAYBACK_ONCE_FORWARD, to, go.EASING_LINEAR, 0.75, 0, function()
+					if not self.remote then
+						msg.post("/broadsock", "unregister_gameobject", { id = bullet })
+					end
+
+					go.delete(bullet)
+				end)
+			end
+		end
+	end
+	
+	if not action_id then
+		self.touch = action
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == COLLISION_RESPONSE then
+		if message.group == BULLET or message.group == ZOMBIE then
+			msg.post("spawner-player#script", "remove_player", {player_id = go.get_id()})
+			-- print("I collided with", go.get_id(), message.other_id, message.other_group)
+		end
+	elseif message_id == CONTACT_POINT_RESPONSE then
+		if message.group == WALL then
+			go.set_position(go.get_position() + message.normal * message.distance)
+		end
+	end
+end
