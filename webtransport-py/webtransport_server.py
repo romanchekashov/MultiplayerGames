@@ -123,8 +123,7 @@ if __name__ == '__main__':
         ))
     
     try:
-        logging.info(
-            "Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
+        print("Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
         loop.run_forever()
     except KeyboardInterrupt:
         pass
