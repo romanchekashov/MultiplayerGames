@@ -91,7 +91,7 @@ from handlers import CounterHandler
 from protocols import WebTransportProtocol
 
 # BIND_ADDRESS = '::1'
-BIND_ADDRESS = 'game.look.ovh'
+# BIND_ADDRESS = 'game.look.ovh'
 BIND_PORT = 4433
 
 logger = logging.getLogger(__name__)
@@ -99,9 +99,12 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('bind_address')
     parser.add_argument('certificate')
     parser.add_argument('key')
     args = parser.parse_args()
+    
+    BIND_ADDRESS = args.bind_address
 
     configuration = QuicConfiguration(
         alpn_protocols=H3_ALPN,
@@ -118,6 +121,7 @@ if __name__ == '__main__':
             configuration=configuration,
             create_protocol=WebTransportProtocol,
         ))
+    
     try:
         logging.info(
             "Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))

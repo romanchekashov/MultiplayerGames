@@ -68,6 +68,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	end
 
 	function instance.on_data(data, data_length)
+		log(data, data_length)
 		local sr = stream.reader(data, data_length)
 		local from_uid = sr.number()
 		local msg_id = sr.string()

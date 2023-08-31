@@ -229,7 +229,8 @@
 
 		// "Connect" button handler.
 		async function WebTransportСonnect() {
-			const url = 'https://game.look.ovh:4433/counter';
+			// const url = 'https://game.look.ovh:4433/counter';
+			const url = 'https://localhost:4433/counter';
 			try {
 				var transport = new WebTransport(url);
 				addToEventLog('Initiating connection...');

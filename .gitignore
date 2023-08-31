@@ -67,3 +67,4 @@ EscapeFromMassacre/build_server/build
 EscapeFromMassacre/bob.jar
 
 webtransport-py/venv
+webtransport-py/__pycache__

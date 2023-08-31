@@ -64,6 +64,7 @@ function M.reader(str, str_length)
 		local length = M.int32_to_number(str, index)
 		index = index + 4
 		local s = str:sub(index, index + length - 1)
+		log(length, s, index, index + length - 1)
 		index = index + length
 		return s
 	end
