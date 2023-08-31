@@ -41,8 +41,8 @@ class CounterHandler:
     def h3_event_received(self, event: H3Event) -> None:
         if isinstance(event, DatagramReceived):
             if 'PLAYER_READY' == event.data.decode(self._encoding):
-                send_message_others(f'{self.client_uid}|CONNECT_OTHER', self.client_uid)
-                self.send_datagram(f'{self.client_uid}|CONNECT_SELF')
+                send_message_others(f'{self.client_uid}|CONNECT_OTHER'.encode(self._encoding), self.client_uid)
+                self.send_datagram(f'{self.client_uid}|CONNECT_SELF'.encode(self._encoding))
 
             self.send_datagram(event.data)
 
