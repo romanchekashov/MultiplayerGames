@@ -28,6 +28,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
         self._handler: Optional[CounterHandler] = None
 
     def quic_event_received(self, event: QuicEvent) -> None:
+        print(event.alpn_protocol)
         if isinstance(event, ProtocolNegotiated):
             self._http = H3Connection(self._quic, enable_webtransport=True)
         elif isinstance(event, StreamReset) and self._handler is not None:
