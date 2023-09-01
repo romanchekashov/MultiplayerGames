@@ -77,6 +77,7 @@ This will output "13" (the length of "Hello, world!") into the console.
 import argparse
 import asyncio
 import logging
+import socket
 from collections import defaultdict
 from typing import Dict, Optional
 
@@ -135,7 +136,7 @@ if __name__ == '__main__':
             configuration=configuration,
             create_protocol=WebTransportProtocol,
         ))
-    loop.create_task(run_server('localhost', 5001))
+    loop.create_task(run_server(socket.gethostname(), 5001))
     
     try:
         print("Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
