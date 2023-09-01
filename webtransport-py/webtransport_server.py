@@ -96,6 +96,20 @@ BIND_PORT = 4433
 
 logger = logging.getLogger(__name__)
 
+async def handle_client(reader, writer):
+    request = None
+    while request != 'quit':
+        request = (await reader.read(255)).decode('utf8')
+        response = str(eval(request)) + '\n'
+        writer.write(response.encode('utf8'))
+        await writer.drain()
+    writer.close()
+
+async def run_server(host, port):
+    server = await asyncio.start_server(handle_client, host, port)
+    print("Listening on http(s)://{}:{}".format(host, port))
+    async with server:
+        await server.serve_forever()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -114,13 +128,14 @@ if __name__ == '__main__':
     configuration.load_cert_chain(args.certificate, args.key)
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(
+    loop.create_task(
         serve(
             BIND_ADDRESS,
             BIND_PORT,
             configuration=configuration,
             create_protocol=WebTransportProtocol,
         ))
+    loop.create_task(run_server('localhost', 5001))
     
     try:
         print("Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
