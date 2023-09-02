@@ -11,7 +11,7 @@ from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
-from handlers import CounterHandler
+from server_webtransport import CounterHandler
 from broadsock import set_game_client_communication_web_transport, get_next_uid_sequence
 import threading
 
@@ -70,8 +70,9 @@ class WebTransportProtocol(QuicConnectionProtocol):
             return
         if path == b"/counter":
             assert(self._handler is None)
-            self._handler = CounterHandler(stream_id, self._http, get_next_uid_sequence())
-            set_game_client_communication_web_transport(self._handler)
+            self._handler = CounterHandler(stream_id, self._http)
+            client = set_game_client_communication_web_transport(self._handler)
+            self._handler.client = client
             # client = handle_client_connected()
             # client.handler = self._handler
             self._send_response(stream_id, 200)
