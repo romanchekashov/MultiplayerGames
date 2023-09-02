@@ -91,12 +91,14 @@ from server_game_connector import run_game_server_connector
 
 from handlers import CounterHandler
 from protocols import WebTransportProtocol
+from utils import Logger
 
 # BIND_ADDRESS = '::1'
 # BIND_ADDRESS = 'game.look.ovh'
 BIND_PORT = 4433
 
 logger = logging.getLogger(__name__)
+Logger.disabled = True
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

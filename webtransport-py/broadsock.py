@@ -3,10 +3,8 @@ from enum import Enum
 from typing import List
 from utils import Logger
 
-to_game_server_logger = Logger('to_game_server')
-to_game_client_logger = Logger('to_game_client')
-to_game_server_calls_count = 0
-to_game_client_calls_count = 0
+ToServerLog = Logger('TO-SERVER')
+ToClientLog = Logger('TO-CLIENT')
 
 class Messages:
     CONNECT_ME = 'CONNECT_ME'
@@ -53,7 +51,7 @@ def handle_client_connected(websocket):
 
 def get_client_by_ws(ws) -> Client:
     global clients
-    print(f'get_client_by_ws clients: {len(clients)}')
+    # print(f'get_client_by_ws clients: {len(clients)}')
     for c in clients:
         if c.reliableWS is ws:
             return c
@@ -84,16 +82,11 @@ def set_game_server_communication(reader, writer):
     game_server_reader = reader
     game_server_writer = writer
 
-prev_msg = ''
 
 def to_game_server(msg):
-    global game_server_reader, prev_msg, to_game_server_calls_count
+    global game_server_reader, prev_msg
     if game_server_writer is not None:
-        to_game_server_calls_count += 1
-        print(f'TO-SERVER {to_game_server_calls_count}, msg {msg}')
-        if prev_msg != msg:
-            to_game_server_logger.print(f'to_game_server {msg}')
-            prev_msg = msg
+        ToServerLog.print(msg)
         out_data = stream_encode(msg)
         game_server_writer.write(out_data)
 
@@ -108,11 +101,10 @@ def set_game_client_communication_web_transport(web_transport):
     game_client_web_transport = web_transport
 
 async def to_game_client(msg):
-    global game_client_websocket, game_client_web_transport, to_game_client_calls_count
+    global game_client_websocket, game_client_web_transport
 
     if game_client_websocket is not None:
-        to_game_client_calls_count += 1
-        print(f'TO-CLIENT {to_game_client_calls_count}, msg {msg}')
+        ToClientLog.print(msg)
         if GameServerMessages.CONNECT_SELF in msg:
             client = get_client_by_ws(game_client_websocket)
             client.uid = int(msg[:msg.index('.')])

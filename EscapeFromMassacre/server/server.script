@@ -12,7 +12,7 @@ local handle_client_message = broadsock.handle_client_message
 
 
 function init(self)
-	debugUtils.debug(true)
+	debugUtils.debug(false)
 
 	local ok, err = broadsock.start(self.port)
 	if ok then

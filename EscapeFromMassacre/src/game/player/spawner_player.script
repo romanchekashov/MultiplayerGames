@@ -1,5 +1,9 @@
 local MainState = require "src.main_state"
 local Utils = require "src.utils.utils"
+local debugUtils = require "src.utils.debug-utils"
+
+local log = debugUtils.createLog("[spawner_player]").log
+
 local random_position = Utils.random_position
 
 function init(self)
@@ -47,7 +51,7 @@ function on_message(self, message_id, message, sender)
 		local player_id = message.player_id
 
 		if self.players:has(player_id) then
-			print("Player killed with bullet", player_id)
+			log("Player killed with bullet", player_id)
 			go.delete(player_id)
 		end
 		-- for m, _ in pairs(self.players) do

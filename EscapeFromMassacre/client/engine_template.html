@@ -225,8 +225,15 @@
 	</script>
 
 	<script type='text/javascript'>
+		let noLogs = true;
+		function enableLogs(enable) {
+			noLogs = !enable;
+		}
+
 		let prev_log_msgs = new Set();
 		const log = (...rest) => {
+			if (noLogs) return;
+
 			const key = rest.join();
 			if (!prev_log_msgs.has(key)) {
 				console.log(...rest);

@@ -63,6 +63,11 @@ function M.isTest(is)
 end
 
 function M.debug(isOn)
+    if isOn then
+        print("Logger ON")
+    else
+        print("Logger OFF")
+    end
     isDebug = isOn
 end
 
@@ -91,7 +96,7 @@ function M.createLog(prefix)
     -- use select(i, ...) to get i-th parameter from the list and 
     -- select('#', ...) to get the number of parameters.
     function instance.log(...)
-        if isDebug then
+        if not isDebug then
             return
         end
         -- local msg = select(1, ...)

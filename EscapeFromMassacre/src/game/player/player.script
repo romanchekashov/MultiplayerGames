@@ -1,4 +1,8 @@
 local MainState = require "src.main_state"
+local debugUtils = require "src.utils.debug-utils"
+
+local log = debugUtils.createLog("[PLAYER]").log
+
 local insidePauseBound = MainState.insidePauseBound
 
 go.property("angular_velocity", 5)
@@ -31,13 +35,13 @@ function init(self)
 	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)	
 
 	local username = "user-" .. tostring(self.uid)
-	print("PLAYER CREATED: ", username)
+	log("PLAYER CREATED: ", username)
 	label.set_text("#name", string.format("%.30s", username))
 
 	local obj = MainState.createGameObject(player_id)
 	MainState.players:put(obj.id, obj)
 	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
-	print("player joined: " .. player_id)
+	log("player joined: " .. player_id)
 end
 
 function final(self)
@@ -150,7 +154,7 @@ function on_message(self, message_id, message, sender)
 	if message_id == COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
 			msg.post("spawner-player#script", "remove_player", {player_id = go.get_id()})
-			-- print("I collided with", go.get_id(), message.other_id, message.other_group)
+			-- log("I collided with", go.get_id(), message.other_id, message.other_group)
 		end
 	elseif message_id == CONTACT_POINT_RESPONSE then
 		if message.group == WALL then

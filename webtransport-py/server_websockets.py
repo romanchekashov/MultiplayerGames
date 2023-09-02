@@ -8,7 +8,6 @@ from broadsock import set_game_client_communication_websocket, handle_client_dis
 async def handler(websocket):
 
     client = set_game_client_communication_websocket(websocket)
-    print(f'websocket {websocket}')
     # create periodic task:
     # asyncio.create_task(send(websocket))
 
