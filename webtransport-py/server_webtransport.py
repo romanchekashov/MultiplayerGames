@@ -77,7 +77,6 @@ This will output "13" (the length of "Hello, world!") into the console.
 import argparse
 import asyncio
 import logging
-import socket
 from collections import defaultdict
 from typing import Dict, Optional
 
@@ -87,6 +86,8 @@ from aioquic.h3.events import H3Event, HeadersReceived, WebTransportStreamDataRe
 from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
+from server_websockets import run_server_websockets
+from server_game_connector import run_game_server_connector
 
 from handlers import CounterHandler
 from protocols import WebTransportProtocol
@@ -96,21 +97,6 @@ from protocols import WebTransportProtocol
 BIND_PORT = 4433
 
 logger = logging.getLogger(__name__)
-
-async def handle_client(reader, writer):
-    request = None
-    while request != 'quit':
-        request = (await reader.read(255)).decode('utf8')
-        response = str(eval(request)) + '\n'
-        writer.write(response.encode('utf8'))
-        await writer.drain()
-    writer.close()
-
-async def run_server(host, port):
-    server = await asyncio.start_server(handle_client, host, port)
-    print("Listening on http(s)://{}:{}".format(host, port))
-    async with server:
-        await server.serve_forever()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -136,10 +122,12 @@ if __name__ == '__main__':
             configuration=configuration,
             create_protocol=WebTransportProtocol,
         ))
-    loop.create_task(run_server(socket.gethostname(), 5001))
+    # loop.create_task(run_game_server_connector(socket.gethostname(), 5001))
+    loop.create_task(run_game_server_connector('127.0.0.1', 5001))
+    loop.create_task(run_server_websockets('127.0.0.1', 5002))
     
     try:
-        print("Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
+        print("[WebTransport] Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
         loop.run_forever()
     except KeyboardInterrupt:
         pass

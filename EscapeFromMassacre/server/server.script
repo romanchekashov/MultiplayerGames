@@ -1,6 +1,7 @@
 go.property("port", 5000)
 
 local broadsock = require "server.broadsock"
+local broadsock = require "server.broadsock_client"
 
 local broadsock_update = broadsock.update
 local handle_client_connected = broadsock.handle_client_connected

@@ -13,11 +13,12 @@
 - [venv — Creation of virtual environments](https://docs.python.org/3/library/venv.html)
 - [How to Create Requirements.txt File in Python](https://www.javatpoint.com/how-to-create-requirements-txt-file-in-python)
 ```shell
-python3 -m venv venv # set virtual environment
-python3 -m pip freeze > requirements.txt # manage dependencies versions
+python3.10 -m venv venv # set virtual environment
+python3.10 -m pip freeze > requirements.txt # manage dependencies versions
 
-python3 -m pip install aioquic
-python3 webtransport_server.py # run
+python3.10 -m pip install aioquic
+python3.10 -m pip install websockets
+python3.10 webtransport_server.py # run
 ```
 
 ### Multiplayer server:

@@ -1,6 +1,5 @@
 local stream = require "client.stream"
 
-local server_nakama = require "client.server_nakama"
 local debugUtils = require "src.utils.debug-utils"
 local MainState = require "src.main_state"
 
@@ -44,11 +43,29 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 	local connection = {}
 
+	local function sendToReliableConnection(msg)
+		if html5 then
+			log(msg)
+			html5.run("WebSocketReliableConnectionSendData('".. msg .."')")
+		end
+	end
+
+	local function sendToUnreliableAndFastConnection(data)
+		local msg = stream.number_to_int32(#data) .. data
+		if html5 then
+			log(msg)
+			html5.run("WebTransportSendData('".. msg .."')")
+		end
+	end
+
 	local function add_client(uid_to_add)
 		log("add_client", uid_to_add)
 		clients[uid_to_add] = { uid = uid_to_add }
 		remote_gameobjects[uid_to_add] = {}
 		client_count = client_count + 1
+
+		MainState.player.username = "user-" .. tostring(uid_to_add)
+		msg.post("gui#menu", "set_username", {username = MainState.player.username})
 	end
 
 	local function remove_client(uid_to_remove)
@@ -209,11 +226,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	function instance.send(data)
 		if connection.connected then
 			-- log("send", #data, "data:", data)
-			local msg = stream.number_to_int32(#data) .. data
-			if html5 then
-				log(msg)
-				html5.run("WebTransportSendData('".. msg .."')")
-			end
+			sendToUnreliableAndFastConnection(data)
 			-- server_nakama.send_player_move(stream.number_to_int32(#data) .. data)
 		end
 	end
@@ -287,25 +300,28 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 
 	-- login and set up nakama
-	server_nakama.login(function(account, err)
-		if account then
-			msg.post(".", "acquire_input_focus")
-			-- let the game know that we are connected
-			print("nakama server connected")
-			print(table.tostring(account))
-			MainState.username = account.user.username
-			print(MainState.username)
-			msg.post("gui#menu", "set_username", {username = MainState.username})
-			-- xoxo.show_menu()
+	-- server_nakama.login(function(account, err)
+	-- 	if account then
+	-- 		msg.post(".", "acquire_input_focus")
+	-- 		-- let the game know that we are connected
+	-- 		print("nakama server connected")
+	-- 		print(table.tostring(account))
+	-- 		MainState.username = account.user.username
+	-- 		print(MainState.username)
+	-- 		msg.post("gui#menu", "set_username", {username = MainState.username})
+	-- 		-- xoxo.show_menu()
 
-			connection.connected = true
-			log("created client", connection.connected)
-		else
-			print(err)
-		end
-	end)
+	-- 	else
+	-- 		print(err)
+	-- 	end
+	-- end)
 
 	-- server_nakama.on_handle_match_data(on_data)
+
+	connection.connected = true
+	log("created client", connection.connected)
+
+	sendToReliableConnection("CONNECT_ME")
 
 	return instance
 end

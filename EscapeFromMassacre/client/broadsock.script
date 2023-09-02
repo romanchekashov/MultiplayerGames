@@ -4,17 +4,7 @@ local stream = require "client.stream"
 local function js_listener(self, message_id, message)
 	if message_id == "ServerMsg" then
 		print("ServerMsg: ", message)
-		local data_length
-		local len = #message
-		for i = 1, len do
-			local _data_len = message:sub(1, i)
-			if tonumber(_data_len) > len then
-				data_length = tonumber(message:sub(1, i - 1))
-				break
-			end
-		end
-		
-		self.client.on_data(message, data_length)
+		self.client.on_data(message, #message)
 	end
 end
 

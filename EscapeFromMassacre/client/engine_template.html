@@ -225,7 +225,26 @@
 	</script>
 
 	<script type='text/javascript'>
-		let currentTransport, streamNumber, currentTransportDatagramWriter;
+		const log = (...rest) => {
+			console.log(...rest);
+		}
+
+		let currentTransport = null, streamNumber, currentTransportDatagramWriter, socket;
+
+		// Create WebSocket connection.
+		socket = new WebSocket("ws://localhost:5002");
+
+		// Connection opened
+		socket.addEventListener("open", (event) => {
+			log('WsConnection ready.');
+		});
+
+		// Listen for messages
+		socket.addEventListener("message", (event) => {
+			log("Message from server ", event.data);
+			addToEventLog(event.data);
+		});
+
 
 		// "Connect" button handler.
 		async function WebTransportСonnect() {
@@ -233,62 +252,71 @@
 			const url = 'https://localhost:4433/counter';
 			try {
 				var transport = new WebTransport(url);
-				addToEventLog('Initiating connection...');
+				log('Initiating connection...');
 			} catch (e) {
-				addToEventLog('Failed to create connection object. ' + e, 'error');
+				log('Failed to create connection object. ' + e, 'error');
 				return;
 			}
 
 			try {
 				await transport.ready;
-				addToEventLog('Connection ready.');
+				log('Connection ready.');
 			} catch (e) {
-				addToEventLog('Connection failed. ' + e, 'error');
+				log('Connection failed. ' + e, 'error');		
 				return;
 			}
 
 			transport.closed
 				.then(() => {
-					addToEventLog('Connection closed normally.');
+					log('Connection closed normally.');
 				})
 				.catch(() => {
-					addToEventLog('Connection closed abruptly.', 'error');
+					log('Connection closed abruptly.', 'error');
 				});
 
 			currentTransport = transport;
 			streamNumber = 1;
 			try {
 				currentTransportDatagramWriter = transport.datagrams.writable.getWriter();
-				addToEventLog('Datagram writer ready.');
+				log('Datagram writer ready.');
 			} catch (e) {
-				addToEventLog('Sending datagrams not supported: ' + e, 'error');
+				log('Sending datagrams not supported: ' + e, 'error');
 				return;
 			}
 			WebTransportReadDatagrams(transport);
 		}
 
+		function WebSocketReliableConnectionSendData(rawData) {
+			log('WS reliable: ', rawData);
+			socket.send(rawData);
+		}
+
 		// "Send data" button handler.
 		async function WebTransportSendData(rawData) {
-			console.log('WebTransportSendData: ', rawData)
-			let encoder = new TextEncoder('utf-8');
-			let data = encoder.encode(rawData);
-			let transport = currentTransport;
-			try {
-				await currentTransportDatagramWriter.write(data);
-				addToEventLog('Sent datagram: ' + rawData);
-			} catch (e) {
-				addToEventLog('Error while sending data: ' + e, 'error');
-			}
+			if (currentTransport) {
+				log('WT unreliable&fast: ', rawData);
+				let encoder = new TextEncoder('utf-8');
+				let data = encoder.encode(rawData);
+				let transport = currentTransport;
+				try {
+					await currentTransportDatagramWriter.write(data);
+					log('Sent datagram: ' + rawData);
+				} catch (e) {
+					log('Error while sending data: ' + e, 'error');
+				}
+			} else {
+				WebSocketReliableConnectionSendData(rawData);
+			}			
 		}
 
 		// Reads datagrams from |transport| into the event log until EOF is reached.
 		async function WebTransportReadDatagrams(transport) {
 			try {
 				var reader = transport.datagrams.readable.getReader();
-				addToEventLog('Datagram reader ready.');
+				log('Datagram reader ready.');
 				WebTransportSendData('PLAYER_READY');
 			} catch (e) {
-				addToEventLog('Receiving datagrams not supported: ' + e, 'error');
+				log('Receiving datagrams not supported: ' + e, 'error');
 				return;
 			}
 			let decoder = new TextDecoder('utf-8');
@@ -296,7 +324,7 @@
 				while (true) {
 					const { value, done } = await reader.read();
 					if (done) {
-						addToEventLog('Done reading datagrams!');
+						log('Done reading datagrams!');
 						return;
 					}
 					// let data = decoder.decode(value);
@@ -305,7 +333,7 @@
 					addToEventLog(String.fromCharCode.apply(null, value));
 				}
 			} catch (e) {
-				addToEventLog('Error while reading datagrams: ' + e, 'error');
+				log('Error while reading datagrams: ' + e, 'error');
 			}
 		}
 

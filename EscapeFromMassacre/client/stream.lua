@@ -61,12 +61,20 @@ function M.reader(str, str_length)
 	-- by the actual characters of the string
 	-- @return The string
 	function instance.string()
-		local length = M.int32_to_number(str, index)
-		index = index + 4
-		local s = str:sub(index, index + length - 1)
-		log(length, s, index, index + length - 1)
-		index = index + length
-		return s
+		for i = index, #str do
+			if str:sub(i, i) == "." then
+				local s = str:sub(index, i - 1)
+				index = index + #s + 1
+				return s
+			end
+		end
+		return str:sub(index, #str)
+		-- local length = M.int32_to_number(str, index)
+		-- index = index + 4
+		-- local s = str:sub(index, index + length - 1)
+		-- log(length, s, index, index + length - 1)
+		-- index = index + length
+		-- return s
 	end
 
 	--- Read a Lua number from the stream
@@ -145,7 +153,7 @@ function M.writer()
 	-- @param str The string to write
 	-- @return The stream instance
 	function instance.string(str)
-		strings[#strings + 1] = M.number_to_int32(#str) .. str
+		strings[#strings + 1] = str .. "."
 		return instance
 	end
 
@@ -155,7 +163,7 @@ function M.writer()
 	-- @return The stream instance
 	function instance.number(number)
 		local str = tostring(math.floor(number))
-		strings[#strings + 1] = M.number_to_int32(#str) .. str
+		strings[#strings + 1] = str .. "."
 		return instance
 	end
 
@@ -196,7 +204,8 @@ function M.writer()
 	-- @return The stream as a string
 	function instance.tostring()
 		-- debugUtils.printTable(strings)
-		return table.concat(strings, "")
+		local data = table.concat(strings, "")
+		return string.sub(data, 1, #data - 1)
 	end
 
 	return instance
