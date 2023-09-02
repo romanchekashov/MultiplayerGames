@@ -3,10 +3,13 @@ local tcp_writer = require "server.tcp_writer"
 local tcp_reader = require "server.tcp_reader"
 local stream = require "client.stream"
 
+local debugUtils = require "src.utils.debug-utils"
 
 local M = {}
 
 M.TCP_SEND_CHUNK_SIZE = 255
+local RATE_LIMIT = 1
+local send_cooldown = RATE_LIMIT
 
 local clients = {}
 
@@ -16,16 +19,28 @@ local server_socket
 
 local connection = {}
 
-local prev_msg = nil
--- You need to use local arg = {...} to assign function parameters to a table or 
--- use select(i, ...) to get i-th parameter from the list and 
--- select('#', ...) to get the number of parameters.
-local function log(...)
-	local msg = select(1, ...)
-	if prev_msg ~= msg then
-		print("[BROADSOCK SERVER]", ...)
-		prev_msg = msg
+-- local prev_msg = nil
+-- -- You need to use local arg = {...} to assign function parameters to a table or 
+-- -- use select(i, ...) to get i-th parameter from the list and 
+-- -- select('#', ...) to get the number of parameters.
+-- local function log(...)
+-- 	local msg = select(1, ...)
+-- 	if prev_msg ~= msg then
+-- 		print("[BROADSOCK SERVER]", ...)
+-- 		prev_msg = msg
+-- 	end
+-- end
+local log = debugUtils.createLog("[BROADSOCK SERVER]").log
+
+
+local function cannotUpdate(dt)
+	send_cooldown = send_cooldown - dt
+	if send_cooldown > 0 then
+		return true
+	else
+		send_cooldown = RATE_LIMIT
 	end
+	return false
 end
 
 --- Convert a Lua number to an int32 (4 bytes)
@@ -71,8 +86,15 @@ function M.send_message(client_uid, message)
 	assert(client_uid, "You must provide a client_uid")
 	assert(message, "You must provide a message")
 	log("send uid:", client_uid, "message:", message, "length:", #message)
-	connection.writer.add(message)
-	connection.writer.send()
+	-- connection.writer.add(message)
+	-- connection.writer.send()
+
+	if connection.connected then
+		print("send_message: client_uid", client_uid, "message_len", #message, "message:", message)
+		-- connection.writer.add(data)
+		connection.writer.add(message)
+		connection.writer.send()
+	end
 end
 
 function M.send_message_others(message, uid)
@@ -163,16 +185,16 @@ end
 --- Send data to the broadsock server
 -- Note: The data will actually not be sent until update() is called
 -- @param data
-local function send(data)
+function M.send(data)
 	if connection.connected then
-		log("send", #data, "data:", data)
+		print("send", #data, "data:", data)
 		-- connection.writer.add(data)
 		connection.writer.add(number_to_int32(#data) .. data)
 	end
 end
 
 local function on_data(data, data_length)
-	log("on_data", #data, "data:", data)
+	log("on_data", #data, "data:", data, table.tostring(M.clients or {}))
 	if data == "CONNECT_ME" then
 		M.handle_client_connected()
 		return
@@ -181,9 +203,15 @@ local function on_data(data, data_length)
 	local sr = stream.reader(data, data_length)
 	local from_uid = sr.number()
 	local msg_id = sr.string()
-	-- log("on_data from:", from_uid, "msg_id:", msg_id)
+	log("on_data from:", from_uid, "msg_id:", msg_id)
 
-	if msg_id == "DISCONNECT" then
+	if msg_id == "GO" then
+		-- M.send_message_others(data, from_uid)
+		-- if cannotUpdate(0) then
+		-- 	return
+		-- end
+		M.send(data)
+	elseif msg_id == "DISCONNECT" then
 		M.handle_client_disconnected(from_uid)
 	end
 end
@@ -210,7 +238,7 @@ function M.start(port)
 	end
 	log("created client")
 	connection.connected = true
-	send("HELLO")
+	M.send("HELLO")
 	return true
 end
 
@@ -230,8 +258,11 @@ end
 
 --- Update the server. The server will listen for new connections
 -- and read from connected client sockets.
-function M.update()
+function M.update(dt)
 	if connection.connected then
+		if cannotUpdate(dt) then
+			return
+		end
 		-- send("HELLO")
 		-- log("update - sending game objects", instance.gameobject_count())
 		-- local sw = stream.writer()

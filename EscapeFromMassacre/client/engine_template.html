@@ -225,8 +225,13 @@
 	</script>
 
 	<script type='text/javascript'>
+		let prev_log_msgs = new Set();
 		const log = (...rest) => {
-			console.log(...rest);
+			const key = rest.join();
+			if (!prev_log_msgs.has(key)) {
+				console.log(...rest);
+				prev_log_msgs.add(key);
+			}
 		}
 
 		let currentTransport = null, streamNumber, currentTransportDatagramWriter, socket;

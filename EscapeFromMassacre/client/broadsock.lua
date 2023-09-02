@@ -5,11 +5,13 @@ local MainState = require "src.main_state"
 
 
 local M = {}
+local RATE_LIMIT = 1
 
+-- local function log(...)
+-- 	print("[BROADSOCK CLIENT]", ...)
+-- end
 
-local function log(...)
-	print("[BROADSOCK CLIENT]", ...)
-end
+local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
 
 --- Create a broadsock instance
 -- @param server_ip
@@ -43,15 +45,19 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 	local connection = {}
 
+	local send_cooldown = RATE_LIMIT
+
 	local function sendToReliableConnection(msg)
+		print("sendToReliableConnection", msg)
 		if html5 then
 			log(msg)
 			html5.run("WebSocketReliableConnectionSendData('".. msg .."')")
 		end
 	end
 
-	local function sendToUnreliableAndFastConnection(data)
-		local msg = stream.number_to_int32(#data) .. data
+	local function sendToUnreliableAndFastConnection(msg)
+		print("sendToUnreliableAndFastConnection", msg)
+		-- local msg = stream.number_to_int32(#data) .. data
 		if html5 then
 			log(msg)
 			html5.run("WebTransportSendData('".. msg .."')")
@@ -65,6 +71,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		client_count = client_count + 1
 
 		MainState.player.username = "user-" .. tostring(uid_to_add)
+		MainState.player.uid = uid_to_add
 		msg.post("gui#menu", "set_username", {username = MainState.player.username})
 	end
 
@@ -82,72 +89,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- @return Client count
 	function instance.client_count()
 		return client_count
-	end
-
-	function instance.on_data(data, data_length)
-		log(data, data_length)
-		local sr = stream.reader(data, data_length)
-		local from_uid = sr.number()
-		local msg_id = sr.string()
-		log("on_data from:", from_uid, "msg_id:", msg_id)
-
-		if msg_id == "GO" then
-			log("GO")
-			if not clients[from_uid] then
-				add_client(from_uid)
-			end
-
-			local remote_gameobjects_for_user = remote_gameobjects[from_uid]
-			local count = sr.number()
-			for _=1,count do
-				local gouid = sr.string()
-				local type = sr.string()
-
-				local pos = sr.vector3()
-				local rot = sr.quat()
-				local scale = sr.vector3()
-				if not remote_gameobjects_for_user[gouid] then
-					local factory_url = factories[type]
-					if factory_url then
-						local id = factory.create(factory_url, pos, rot, {}, scale)
-						remote_gameobjects_for_user[gouid] = { id = id, type = type }
-					end
-				else
-					local id = remote_gameobjects_for_user[gouid].id
-					local ok, err = pcall(function()
-						go.set_position(pos, id)
-						go.set_rotation(rot, id)
-						go.set_scale(scale, id)
-					end)
-				end
-			end
-		elseif msg_id == "GOD" then
-			log("GOD")
-			if clients[from_uid] then
-				local gouid = sr.string()
-				local remote_gameobjects_for_user = remote_gameobjects[from_uid]
-				local id = remote_gameobjects_for_user[gouid].id
-				local ok, err = pcall(function()
-					go.delete(id)
-				end)
-				remote_gameobjects_for_user[gouid] = nil
-			end
-		elseif msg_id == "CONNECT_OTHER" then
-			log("CONNECT_OTHER")
-			add_client(from_uid)
-		elseif msg_id == "CONNECT_SELF" then
-			log("CONNECT_SELF")
-			add_client(from_uid)
-			uid = from_uid
-			on_connected()
-		elseif msg_id == "DISCONNECT" then
-			log("DISCONNECT")
-			remove_client(from_uid)
-		else
-			log("CUSTOM MESSAGE", msg_id)
-			local message_data, message_length = sr.rest()
-			on_custom_message(msg_id, from_uid, stream.reader(message_data, message_length))
-		end
 	end
 
 	--- Register a game object with the instance
@@ -219,6 +160,77 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		return factories[type]
 	end
 
+	function instance.on_data(data, data_length)
+		log("on_data: data:", data_length, data)
+		local sr = stream.reader(data, data_length)
+		local from_uid = sr.number()
+		local msg_id = sr.string()
+		log("on_data: from:", from_uid, "msg_id:", msg_id, "data:", data)
+
+		if msg_id == "GO" then
+			if not clients[from_uid] then
+				add_client(from_uid)
+				log("remote GO add_client", from_uid)
+			end
+			
+			local remote_gameobjects_for_user = remote_gameobjects[from_uid]
+			local count = sr.number()
+			log("remote GO", tostring(count))
+			for _=1,count do
+				local gouid = sr.string()
+				local type = sr.string()
+
+				local pos = sr.vector3()
+				local rot = sr.quat()
+				local scale = sr.vector3()
+
+				-- if uid ~= gouid then
+				-- end
+				if not remote_gameobjects_for_user[gouid] then
+					local factory_url = factories[type]
+					if factory_url then
+						log("GO create obj", from_uid, tostring(type))
+						local id = factory.create(factory_url, pos, rot, {remote = true, uid = from_uid}, scale)
+						remote_gameobjects_for_user[gouid] = { id = id, type = type }
+					end
+				else
+					local id = remote_gameobjects_for_user[gouid].id
+					local ok, err = pcall(function()
+						go.set_position(pos, id)
+						go.set_rotation(rot, id)
+						go.set_scale(scale, id)
+					end)
+				end
+
+			end
+		elseif msg_id == "GOD" then
+			log("GOD")
+			if clients[from_uid] then
+				local gouid = sr.string()
+				local remote_gameobjects_for_user = remote_gameobjects[from_uid]
+				local id = remote_gameobjects_for_user[gouid].id
+				local ok, err = pcall(function()
+					go.delete(id)
+				end)
+				remote_gameobjects_for_user[gouid] = nil
+			end
+		elseif msg_id == "CONNECT_OTHER" then
+			log("CONNECT_OTHER")
+			add_client(from_uid)
+		elseif msg_id == "CONNECT_SELF" then
+			log("CONNECT_SELF")
+			add_client(from_uid)
+			uid = from_uid
+			on_connected()
+		elseif msg_id == "DISCONNECT" then
+			log("DISCONNECT")
+			remove_client(from_uid)
+		else
+			log("CUSTOM MESSAGE", msg_id)
+			local message_data, message_length = sr.rest()
+			on_custom_message(msg_id, from_uid, stream.reader(message_data, message_length))
+		end
+	end
 
 	--- Send data to the broadsock server
 	-- Note: The data will actually not be sent until update() is called
@@ -234,12 +246,19 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	--- Update the broadsock client instance
 	-- Any registered game objects will send their transforms
 	-- This will also send any other queued data
-	function instance.update()
+	function instance.update(dt)
 		if connection.connected then
+			send_cooldown = send_cooldown - dt
+			if send_cooldown > 0 then
+				return
+			else
+				send_cooldown = RATE_LIMIT
+			end
 			-- log("update - sending game objects", instance.gameobject_count(), debugUtils.printTable(gameobjects))
 			local sw = stream.writer()
 			sw.string("GO")
 			sw.number(gameobject_count)
+			log("update GO count", gameobject_count, #gameobjects, table.tostring(gameobjects))
 			for gouid,gameobject in pairs(gameobjects) do
 				local pos = go.get_position(gameobject.id)
 				local rot = go.get_rotation(gameobject.id)
@@ -297,26 +316,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			client_count = 0
 		end
 	end
-
-
-	-- login and set up nakama
-	-- server_nakama.login(function(account, err)
-	-- 	if account then
-	-- 		msg.post(".", "acquire_input_focus")
-	-- 		-- let the game know that we are connected
-	-- 		print("nakama server connected")
-	-- 		print(table.tostring(account))
-	-- 		MainState.username = account.user.username
-	-- 		print(MainState.username)
-	-- 		msg.post("gui#menu", "set_username", {username = MainState.username})
-	-- 		-- xoxo.show_menu()
-
-	-- 	else
-	-- 		print(err)
-	-- 	end
-	-- end)
-
-	-- server_nakama.on_handle_match_data(on_data)
 
 	connection.connected = true
 	log("created client", connection.connected)

@@ -1,3 +1,5 @@
+
+local debugUtils = require "src.utils.debug-utils"
 local M = {}
 
 --- Create a TCP writer
@@ -27,6 +29,7 @@ function M.create(socket, chunk_size)
 		assert(data, "You must provide some data")
 		for i=1,#data,chunk_size do
 			table.insert(queue, { data = data:sub(i, i + chunk_size - 1), sent_index = 0 })
+			print("tcp_writer add", #data, data)
 		end
 	end
 
@@ -44,7 +47,7 @@ function M.create(socket, chunk_size)
 		while queue[1] do
 			local first = queue[1]
 			if first ~= nil then
-				print("tcp_writer", first.data, first.sent_index + 1, #first.data)
+				print("tcp_writer send", #queue, first.data)
 			end
 			local sent_index, err, sent_index_on_err = socket:send(first.data, first.sent_index + 1, #first.data)
 			if err then
@@ -56,6 +59,7 @@ function M.create(socket, chunk_size)
 			if first.sent_index == #first.data then
 				table.remove(queue, 1)
 			end
+			print("tcp_writer send finish", #queue, debugUtils.printTable(queue))
 		end
 		return true
 	end

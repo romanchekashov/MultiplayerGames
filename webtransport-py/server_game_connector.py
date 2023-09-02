@@ -16,10 +16,11 @@ async def handle_client(reader, writer):
         in_bytes = await reader.readexactly(size)
         in_msg = in_bytes.decode('utf8')
 
-        out_data = stream_encode(in_msg)
-        writer.write(out_data)
-        print(f'in_msg {in_msg}, out {out_data}')
-        
+        # print(f'in_msg {in_msg}')
+        # out_data = stream_encode(in_msg)
+        # writer.write(out_data)
+        # print(f'in_msg {in_msg}, out {out_data}')
+
         await to_game_client(in_msg)
 
         await writer.drain()

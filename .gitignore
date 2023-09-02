@@ -63,6 +63,7 @@ server/logs
 EscapeFromMassacre/.internal
 EscapeFromMassacre/build
 EscapeFromMassacre/build_server/build
+EscapeFromMassacre/bundle_headless
 
 EscapeFromMassacre/bob.jar
 

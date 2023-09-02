@@ -28,5 +28,5 @@ function final(self)
 end
 
 function update(self, dt)
-	broadsock_update()
+	broadsock_update(dt)
 end

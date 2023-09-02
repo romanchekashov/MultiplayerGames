@@ -7,7 +7,7 @@ from broadsock import set_game_client_communication_websocket, handle_client_dis
 
 async def handler(websocket):
 
-    set_game_client_communication_websocket(websocket)
+    client = set_game_client_communication_websocket(websocket)
     print(f'websocket {websocket}')
     # create periodic task:
     # asyncio.create_task(send(websocket))
@@ -15,7 +15,10 @@ async def handler(websocket):
     while True:
         try:
             message = await websocket.recv()
-            to_game_server(message)
+            if client.uid is None:
+                to_game_server(message)
+            else:
+                to_game_server(f'{client.uid}.{message}')
 
         # client disconnected?
         except websockets.ConnectionClosedOK:

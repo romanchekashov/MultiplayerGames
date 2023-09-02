@@ -1,3 +1,5 @@
+local collections = require "src.utils.collections"
+
 local M = {}
 local isDebug = false
 local isTest = false
@@ -79,6 +81,31 @@ function M.printTable(tbl)
             print(', ', key, value)
         end
     end
+end
+
+function M.createLog(prefix)
+    local instance = {}
+    local _prefix = prefix or "LOG"
+    local prev_msgs = collections.createSet()
+    -- You need to use local arg = {...} to assign function parameters to a table or 
+    -- use select(i, ...) to get i-th parameter from the list and 
+    -- select('#', ...) to get the number of parameters.
+    function instance.log(...)
+        -- local msg = select(1, ...)
+        local arg = {...}
+        local msg = ""
+        
+        for i=1,#arg do
+            msg = msg .. tostring(arg[i])
+        end
+        
+        if not prev_msgs:has(msg) then
+            print(_prefix, ...)
+            prev_msgs:add(msg)
+        end
+    end
+
+    return instance
 end
 
 return M

@@ -64,7 +64,7 @@ function on_input(self, action_id, action)
 			end)
 		else
 			btnAction(action, "btn-join", nil, nil, function ()
-				msg.post("spawner-player#script", "add_player")
+				msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid})
 
 				local nodeBtnExit = gui.get_node("btn-exit")
 				MainState.setPauseBound(gui.get_screen_position(nodeBtnExit), gui.get_size(nodeBtnExit))

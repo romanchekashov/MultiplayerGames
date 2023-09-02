@@ -5,6 +5,7 @@ local M = {
     players = Collections.createMap(),
     zombies = Collections.createMap(),
     player = {
+        uid = 0,
         username = "N/A"
     }
 }

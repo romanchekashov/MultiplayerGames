@@ -4,6 +4,7 @@ local insidePauseBound = MainState.insidePauseBound
 go.property("angular_velocity", 5)
 go.property("linear_velocity", 200)
 go.property("remote", true)
+go.property("uid", 0)
 
 local LEFT = hash("left")
 local RIGHT = hash("right")
@@ -17,29 +18,27 @@ local ZOMBIE = hash("zombie")
 local BULLET = hash("bullet")
 
 function init(self)
-	if self.remote then
-		return
+	if not self.remote then
+		msg.post(".", "acquire_input_focus")
+		msg.post("camera", "acquire_camera_focus")
+		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = "player" })
 	end
 
-	msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = "player" })
-
-	msg.post(".", "acquire_input_focus")
-	msg.post("camera", "acquire_camera_focus")
 
 	self.move = 0		-- direction of movement (0 = standing still, 1 = forward, -1 = backward)
 	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)	
 
-	label.set_text("#name", string.format("%.30s", MainState.player.username))
+	local username = "user-" .. tostring(self.uid)
+	print("PLAYER CREATED: ", username)
+	label.set_text("#name", string.format("%.30s", username))
 end
 
 function final(self)
-	if self.remote then
-		return
+	if not self.remote then
+		msg.post(".", "release_input_focus")
+		msg.post("camera", "release_camera_focus")
+		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
 	end
-	msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
-
-	msg.post(".", "release_input_focus")
-	msg.post("camera", "release_camera_focus")
 end
 
 function update(self, dt)
