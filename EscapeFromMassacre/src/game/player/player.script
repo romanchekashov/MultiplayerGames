@@ -18,10 +18,12 @@ local ZOMBIE = hash("zombie")
 local BULLET = hash("bullet")
 
 function init(self)
+	local player_id = go.get_id()
+
 	if not self.remote then
 		msg.post(".", "acquire_input_focus")
 		msg.post("camera", "acquire_camera_focus")
-		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = "player" })
+		msg.post("/broadsock", "register_gameobject", { id = player_id, type = "player" })
 	end
 
 
@@ -31,14 +33,24 @@ function init(self)
 	local username = "user-" .. tostring(self.uid)
 	print("PLAYER CREATED: ", username)
 	label.set_text("#name", string.format("%.30s", username))
+
+	local obj = MainState.createGameObject(player_id)
+	MainState.players:put(obj.id, obj)
+	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
+	print("player joined: " .. player_id)
 end
 
 function final(self)
+	local player_id = go.get_id()
+
 	if not self.remote then
 		msg.post(".", "release_input_focus")
 		msg.post("camera", "release_camera_focus")
-		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
+		msg.post("/broadsock", "unregister_gameobject", { id = player_id })
 	end
+
+	MainState.players:remove(player_id)
+	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
 end
 
 function update(self, dt)
