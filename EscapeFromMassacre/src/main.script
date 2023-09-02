@@ -1,7 +1,13 @@
+local debugUtils = require "src.utils.debug-utils"
+
+local log = debugUtils.createLog("[BROADSOCK SERVER]").log
+
 local BROADSOCK = msg.url("default:/broadsock#script")
 -- local BROADSOCK = msg.url("default:/server#broadsock")
 
 function init(self)
+	debugUtils.debug(true)
+
 	math.randomseed(os.time())
 	-- msg.post("@render:", "clear_color", { color = vmath.vector4(0.4, 0.5, 0.8, 1.0) })
 	msg.post(BROADSOCK, "connect", { ip = "127.0.0.1", port = 5001 })
@@ -11,15 +17,15 @@ function init(self)
 end
 
 function on_message(self, message_id, message, sender)
-	print("game", message_id)
+	log("game", message_id)
 	if message_id == hash("connected") then
 		if sender == BROADSOCK then
-			print("connected: create player")
+			log("connected: create player")
 			-- factory.create("/factories#player", random_position(), nil, { remote = false })	
 		end
 	elseif message_id == hash("disconnected") then
 		if sender == BROADSOCK then
-			print("disconnected")
+			log("disconnected")
 		end
 	end
 end

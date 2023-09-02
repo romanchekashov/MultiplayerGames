@@ -91,6 +91,9 @@ function M.createLog(prefix)
     -- use select(i, ...) to get i-th parameter from the list and 
     -- select('#', ...) to get the number of parameters.
     function instance.log(...)
+        if isDebug then
+            return
+        end
         -- local msg = select(1, ...)
         local arg = {...}
         local msg = ""

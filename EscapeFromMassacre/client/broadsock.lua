@@ -1,17 +1,14 @@
 local stream = require "client.stream"
-
+local multiplayer = require "server.multiplayer"
 local debugUtils = require "src.utils.debug-utils"
 local MainState = require "src.main_state"
 
 
-local M = {}
-local RATE_LIMIT = 1
-
--- local function log(...)
--- 	print("[BROADSOCK CLIENT]", ...)
--- end
-
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
+
+local M = {}
+local RATE_LIMIT = multiplayer.RATE_LIMIT
+local MSG_IDS = multiplayer.MSG_IDS
 
 --- Create a broadsock instance
 -- @param server_ip
@@ -48,18 +45,15 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	local send_cooldown = RATE_LIMIT
 
 	local function sendToReliableConnection(msg)
-		print("sendToReliableConnection", msg)
 		if html5 then
-			log(msg)
+			log("sendToReliableConnection", msg)
 			html5.run("WebSocketReliableConnectionSendData('".. msg .."')")
 		end
 	end
 
 	local function sendToUnreliableAndFastConnection(msg)
-		print("sendToUnreliableAndFastConnection", msg)
-		-- local msg = stream.number_to_int32(#data) .. data
 		if html5 then
-			log(msg)
+			log("sendToUnreliableAndFastConnection", msg)
 			html5.run("WebTransportSendData('".. msg .."')")
 		end
 	end
@@ -167,7 +161,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		local msg_id = sr.string()
 		log("on_data: from:", from_uid, "msg_id:", msg_id, "data:", data)
 
-		if msg_id == "GO" then
+		if msg_id == MSG_IDS.GO then
 			if not clients[from_uid] then
 				add_client(from_uid)
 				log("remote GO add_client", from_uid)
@@ -203,7 +197,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				end
 
 			end
-		elseif msg_id == "GOD" then
+		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")
 			if clients[from_uid] then
 				local gouid = sr.string()
@@ -214,15 +208,15 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				end)
 				remote_gameobjects_for_user[gouid] = nil
 			end
-		elseif msg_id == "CONNECT_OTHER" then
+		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")
 			add_client(from_uid)
-		elseif msg_id == "CONNECT_SELF" then
+		elseif msg_id == MSG_IDS.CONNECT_SELF then
 			log("CONNECT_SELF")
 			add_client(from_uid)
 			uid = from_uid
 			on_connected()
-		elseif msg_id == "DISCONNECT" then
+		elseif msg_id == MSG_IDS.DISCONNECT then
 			log("DISCONNECT")
 			remove_client(from_uid)
 		else
@@ -254,11 +248,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			else
 				send_cooldown = RATE_LIMIT
 			end
-			-- log("update - sending game objects", instance.gameobject_count(), debugUtils.printTable(gameobjects))
+			log("update - sending game objects", instance.gameobject_count(), debugUtils.printTable(gameobjects))
 			local sw = stream.writer()
 			sw.string("GO")
 			sw.number(gameobject_count)
-			log("update GO count", gameobject_count, #gameobjects, table.tostring(gameobjects))
 			for gouid,gameobject in pairs(gameobjects) do
 				local pos = go.get_position(gameobject.id)
 				local rot = go.get_rotation(gameobject.id)

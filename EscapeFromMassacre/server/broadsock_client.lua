@@ -2,35 +2,23 @@ local socket = require "builtins.scripts.socket"
 local tcp_writer = require "server.tcp_writer"
 local tcp_reader = require "server.tcp_reader"
 local stream = require "client.stream"
-
+local multiplayer = require "server.multiplayer"
 local debugUtils = require "src.utils.debug-utils"
 
+local log = debugUtils.createLog("[BROADSOCK SERVER]").log
+
 local M = {}
+local RATE_LIMIT = multiplayer.RATE_LIMIT
+local MSG_IDS = multiplayer.MSG_IDS
 
 M.TCP_SEND_CHUNK_SIZE = 255
-local RATE_LIMIT = 1
 local send_cooldown = RATE_LIMIT
 
 local clients = {}
 
 local uid_sequence = 0
 
-local server_socket
-
 local connection = {}
-
--- local prev_msg = nil
--- -- You need to use local arg = {...} to assign function parameters to a table or 
--- -- use select(i, ...) to get i-th parameter from the list and 
--- -- select('#', ...) to get the number of parameters.
--- local function log(...)
--- 	local msg = select(1, ...)
--- 	if prev_msg ~= msg then
--- 		print("[BROADSOCK SERVER]", ...)
--- 		prev_msg = msg
--- 	end
--- end
-local log = debugUtils.createLog("[BROADSOCK SERVER]").log
 
 
 local function cannotUpdate(dt)
@@ -90,7 +78,7 @@ function M.send_message(client_uid, message)
 	-- connection.writer.send()
 
 	if connection.connected then
-		print("send_message: client_uid", client_uid, "message_len", #message, "message:", message)
+		log("send_message: client_uid", client_uid, "message_len", #message, "message:", message)
 		-- connection.writer.add(data)
 		connection.writer.add(message)
 		connection.writer.send()
@@ -150,7 +138,7 @@ function M.handle_client_disconnected(client_uid)
 	local disconnect_message = tomessage(
 		stream.writer()
 			.number(client_uid)
-			.string("DISCONNECT")
+			.string(MSG_IDS.DISCONNECT)
 			.tostring()
 	)
 	M.send_message_all(disconnect_message)
@@ -166,7 +154,7 @@ function M.handle_client_connected()
 	local other_message = tomessage(
 		stream.writer()
 			.number(client.uid)
-			.string("CONNECT_OTHER")
+			.string(MSG_IDS.CONNECT_OTHER)
 			.tostring()
 	)
 	M.send_message_others(other_message, client.uid)
@@ -174,7 +162,7 @@ function M.handle_client_connected()
 	local self_message = tomessage(
 		stream.writer()
 			.number(client.uid)
-			.string("CONNECT_SELF")
+			.string(MSG_IDS.CONNECT_SELF)
 			.tostring()
 	)
 	M.send_message(client.uid, self_message)
@@ -187,8 +175,7 @@ end
 -- @param data
 function M.send(data)
 	if connection.connected then
-		print("send", #data, "data:", data)
-		-- connection.writer.add(data)
+		log("send", #data, "data:", data)
 		connection.writer.add(number_to_int32(#data) .. data)
 	end
 end
@@ -205,13 +192,13 @@ local function on_data(data, data_length)
 	local msg_id = sr.string()
 	log("on_data from:", from_uid, "msg_id:", msg_id)
 
-	if msg_id == "GO" then
+	if msg_id == MSG_IDS.GO then
 		-- M.send_message_others(data, from_uid)
 		-- if cannotUpdate(0) then
 		-- 	return
 		-- end
 		M.send(data)
-	elseif msg_id == "DISCONNECT" then
+	elseif msg_id == MSG_IDS.DISCONNECT then
 		M.handle_client_disconnected(from_uid)
 	end
 end
@@ -238,7 +225,6 @@ function M.start(port)
 	end
 	log("created client")
 	connection.connected = true
-	M.send("HELLO")
 	return true
 end
 

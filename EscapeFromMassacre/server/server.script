@@ -1,7 +1,9 @@
 go.property("port", 5000)
 
-local broadsock = require "server.broadsock"
+local debugUtils = require "src.utils.debug-utils"
 local broadsock = require "server.broadsock_client"
+
+local log = debugUtils.createLog("[ESCAPE_SERVER]").log
 
 local broadsock_update = broadsock.update
 local handle_client_connected = broadsock.handle_client_connected
@@ -9,11 +11,9 @@ local handle_client_disconnected = broadsock.handle_client_disconnected
 local handle_client_message = broadsock.handle_client_message
 
 
-local function log(...)
-	print("[ESCAPE_SERVER]", ...)
-end
-
 function init(self)
+	debugUtils.debug(true)
+
 	local ok, err = broadsock.start(self.port)
 	if ok then
 		log("start", self.port)

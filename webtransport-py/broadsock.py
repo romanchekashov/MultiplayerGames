@@ -8,11 +8,13 @@ to_game_client_logger = Logger('to_game_client')
 to_game_server_calls_count = 0
 to_game_client_calls_count = 0
 
-class Messages(Enum):
-    CONNECT_ME: 1
+class Messages:
+    CONNECT_ME = 'CONNECT_ME'
 
-class GameServerMessages(Enum):
-    CONNECT_SELF: 1
+class GameServerMessages:
+    CONNECT_SELF = 'CONNECT_SELF'
+    CONNECT_OTHER = 'CONNECT_OTHER'
+    DISCONNECT = 'DISCONNECT'
 
 class Client:
     def __init__(self, uid, handler, websocket, data):
@@ -61,7 +63,7 @@ async def handle_client_disconnected(websocket):
     client = get_client_by_ws(websocket)
     clients.remove(client)
     print(f'{client.__dict__} {len(clients)}')
-    msg = f'{client.uid}.DISCONNECT'
+    msg = f'{client.uid}.{GameServerMessages.DISCONNECT}'
     await send_message_all(msg)
     to_game_server(msg)
 
@@ -111,13 +113,13 @@ async def to_game_client(msg):
     if game_client_websocket is not None:
         to_game_client_calls_count += 1
         print(f'TO-CLIENT {to_game_client_calls_count}, msg {msg}')
-        if "CONNECT_SELF" in msg:
+        if GameServerMessages.CONNECT_SELF in msg:
             client = get_client_by_ws(game_client_websocket)
             client.uid = int(msg[:msg.index('.')])
             client.unreliableFastWT = game_client_web_transport
             # print(client.uid)
             await game_client_websocket.send(msg)
-        elif "CONNECT_OTHER" in msg or "GO" in msg:
+        elif GameServerMessages.CONNECT_OTHER in msg or "GO" in msg:
             await send_message_others(msg, int(msg[:msg.index('.')]))
         else:
             await send_message_all(msg)

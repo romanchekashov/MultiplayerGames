@@ -1,8 +1,6 @@
 local debugUtils = require "src.utils.debug-utils"
 
-local function log(...)
-	print("[BROADSOCK STREAM]", ...)
-end
+local log = debugUtils.createLog("[BROADSOCK STREAM]").log
 
 local M = {}
 

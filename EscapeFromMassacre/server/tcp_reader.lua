@@ -1,3 +1,7 @@
+local debugUtils = require "src.utils.debug-utils"
+
+local log = debugUtils.createLog("[tcp_reader]").log
+
 local M = {}
 
 
@@ -20,7 +24,7 @@ function M.create(socket, on_data)
 		local received_data = ""
 		while #received_data < bytes do
 			local data, err, partial = socket:receive(bytes - #received_data)
-			-- print("tcp_reader", data)
+			log(data)
 			if data then
 				received_data = received_data .. data
 			elseif err == "closed" then
@@ -58,7 +62,7 @@ function M.create(socket, on_data)
 			local ok, err = coroutine.resume(co)
 			if not ok then
 				connected = false
-				print(err)
+				log(err)
 				return false, err
 			end
 		end
