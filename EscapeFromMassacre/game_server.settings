@@ -20,6 +20,7 @@ width = 1136
 height = 640
 variable_dt = 0
 vsync = 0
+swap_interval = 0
 frame_cap = 0
 update_frequency = 20
 

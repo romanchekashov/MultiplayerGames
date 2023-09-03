@@ -3,6 +3,8 @@ from enum import Enum
 from typing import List
 from utils import Logger
 
+from server_game import start_game_server, stop_game_server
+
 ToServerLog = Logger('TO-SERVER')
 ToClientLog = Logger('TO-CLIENT')
 
@@ -37,27 +39,8 @@ def get_next_uid_sequence() -> int:
     global uid_sequence
     return uid_sequence + 1
 
-def handle_client_connected(websocket, web_transport):
-    global uid_sequence, clients
-    if websocket is not None:
-        client = get_client_by_ws(websocket)
-    if client is None and web_transport is not None:
-        client = get_client_by_wt(web_transport)
-    # uid_sequence += 1
-    if client is None:
-        client = Client(None, web_transport, websocket, None)
-        clients.append(client)
-    
-    if websocket is not None:
-        client.reliableWS = websocket
-    if web_transport is not None:
-        client.unreliableFastWT = web_transport
-    # print(f'add_client {client.uid}')
-    # print(client.handler)
-    # print(f'CounterHandler({client.handler.__dict__}')
-    # send_message_others(f'{client.uid}|CONNECT_OTHER', client.uid)
-    # client.handler.send_datagram(f'{client.uid}|CONNECT_SELF')
-    return client
+def has_connected_clients() -> bool:
+    return len(clients) > 0
 
 def get_client_by_ws(ws) -> Client:
     global clients
@@ -73,14 +56,42 @@ def get_client_by_wt(wt) -> Client:
         if c.unreliableFastWT is wt:
             return c
 
+def handle_client_connected(websocket, web_transport):
+    global uid_sequence, clients
+    if websocket is not None:
+        client = get_client_by_ws(websocket)
+    if client is None and web_transport is not None:
+        client = get_client_by_wt(web_transport)
+    # uid_sequence += 1
+    if client is None:
+        client = Client(None, web_transport, websocket, None)
+        clients.append(client)
+    
+    if websocket is not None:
+        client.reliableWS = websocket
+    if web_transport is not None:
+        client.unreliableFastWT = web_transport
+
+    if len(clients) > 0:
+        start_game_server()
+
+    return client
+
 async def handle_client_disconnected(websocket):
     global clients
+    if len(clients) == 0:
+        return
     client = get_client_by_ws(websocket)
+    print(f'clients: {len(clients)}')
     clients.remove(client)
     print(f'{client.__dict__} {len(clients)}')
     msg = f'{client.uid}.{GameServerMessages.DISCONNECT}'
-    await send_message_all(msg)
-    to_game_server(msg)
+
+    if len(clients) == 0:
+        stop_game_server()
+    else:
+        await send_message_all(msg)
+        to_game_server(msg)
 
 async def send_message_all(msg: str, fast) -> None:
     global clients

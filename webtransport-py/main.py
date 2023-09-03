@@ -91,13 +91,14 @@ from server_game_connector import run_game_server_connector
 
 from protocols import WebTransportProtocol
 from utils import Logger
+from server_game import set_event_loop
 
 # BIND_ADDRESS = '::1'
 # BIND_ADDRESS = 'game.look.ovh'
 BIND_PORT = 4433
 
 logger = logging.getLogger(__name__)
-Logger.disabled = True
+Logger.disabled = False
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -115,8 +116,9 @@ if __name__ == '__main__':
     )
     configuration.load_cert_chain(args.certificate, args.key)
 
-    loop = asyncio.get_event_loop()
-    loop.create_task(
+    event_loop = asyncio.get_event_loop()
+    set_event_loop(event_loop)
+    event_loop.create_task(
         serve(
             BIND_ADDRESS,
             BIND_PORT,
@@ -124,11 +126,11 @@ if __name__ == '__main__':
             create_protocol=WebTransportProtocol,
         ))
     # loop.create_task(run_game_server_connector(socket.gethostname(), 5001))
-    loop.create_task(run_game_server_connector('127.0.0.1', 5001))
-    loop.create_task(run_server_websockets('127.0.0.1', 5002))
+    event_loop.create_task(run_game_server_connector('127.0.0.1', 5001))
+    event_loop.create_task(run_server_websockets('127.0.0.1', 5002))
     
     try:
         print("[WebTransport] Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
-        loop.run_forever()
+        event_loop.run_forever()
     except KeyboardInterrupt:
         pass

@@ -44,6 +44,8 @@ async def handler(websocket):
 #         await asyncio.sleep(0.5)
 
 async def run_server_websockets(host, port):
-    async with websockets.serve(handler, host, port):
-        print("[WebSockets] Listening on ws://{}:{}".format(host, port))
-        await asyncio.Future()  # run forever
+    print("[WebSockets] Listening on ws://{}:{}".format(host, port))
+    await websockets.serve(handler, host, port)
+    # async with websockets.serve(handler, host, port):
+    #     print("[WebSockets] Listening on ws://{}:{}".format(host, port))
+    #     await asyncio.Future()  # run forever

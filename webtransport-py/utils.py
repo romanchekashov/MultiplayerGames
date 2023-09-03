@@ -1,3 +1,4 @@
+from datetime import datetime
 
 class Logger:
     disabled = True
@@ -13,7 +14,7 @@ class Logger:
         
         self._calls_count += 1
         if msg not in self._prev_msgs:
-            print(f'[{self.prefix}](calls: {self._calls_count}): {msg}')
+            print(f'{datetime.now()}:[{self.prefix}](calls: {self._calls_count}): {msg}')
             self._prev_msgs.add(msg)
 
     def __str__(self):
