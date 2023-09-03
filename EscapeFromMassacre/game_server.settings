@@ -24,6 +24,9 @@ swap_interval = 0
 frame_cap = 0
 update_frequency = 20
 
+[engine]
+fixed_update_frequency = 30
+
 [physics]
 scale = 0.02
 debug = 0
@@ -65,4 +68,7 @@ max_component_count = 64
 
 [html5]
 htmlfile = /client/engine_template.html
+
+[native_extension]
+app_manifest = /generated.appmanifest
 
