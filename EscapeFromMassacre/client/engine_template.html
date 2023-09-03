@@ -242,9 +242,11 @@
 		}
 
 		let currentTransport = null, streamNumber, currentTransportDatagramWriter, socket;
+		// const BASE_ADDRESS = 'game.look.ovh';
+		const BASE_ADDRESS = 'localhost';
 
 		// Create WebSocket connection.
-		socket = new WebSocket("ws://localhost:5002");
+		socket = new WebSocket(`ws://${BASE_ADDRESS}:5002`);
 
 		// Connection opened
 		socket.addEventListener("open", (event) => {
@@ -261,9 +263,9 @@
 		// "Connect" button handler.
 		async function WebTransportСonnect() {
 			// const url = 'https://game.look.ovh:4433/counter';
-			const url = 'https://localhost:4433/counter';
+			// const url = 'https://localhost:4433/counter';
 			try {
-				var transport = new WebTransport(url);
+				var transport = new WebTransport(`https://${BASE_ADDRESS}:4433/counter`);
 				log('Initiating connection...');
 			} catch (e) {
 				log('Failed to create connection object. ' + e, 'error');

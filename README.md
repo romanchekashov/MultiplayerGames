@@ -32,7 +32,7 @@ python3.10 webtransport_server.py # run
 
 ### Deploy:
 - Start Docker: 
-- `docker-compose --env-file .env.local up -d`
+- `docker-compose --env-file .env.local up --build -d`
 - Stop Docker: 
 - `docker-compose --env-file .env.local down`
 

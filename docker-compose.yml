@@ -1,0 +1,16 @@
+version: "3.7"
+volumes:
+  data:
+services:
+  escape_from_massacre:
+    platform: linux/x86_64
+    container_name: escape_from_massacre
+    build:
+      context: .
+      args:
+        BIND_ADDRESS: ${BIND_ADDRESS}
+        CERT: ${CERT}
+        CERT_KEY: ${CERT_KEY}
+    ports:
+      - 4433:4433
+      - 5002:5002

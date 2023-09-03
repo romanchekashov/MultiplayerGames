@@ -73,9 +73,10 @@ This will output "13" (the length of "Hello, world!") into the console.
 #
 # See https://www.chromium.org/developers/how-tos/run-chromium-with-flags for
 # details on how to run Chromium with flags.
-
+import os
 import argparse
 import asyncio
+import aioquic
 import logging
 from collections import defaultdict
 from typing import Dict, Optional
@@ -97,6 +98,7 @@ from utils import Logger
 from server_game import set_event_loop
 
 dotenv_path = Path('../.env.local')
+# dotenv_path = Path('.env.local')
 load_dotenv(dotenv_path=dotenv_path)
 
 # BIND_ADDRESS = '::1'
@@ -108,12 +110,13 @@ Logger.disabled = False
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('bind_address')
+    # parser.add_argument('bind_address')
     parser.add_argument('certificate')
     parser.add_argument('key')
     args = parser.parse_args()
     
-    BIND_ADDRESS = args.bind_address
+    # BIND_ADDRESS = args.bind_address
+    BIND_ADDRESS = os.environ['BIND_ADDRESS']
 
     configuration = QuicConfiguration(
         alpn_protocols=H3_ALPN,
@@ -133,7 +136,7 @@ if __name__ == '__main__':
         ))
     # loop.create_task(run_game_server_connector(socket.gethostname(), 5001))
     event_loop.create_task(run_game_server_connector('127.0.0.1', 5001))
-    event_loop.create_task(run_server_websockets('127.0.0.1', 5002))
+    event_loop.create_task(run_server_websockets(BIND_ADDRESS, 5002))
     
     try:
         print("[WebTransport] Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
