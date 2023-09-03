@@ -1,3 +1,4 @@
+import os
 import psutil
 import asyncio
 from subprocess import Popen
@@ -43,6 +44,6 @@ def start_game_server():
     gameStopNeeded = False
     process = findGameProcess()
     if process is None:
-        Popen('./run_x86_64_macos.sh', shell=True)
+        Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
     else:
         Log.print(f'{process.name()} - Game Sever Process already running.')

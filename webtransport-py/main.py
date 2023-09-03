@@ -89,9 +89,15 @@ from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 from server_websockets import run_server_websockets
 from server_game_connector import run_game_server_connector
 
+from dotenv import load_dotenv
+from pathlib import Path
+
 from protocols import WebTransportProtocol
 from utils import Logger
 from server_game import set_event_loop
+
+dotenv_path = Path('../.env.local')
+load_dotenv(dotenv_path=dotenv_path)
 
 # BIND_ADDRESS = '::1'
 # BIND_ADDRESS = 'game.look.ovh'
