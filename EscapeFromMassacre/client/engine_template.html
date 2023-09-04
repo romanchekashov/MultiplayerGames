@@ -273,12 +273,10 @@
 		// --------------------------
 
 		async function CreateWebСonnection() {
-			console.log('CreateWebСonnection')
 			webSocketСonnect();
 			await webTransportСonnect();
 
 			function webSocketСonnect() {
-				console.log('webSocketСonnect')
 				// Create WebSocket connection.
 				socket = new WebSocket(`wss://${BASE_ADDRESS}:5002`);
 		
@@ -297,7 +295,6 @@
 	
 			// "Connect" button handler.
 			async function webTransportСonnect() {
-				console.log('webTransportСonnect');
 				// const url = 'https://game.look.ovh:4433/counter';
 				// const url = 'https://localhost:4433/counter';
 				try {
@@ -337,7 +334,7 @@
 			}
 	
 			// Reads datagrams from |transport| into the event log until EOF is reached.
-			function webTransportReadDatagrams(transport) {
+			async function webTransportReadDatagrams(transport) {
 				try {
 					var reader = transport.datagrams.readable.getReader();
 					log('[WT unreliable&fast]: Datagram reader ready.');
