@@ -78,14 +78,15 @@ function M.print(arguments)
 end
 
 function M.printTable(tbl)
-    for index, data in ipairs(tbl) do
-        print(index)
+    for _,line in ipairs(tbl) do print(table.concat(line)) end
+    -- for index, data in ipairs(tbl) do
+    --     print(index)
     
-        for key, value in pairs(data) do
-            -- print('\t', key, value)
-            print(', ', key, value)
-        end
-    end
+    --     for key, value in pairs(data) do
+    --         -- print('\t', key, value)
+    --         print(', ', key, value)
+    --     end
+    -- end
 end
 
 function M.createLog(prefix)

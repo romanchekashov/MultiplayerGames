@@ -11,6 +11,7 @@ class Messages:
     CONNECT_ME = 'CONNECT_ME'
 
 class GameServerMessages:
+    GO = 'GO'
     CONNECT_SELF = 'CONNECT_SELF'
     CONNECT_OTHER = 'CONNECT_OTHER'
     DISCONNECT = 'DISCONNECT'
@@ -38,13 +39,22 @@ class FastUnreliableConnection:
     def __init__(self):
         print()
 
+    async def send_msg_to(self, client, msg):
+        if client.unreliableFastWT is not None:
+            client.unreliableFastWT.send_datagram(msg)
+        elif client.reliableWS is not None:
+            await client.reliableWS.send(msg)
+
     async def send_message_all(self, msg: str) -> None:
         global clients
         for client in clients:
-            if client.unreliableFastWT is not None:
-                client.unreliableFastWT.send_datagram(msg)
-            elif client.reliableWS is not None:
-                await client.reliableWS.send(msg)
+            await self.send_msg_to(client, msg)
+
+    async def send_message_others(self, msg: str, c_uid: int) -> None:
+        global clients
+        for client in clients:
+            if client.uid != c_uid:
+                await self.send_msg_to(client, msg)
 
 
 class ReliableConnection:
@@ -61,6 +71,7 @@ class ReliableConnection:
         global clients
         for client in clients:
             if client.uid != c_uid:
+                Log.info(f'send_message_others from {msg} to {client.__dict__}')
                 await client.reliableWS.send(msg)
 
 
@@ -104,7 +115,7 @@ def handle_client_connected(websocket, web_transport):
     if client is None:
         client = Client(None, web_transport, websocket, None)
         clients.append(client)
-        Log.info(f'connected: clients = {len(clients)}')
+        Log.info(f'connected: clients = {len(clients)}, WS: {id(websocket)}, WT: {id(web_transport)}')
     
     if websocket is not None:
         client.reliableWS = websocket
@@ -117,14 +128,14 @@ def handle_client_connected(websocket, web_transport):
     return client
 
 async def handle_client_disconnected(websocket):
-    Log.info(f'clients = {len(clients)}: disconnecting...')
+    Log.info(f'clients = {len(clients)}: disconnecting..., WS: {id(websocket)}')
     if len(clients) == 0:
         return
     
     client = get_client_by_ws(websocket)
     clients.remove(client)
     
-    Log.info(f'clients = {len(clients)}: disconected client = {client.__dict__}')
+    Log.info(f'clients = {len(clients)}: disconected client = {client.__dict__}, WS: {id(client.reliableWS)}')
 
     if len(clients) == 0:
         Log.info(f'clients = {len(clients)}: Need stop game server')
@@ -166,15 +177,19 @@ def to_game_server(msg):
 async def to_game_client(msg):
     global game_client_websocket, game_client_web_transport
 
-    Log.info(f'TO-CLIENT: {msg}, {game_client_websocket}')
+    Log.info(f'TO-CLIENT: {msg}, WS: {id(game_client_websocket)}, WT: {id(game_client_web_transport)}')
     if game_client_websocket is not None:
-        if GameServerMessages.CONNECT_SELF in msg:
+        if GameServerMessages.GO in msg:
+            await fast_unreliable_connection.send_message_others(msg, get_uid_from_msg(msg))
+        elif GameServerMessages.CONNECT_SELF in msg:
             client = get_client_by_ws(game_client_websocket)
-            client.uid = get_uid_from_msg(msg)
-            client.unreliableFastWT = game_client_web_transport
-            # Log.info(client.uid)
-            await game_client_websocket.send(msg)
-        elif GameServerMessages.CONNECT_OTHER in msg or "GO" in msg:
+            uid = get_uid_from_msg(msg)
+            if client is not None and client.uid != uid:
+                client.uid = uid
+                client.unreliableFastWT = game_client_web_transport
+                # Log.info(client.uid)
+                await client.reliableWS.send(msg)
+        elif GameServerMessages.CONNECT_OTHER in msg:
             await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
         elif GameServerMessages.DISCONNECT in msg:
             await reliable_connection.send_message_all(msg)

@@ -15,7 +15,7 @@ CRITICAL=50
 from datetime import datetime
 import logging
 LOG_FORMAT = '%(asctime)s : %(levelname)-8.8s : %(name)-20.20s : Fn %(funcName)-20.20s : Ln %(lineno)-5d : %(message)s'
-logging.basicConfig(level=logging.NOTSET, format=LOG_FORMAT)
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 from logging.handlers import RotatingFileHandler
 
 class LoggerWrapper:

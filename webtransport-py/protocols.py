@@ -62,7 +62,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
         authority = request_headers.get(b":authority")
         path = request_headers.get(b":path")
         Log.info(self)
-        Log.info(f'WebTransportProtocol({self.__dict__}')
+        Log.info(f'WebTransportProtocol({id(self)}')
         Log.info(f'stream_id {stream_id}, authority {authority}, {threading.get_ident()}')
         if authority is None or path is None:
             # `:authority` and `:path` must be provided.

@@ -49,8 +49,8 @@ end
 
 local function add_client(client)
 	assert(client)
-	log("add_client", client.uid)
 	table.insert(clients, client)
+	log("add_client", client.uid, debugUtils.printTable(clients))
 end
 
 local function remove_client(uid_to_remove)
@@ -64,6 +64,7 @@ local function remove_client(uid_to_remove)
 			return
 		end
 	end
+	log("remove_client", uid_to_remove, debugUtils.printTable(clients))
 end
 
 function M.client_count()
@@ -151,20 +152,20 @@ function M.handle_client_connected()
 	local client = create_client(uid_sequence)
 	add_client(client)
 
-	local other_message = tomessage(
-		stream.writer()
-			.number(client.uid)
-			.string(MSG_IDS.CONNECT_OTHER)
-			.tostring()
-	)
+	local _other = stream.writer()
+		.number(client.uid)
+		.string(MSG_IDS.CONNECT_OTHER)
+		.tostring()
+	log("handle_client_connected: ", _other)
+	local other_message = tomessage(_other)
 	M.send_message_others(other_message, client.uid)
 
-	local self_message = tomessage(
-		stream.writer()
-			.number(client.uid)
-			.string(MSG_IDS.CONNECT_SELF)
-			.tostring()
-	)
+	local _self = stream.writer()
+		.number(client.uid)
+		.string(MSG_IDS.CONNECT_SELF)
+		.tostring()
+	log("handle_client_connected: ", _self)
+	local self_message = tomessage(_self)
 	M.send_message(client.uid, self_message)
 	return client
 end
