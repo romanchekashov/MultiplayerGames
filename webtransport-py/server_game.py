@@ -46,7 +46,9 @@ def start_game_server():
     global gameStopNeeded
     gameStopNeeded = False
     processList = findGameProcess()
-    if len(processList) == 0:
+    size = len(processList)
+    if size == 0:
+        Log.info(f'Game Server starting...')
         Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
     else:
-        Log.info(f'{len(processList)} Game Sever Processes like {processList[0].name()} already running.')
+        Log.info(f'{size} Game Sever Processes like {processList[0].name()} already running.')
