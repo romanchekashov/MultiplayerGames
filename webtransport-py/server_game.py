@@ -22,7 +22,7 @@ def findGameProcess() -> List[Any]:
         if 'dmengine_headless' in process.name():
             arr.append(process)
         if 'engine_main' in process.name():
-            Log.info(process.as_dict().__dict__)
+            Log.info(process.as_dict())
         # children = process.children()
         # for p in children:
         #     Log.info(f'child: [pid: {p.pid}] {p.name()}')
