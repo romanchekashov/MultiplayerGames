@@ -4,15 +4,15 @@ local tcp_reader = require "server.tcp_reader"
 local stream = require "client.stream"
 local multiplayer = require "server.multiplayer"
 local debugUtils = require "src.utils.debug-utils"
+local performance_utils = require "server.performance_utils"
 
 local log = debugUtils.createLog("[BROADSOCK SERVER]").log
+local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES.ONE_SECOND)
 
 local M = {}
-local RATE_LIMIT = multiplayer.RATE_LIMIT
 local MSG_IDS = multiplayer.MSG_IDS
 
 M.TCP_SEND_CHUNK_SIZE = 255
-local send_cooldown = RATE_LIMIT
 
 local clients = {}
 
@@ -21,15 +21,6 @@ local uid_sequence = 0
 local connection = {}
 
 
-local function cannotUpdate(dt)
-	send_cooldown = send_cooldown - dt
-	if send_cooldown > 0 then
-		return true
-	else
-		send_cooldown = RATE_LIMIT
-	end
-	return false
-end
 
 --- Convert a Lua number to an int32 (4 bytes)
 -- @param number The number to convert, only the integer part will be converted
@@ -247,7 +238,7 @@ end
 -- and read from connected client sockets.
 function M.update(dt)
 	if connection.connected then
-		if cannotUpdate(dt) then
+		if rateLimiter(dt) then
 			return
 		end
 		-- send("HELLO")

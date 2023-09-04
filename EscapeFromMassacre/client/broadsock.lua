@@ -2,12 +2,13 @@ local stream = require "client.stream"
 local multiplayer = require "server.multiplayer"
 local debugUtils = require "src.utils.debug-utils"
 local MainState = require "src.main_state"
+local performance_utils = require "server.performance_utils"
 
 
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
+local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES.ONE_SECOND)
 
 local M = {}
-local RATE_LIMIT = multiplayer.RATE_LIMIT
 local MSG_IDS = multiplayer.MSG_IDS
 
 --- Create a broadsock instance
@@ -42,8 +43,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	local uid = nil
 
 	local connection = {}
-
-	local send_cooldown = RATE_LIMIT
 
 	local function add_client(uid_to_add)
 		log("add_client", uid_to_add)
@@ -229,11 +228,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- This will also send any other queued data
 	function instance.update(dt)
 		if connection.connected then
-			send_cooldown = send_cooldown - dt
-			if send_cooldown > 0 then
+			if rateLimiter(dt) then
 				return
-			else
-				send_cooldown = RATE_LIMIT
 			end
 			log("update - sending game objects", instance.gameobject_count(), debugUtils.printTable(gameobjects))
 			local sw = stream.writer()
