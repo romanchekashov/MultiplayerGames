@@ -38,7 +38,7 @@ class FastUnreliableConnection:
     def __init__(self):
         print()
 
-    async def send_message_all(msg: str) -> None:
+    async def send_message_all(self, msg: str) -> None:
         global clients
         for client in clients:
             if client.unreliableFastWT is not None:
@@ -51,13 +51,13 @@ class ReliableConnection:
     def __init__(self):
         print()
 
-    async def send_message_all(msg: str) -> None:
+    async def send_message_all(self, msg: str) -> None:
         global clients
         for client in clients:
             if client.reliableWS is not None:
                 await client.reliableWS.send(msg)
 
-    async def send_message_others(msg: str, c_uid: int) -> None:
+    async def send_message_others(self, msg: str, c_uid: int) -> None:
         global clients
         for client in clients:
             if client.uid != c_uid:
