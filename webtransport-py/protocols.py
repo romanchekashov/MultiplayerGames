@@ -72,6 +72,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
             assert(self._handler is None)
             self._handler = CounterHandler(stream_id, self._http)
             client = set_game_client_communication_web_transport(self._handler)
+            Log.info(f'handler: WT = {id(self._handler)}: client = {client}')
             self._handler.client = client
             # client = handle_client_connected()
             # client.handler = self._handler

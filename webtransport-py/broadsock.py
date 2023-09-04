@@ -24,7 +24,7 @@ class Client:
         self.data = data
 
     def __str__(self):
-        return f'Client({self.__dict__}'
+        return f'Client(uid = {self.uid}, WS = {id(self.reliableWS)})'
 
 
 uid_sequence = 0
@@ -71,7 +71,7 @@ class ReliableConnection:
         global clients
         for client in clients:
             if client.uid != c_uid:
-                Log.info(f'send_message_others from {msg} to {client.__dict__}')
+                Log.info(f'send_message_others from {msg} to {client}')
                 await client.reliableWS.send(msg)
 
 
@@ -117,9 +117,9 @@ def handle_client_connected(websocket, web_transport):
         clients.append(client)
         Log.info(f'connected: clients = {len(clients)}, WS: {id(websocket)}, WT: {id(web_transport)}')
     
-    if websocket is not None:
+    if client.reliableWS is None and websocket is not None:
         client.reliableWS = websocket
-    if web_transport is not None:
+    if client.unreliableFastWT is None and web_transport is not None:
         client.unreliableFastWT = web_transport
 
     if len(clients) > 0:
@@ -128,14 +128,14 @@ def handle_client_connected(websocket, web_transport):
     return client
 
 async def handle_client_disconnected(websocket):
-    Log.info(f'clients = {len(clients)}: disconnecting..., WS: {id(websocket)}')
+    Log.info(f'clients = {", ".join(map(str, clients))}: disconnecting..., WS: {id(websocket)}')
     if len(clients) == 0:
         return
     
     client = get_client_by_ws(websocket)
     clients.remove(client)
     
-    Log.info(f'clients = {len(clients)}: disconected client = {client.__dict__}, WS: {id(client.reliableWS)}')
+    Log.info(f'clients = {len(clients)}: disconected client = {client}, WS: {id(client.reliableWS)}')
 
     if len(clients) == 0:
         Log.info(f'clients = {len(clients)}: Need stop game server')

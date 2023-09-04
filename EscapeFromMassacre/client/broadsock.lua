@@ -56,7 +56,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	end
 
 	local function remove_client(uid_to_remove)
-		log("remove_client", uid_to_remove)
+		log("remove_client", uid_to_remove, "remote_gameobjects", debugUtils.printTable(remote_gameobjects))
 		clients[uid_to_remove] = nil
 		for _,gameobject in pairs(remote_gameobjects[uid_to_remove]) do
 			go.delete(gameobject.id)

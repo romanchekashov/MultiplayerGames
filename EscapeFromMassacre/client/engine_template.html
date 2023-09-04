@@ -274,7 +274,6 @@
 
 		async function CreateWebСonnection() {
 			webSocketСonnect();
-			await webTransportСonnect();
 
 			function webSocketСonnect() {
 				// Create WebSocket connection.
@@ -287,9 +286,13 @@
 				});
 		
 				// Listen for messages
-				socket.addEventListener("message", (event) => {
+				socket.addEventListener("message", async (event) => {
 					log("[WS reliable]: Message from server: ", event.data);
 					addToEventLog(event.data);
+					if (event.data.includes('CONNECT_SELF')) {
+						// WebTransport should be associated with websocket(by sending msg or smth)
+						// await webTransportСonnect();
+					}
 				});
 			}
 	
