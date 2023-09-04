@@ -19,10 +19,10 @@ def findGameProcess() -> List[Any]:
     arr = []
     for process in psutil.process_iter():
         # Log.info(process.name())
-        if 'dmengine_headless' in process.name():
+        if 'dmengine_headless' in process.cmdline()[0]:
             arr.append(process)
-        if 'engine_main' in process.name():
-            Log.info(process.as_dict())
+        # if 'engine_main' in process.name():
+        #     Log.info(process.as_dict())
         # children = process.children()
         # for p in children:
         #     Log.info(f'child: [pid: {p.pid}] {p.name()}')
