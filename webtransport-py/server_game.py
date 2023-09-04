@@ -17,6 +17,7 @@ def set_event_loop(loop):
 def findGameProcess() -> List[Any]:
     arr = []
     for process in psutil.process_iter():
+        Log.info(process.name())
         if 'dmengine_headless' in process.name():
             arr.append(process)
     return arr
