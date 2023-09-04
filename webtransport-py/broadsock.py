@@ -114,6 +114,8 @@ def set_game_server_communication(reader, writer):
     game_server_reader = reader
     game_server_writer = writer
     Log.info('SERVER connected.')
+    for client in clients:
+        to_game_server(Messages.CONNECT_ME)
 
 
 def to_game_server(msg):
