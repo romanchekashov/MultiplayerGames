@@ -30,19 +30,21 @@ def findGameProcess() -> List[Any]:
         #     Log.info(f'child: [pid: {p.pid}] {p.name()}')
     return arr
 
-async def _stop_game_server():
-    Log.info('stop started...')
-    await asyncio.sleep(GAME_SERVER_STOP_TIMEOUT)
-    
-    if not gameStopNeeded:
-        Log.info('Connected clients found: stop_game_server cancelled.')
-        return
-    
+def _terminate_game_server():
+    Log.info('server terminating...')
     processList = findGameProcess()
     for process in processList:
         Log.info(f'{process.name()} - Process found. Terminating it.')
         process.terminate()
         process.wait()
+
+async def _stop_game_server():
+    Log.info('stop started...')
+    await asyncio.sleep(GAME_SERVER_STOP_TIMEOUT)
+    if not gameStopNeeded:
+        Log.info('Connected clients found: stop_game_server cancelled.')
+        return
+    _terminate_game_server()
 
 def stop_game_server():
     global gameStopNeeded

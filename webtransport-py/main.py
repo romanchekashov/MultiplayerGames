@@ -94,7 +94,7 @@ from pathlib import Path
 
 from protocols import WebTransportProtocol
 from utils import getLogger
-from server_game import set_event_loop
+from server_game import set_event_loop, _terminate_game_server
 
 Log = getLogger(__name__)
 
@@ -115,6 +115,8 @@ if __name__ == '__main__':
     
     # BIND_ADDRESS = args.bind_address
     BIND_ADDRESS = os.environ['BIND_ADDRESS']
+
+    _terminate_game_server()
 
     configuration = QuicConfiguration(
         alpn_protocols=H3_ALPN,
