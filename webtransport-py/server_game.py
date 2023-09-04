@@ -15,13 +15,15 @@ def set_event_loop(loop):
     event_loop = loop
 
 def findGameProcess() -> List[Any]:
+    Log.info(f'len = {len(psutil.pids())}: {psutil.pids()}')
     arr = []
     for process in psutil.process_iter():
         Log.info(process.name())
         if 'dmengine_headless' in process.name():
             arr.append(process)
-    for pid in psutil.pids():
-        Log.info(pid)
+        children = process.children()
+        for p in children:
+            Log.info(f'child: [pid: {p.pid}] {p.name()}')
     return arr
 
 async def _stop_game_server():
