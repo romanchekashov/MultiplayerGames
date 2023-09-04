@@ -113,6 +113,7 @@ def set_game_server_communication(reader, writer):
     global game_server_reader, game_server_writer
     game_server_reader = reader
     game_server_writer = writer
+    Log.info('SERVER connected.')
 
 
 def to_game_server(msg):
