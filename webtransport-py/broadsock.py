@@ -1,12 +1,11 @@
 from stream import stream_encode
 from enum import Enum
 from typing import List
-from utils import Logger
+from utils import getLogger
 
 from server_game import start_game_server, stop_game_server
 
-ToServerLog = Logger('TO-SERVER')
-ToClientLog = Logger('TO-CLIENT')
+Log = getLogger(__name__)
 
 class Messages:
     CONNECT_ME = 'CONNECT_ME'
@@ -44,14 +43,14 @@ def has_connected_clients() -> bool:
 
 def get_client_by_ws(ws) -> Client:
     global clients
-    # print(f'get_client_by_ws clients: {len(clients)}')
+    # Log.info(f'get_client_by_ws clients: {len(clients)}')
     for c in clients:
         if c.reliableWS is ws:
             return c
 
 def get_client_by_wt(wt) -> Client:
     global clients
-    # print(f'get_client_by_ws clients: {len(clients)}')
+    # Log.info(f'get_client_by_ws clients: {len(clients)}')
     for c in clients:
         if c.unreliableFastWT is wt:
             return c
@@ -82,9 +81,9 @@ async def handle_client_disconnected(websocket):
     if len(clients) == 0:
         return
     client = get_client_by_ws(websocket)
-    print(f'clients: {len(clients)}')
+    Log.info(f'clients: {len(clients)}')
     clients.remove(client)
-    print(f'{client.__dict__} {len(clients)}')
+    Log.info(f'{client.__dict__} {len(clients)}')
     msg = f'{client.uid}.{GameServerMessages.DISCONNECT}'
 
     if len(clients) == 0:
@@ -117,7 +116,7 @@ def set_game_server_communication(reader, writer):
 def to_game_server(msg):
     global game_server_reader
     if game_server_writer is not None:
-        ToServerLog.print(msg)
+        Log.info(f'TO-SERVER: {msg}')
         out_data = stream_encode(msg)
         game_server_writer.write(out_data)
 
@@ -136,12 +135,12 @@ async def to_game_client(msg):
     global game_client_websocket, game_client_web_transport
 
     if game_client_websocket is not None:
-        ToClientLog.print(msg)
+        Log.info(f'TO-CLIENT: {msg}')
         if GameServerMessages.CONNECT_SELF in msg:
             client = get_client_by_ws(game_client_websocket)
             client.uid = int(msg[:msg.index('.')])
             client.unreliableFastWT = game_client_web_transport
-            # print(client.uid)
+            # Log.info(client.uid)
             await game_client_websocket.send(msg)
         elif GameServerMessages.CONNECT_OTHER in msg or "GO" in msg:
             await send_message_others(msg, int(msg[:msg.index('.')]))

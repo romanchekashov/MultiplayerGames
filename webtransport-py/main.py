@@ -77,7 +77,6 @@ import os
 import argparse
 import asyncio
 import aioquic
-import logging
 from collections import defaultdict
 from typing import Dict, Optional
 
@@ -94,8 +93,10 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 from protocols import WebTransportProtocol
-from utils import Logger
+from utils import getLogger
 from server_game import set_event_loop
+
+Log = getLogger(__name__)
 
 dotenv_path = Path('../.env.local')
 # dotenv_path = Path('.env.local')
@@ -104,9 +105,6 @@ load_dotenv(dotenv_path=dotenv_path)
 # BIND_ADDRESS = '::1'
 # BIND_ADDRESS = 'game.look.ovh'
 BIND_PORT = 4433
-
-logger = logging.getLogger(__name__)
-Logger.disabled = False
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -139,7 +137,7 @@ if __name__ == '__main__':
     event_loop.create_task(run_server_websockets(BIND_ADDRESS, 5002))
     
     try:
-        print("[WebTransport] Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
+        Log.info("[WebTransport] Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))
         event_loop.run_forever()
     except KeyboardInterrupt:
         pass

@@ -1,6 +1,6 @@
 import argparse
 import asyncio
-import logging
+from utils import getLogger
 from collections import defaultdict
 from typing import Dict, Optional
 
@@ -15,7 +15,7 @@ from server_webtransport import CounterHandler
 from broadsock import set_game_client_communication_web_transport, get_next_uid_sequence
 import threading
 
-logger = logging.getLogger(__name__)
+Log = getLogger(__name__)
 
 # WebTransportProtocol handles the beginning of a WebTransport connection: it
 # responses to an extended CONNECT method request, and routes the transport
@@ -28,7 +28,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
         self._handler: Optional[CounterHandler] = None
 
     def quic_event_received(self, event: QuicEvent) -> None:
-        print(f'quic_event_received: {event.__dict__}')
+        Log.info(f'quic_event_received: {event.__dict__}')
         if isinstance(event, ProtocolNegotiated):
             self._http = H3Connection(self._quic, enable_webtransport=True)
         elif isinstance(event, StreamReset) and self._handler is not None:
@@ -42,7 +42,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
                 self._h3_event_received(h3_event)
 
     def _h3_event_received(self, event: H3Event) -> None:
-        print(f'_h3_event_received: {event.__dict__}')
+        Log.info(f'_h3_event_received: {event.__dict__}')
         if isinstance(event, HeadersReceived):
             headers = {}
             for header, value in event.headers:
@@ -61,9 +61,9 @@ class WebTransportProtocol(QuicConnectionProtocol):
                                 request_headers: Dict[bytes, bytes]) -> None:
         authority = request_headers.get(b":authority")
         path = request_headers.get(b":path")
-        print(self)
-        print(f'WebTransportProtocol({self.__dict__}')
-        print(f'stream_id {stream_id}, authority {authority}, {threading.get_ident()}')
+        Log.info(self)
+        Log.info(f'WebTransportProtocol({self.__dict__}')
+        Log.info(f'stream_id {stream_id}, authority {authority}, {threading.get_ident()}')
         if authority is None or path is None:
             # `:authority` and `:path` must be provided.
             self._send_response(stream_id, 400, end_stream=True)

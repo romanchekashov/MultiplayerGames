@@ -5,6 +5,9 @@ import asyncio
 from broadsock import to_game_client, set_game_server_communication
 
 from stream import stream_encode
+from utils import getLogger
+
+Log = getLogger(__name__)
 
 async def handle_client(reader, writer):
     set_game_server_communication(reader, writer)
@@ -28,6 +31,6 @@ async def handle_client(reader, writer):
 
 async def run_game_server_connector(host, port):
     server = await asyncio.start_server(handle_client, host, port)
-    print("[GAME SERVER] Listening on http(s)://{}:{}".format(host, port))
+    Log.info("[GAME SERVER] Listening on http(s)://{}:{}".format(host, port))
     async with server:
         await server.serve_forever()

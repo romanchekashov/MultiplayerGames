@@ -2,9 +2,9 @@ import os
 import psutil
 import asyncio
 from subprocess import Popen
-from utils import Logger
+from utils import getLogger
 
-Log = Logger('GAME_SERVER')
+Log = getLogger(__name__)
 
 GAME_SERVER_STOP_TIMEOUT = 10
 event_loop = None
@@ -19,24 +19,24 @@ def findGameProcess():
             return process
 
 async def _stop_game_server():
-    Log.print('stop started...')
+    Log.info('stop started...')
     await asyncio.sleep(GAME_SERVER_STOP_TIMEOUT)
     
     if not gameStopNeeded:
-        Log.print('Connected clients found: stop_game_server cancelled.')
+        Log.info('Connected clients found: stop_game_server cancelled.')
         return
     
-    Log.print('stoping...')
+    Log.info('stoping...')
     process = findGameProcess()
     if process is not None:
-        Log.print(f'{process.name()} - Process found. Terminating it.')
+        Log.info(f'{process.name()} - Process found. Terminating it.')
         process.terminate()
         process.wait()
 
 def stop_game_server():
     global gameStopNeeded
     gameStopNeeded = True
-    Log.print(f'stop {gameStopNeeded}')
+    Log.info(f'stop {gameStopNeeded}')
     asyncio.ensure_future(_stop_game_server(), loop=event_loop)
 
 def start_game_server():
@@ -46,4 +46,4 @@ def start_game_server():
     if process is None:
         Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
     else:
-        Log.print(f'{process.name()} - Game Sever Process already running.')
+        Log.info(f'{process.name()} - Game Sever Process already running.')
