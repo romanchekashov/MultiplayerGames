@@ -23,6 +23,8 @@ local function sendToUnreliableAndFastConnection(msg)
 	if html5 and hasFastUnreliableConnection then
 		log("sendToUnreliableAndFastConnection", msg)
 		html5.run("WebTransportSendData('".. msg .."')")
+	else
+		sendToReliableConnection(msg)
 	end
 end
 
