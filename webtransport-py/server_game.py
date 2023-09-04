@@ -14,6 +14,7 @@ gameStopNeeded = False
 def set_event_loop(loop):
     event_loop = loop
 
+# ps aux | grep 'dmengine_headless'
 def findGameProcess() -> List[Any]:
     # Log.info(f'len = {len(psutil.pids())}: {psutil.pids()}')
     arr = []
