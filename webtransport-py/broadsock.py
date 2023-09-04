@@ -117,19 +117,19 @@ def handle_client_connected(websocket, web_transport):
     return client
 
 async def handle_client_disconnected(websocket):
-    Log.info(f'disconnected: clients = {len(clients)}')
+    Log.info(f'clients = {len(clients)}: disconnecting...')
     if len(clients) == 0:
         return
     
     client = get_client_by_ws(websocket)
     clients.remove(client)
     
-    Log.info(f'{client.__dict__} {len(clients)}')
+    Log.info(f'clients = {len(clients)}: disconected client = {client.__dict__}')
 
     if len(clients) == 0:
         Log.info(f'clients = {len(clients)}: Need stop game server')
         stop_game_server()
-    else:
+    elif client.uid is not None:
         msg = f'{client.uid}.{GameServerMessages.DISCONNECT}'
         to_game_server(msg)
 
