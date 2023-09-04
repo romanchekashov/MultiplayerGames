@@ -20,6 +20,8 @@ def findGameProcess() -> List[Any]:
         Log.info(process.name())
         if 'dmengine_headless' in process.name():
             arr.append(process)
+    for pid in psutil.pids():
+        Log.info(pid)
     return arr
 
 async def _stop_game_server():
