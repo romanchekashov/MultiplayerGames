@@ -1,4 +1,4 @@
-from stream import stream_encode
+from stream import stream_encode, get_uid_from_msg
 from enum import Enum
 from typing import List
 from utils import getLogger
@@ -170,12 +170,12 @@ async def to_game_client(msg):
     if game_client_websocket is not None:
         if GameServerMessages.CONNECT_SELF in msg:
             client = get_client_by_ws(game_client_websocket)
-            client.uid = int(msg[:msg.index('.')])
+            client.uid = get_uid_from_msg(msg)
             client.unreliableFastWT = game_client_web_transport
             # Log.info(client.uid)
             await game_client_websocket.send(msg)
         elif GameServerMessages.CONNECT_OTHER in msg or "GO" in msg:
-            await reliable_connection.send_message_others(msg, int(msg[:msg.index('.')]))
+            await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
         elif GameServerMessages.DISCONNECT in msg:
             await reliable_connection.send_message_all(msg)
         else:
