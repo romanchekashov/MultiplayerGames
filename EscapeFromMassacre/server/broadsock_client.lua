@@ -81,7 +81,7 @@ function M.send_message(client_uid, message)
 		log("send_message: client_uid", client_uid, "message_len", #message, "message:", message)
 		-- connection.writer.add(data)
 		connection.writer.add(message)
-		connection.writer.send()
+		-- connection.writer.send()
 	end
 end
 
