@@ -34,6 +34,40 @@ game_client_websocket = None
 game_client_web_transport = None
 
 
+class FastUnreliableConnection:
+    def __init__(self):
+        print()
+
+    async def send_message_all(msg: str) -> None:
+        global clients
+        for client in clients:
+            if client.unreliableFastWT is not None:
+                client.unreliableFastWT.send_datagram(msg)
+            elif client.reliableWS is not None:
+                await client.reliableWS.send(msg)
+
+
+class ReliableConnection:
+    def __init__(self):
+        print()
+
+    async def send_message_all(msg: str) -> None:
+        global clients
+        for client in clients:
+            if client.reliableWS is not None:
+                await client.reliableWS.send(msg)
+
+    async def send_message_others(msg: str, c_uid: int) -> None:
+        global clients
+        for client in clients:
+            if client.uid != c_uid:
+                await client.reliableWS.send(msg)
+
+
+reliable_connection = ReliableConnection()
+fast_unreliable_connection = FastUnreliableConnection()
+
+
 def get_next_uid_sequence() -> int:
     global uid_sequence
     return uid_sequence + 1
@@ -55,13 +89,18 @@ def get_client_by_wt(wt) -> Client:
         if c.unreliableFastWT is wt:
             return c
 
+
+"""
+Client connect/disconnect
+"""
 def handle_client_connected(websocket, web_transport):
-    global uid_sequence, clients
     if websocket is not None:
         client = get_client_by_ws(websocket)
     if client is None and web_transport is not None:
         client = get_client_by_wt(web_transport)
+    
     # uid_sequence += 1
+    
     if client is None:
         client = Client(None, web_transport, websocket, None)
         clients.append(client)
@@ -78,37 +117,26 @@ def handle_client_connected(websocket, web_transport):
     return client
 
 async def handle_client_disconnected(websocket):
-    global clients
     Log.info(f'disconnected: clients = {len(clients)}')
     if len(clients) == 0:
         return
+    
     client = get_client_by_ws(websocket)
     clients.remove(client)
+    
     Log.info(f'{client.__dict__} {len(clients)}')
-    msg = f'{client.uid}.{GameServerMessages.DISCONNECT}'
 
     if len(clients) == 0:
         Log.info(f'clients = {len(clients)}: Need stop game server')
         stop_game_server()
     else:
-        await send_message_all(msg)
+        msg = f'{client.uid}.{GameServerMessages.DISCONNECT}'
         to_game_server(msg)
 
-async def send_message_all(msg: str, fast) -> None:
-    global clients
-    for client in clients:
-        if fast is not None and client.unreliableFastWT is not None:
-            client.unreliableFastWT.send_datagram(msg)
-        else:
-            await client.reliableWS.send(msg)
 
-async def send_message_others(msg: str, c_uid: int) -> None:
-    global clients
-    for client in clients:
-        if client.uid != c_uid:
-            await client.reliableWS.send(msg)
-
-
+"""
+Set client/server connection
+"""
 def set_game_server_communication(reader, writer):
     global game_server_reader, game_server_writer
     game_server_reader = reader
@@ -116,15 +144,6 @@ def set_game_server_communication(reader, writer):
     Log.info('SERVER connected.')
     for client in clients:
         to_game_server(Messages.CONNECT_ME)
-
-
-def to_game_server(msg):
-    global game_server_reader
-    if game_server_writer is not None:
-        Log.info(f'TO-SERVER: {msg}')
-        out_data = stream_encode(msg)
-        game_server_writer.write(out_data)
-
 
 def set_game_client_communication_websocket(websocket) -> Client:
     global game_client_websocket, game_client_web_transport
@@ -135,6 +154,16 @@ def set_game_client_communication_web_transport(web_transport) -> Client:
     global game_client_web_transport
     game_client_web_transport = web_transport
     return handle_client_connected(game_client_websocket, web_transport)
+
+"""
+Send messages to server and client
+"""
+def to_game_server(msg):
+    global game_server_reader
+    if game_server_writer is not None:
+        Log.info(f'TO-SERVER: {msg}')
+        out_data = stream_encode(msg)
+        game_server_writer.write(out_data)
 
 async def to_game_client(msg):
     global game_client_websocket, game_client_web_transport
@@ -148,8 +177,8 @@ async def to_game_client(msg):
             # Log.info(client.uid)
             await game_client_websocket.send(msg)
         elif GameServerMessages.CONNECT_OTHER in msg or "GO" in msg:
-            await send_message_others(msg, int(msg[:msg.index('.')]))
+            await reliable_connection.send_message_others(msg, int(msg[:msg.index('.')]))
         elif GameServerMessages.DISCONNECT in msg:
-            await send_message_all(msg)
+            await reliable_connection.send_message_all(msg)
         else:
-            await send_message_all(msg, True)
+            await fast_unreliable_connection.send_message_all(msg)

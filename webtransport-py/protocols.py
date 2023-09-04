@@ -12,7 +12,7 @@ from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
 from server_webtransport import CounterHandler
-from broadsock import set_game_client_communication_web_transport, get_next_uid_sequence
+from broadsock import set_game_client_communication_web_transport
 import threading
 
 Log = getLogger(__name__)
