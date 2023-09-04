@@ -1,4 +1,5 @@
 import os
+from typing import Any, List
 import psutil
 import asyncio
 from subprocess import Popen
@@ -13,10 +14,12 @@ gameStopNeeded = False
 def set_event_loop(loop):
     event_loop = loop
 
-def findGameProcess():
+def findGameProcess() -> List[Any]:
+    arr = []
     for process in psutil.process_iter():
         if 'dmengine_headless' in process.name():
-            return process
+            arr.append(process)
+    return arr
 
 async def _stop_game_server():
     Log.info('stop started...')
@@ -27,8 +30,8 @@ async def _stop_game_server():
         return
     
     Log.info('stoping...')
-    process = findGameProcess()
-    if process is not None:
+    processList = findGameProcess()
+    for process in processList:
         Log.info(f'{process.name()} - Process found. Terminating it.')
         process.terminate()
         process.wait()
@@ -42,8 +45,8 @@ def stop_game_server():
 def start_game_server():
     global gameStopNeeded
     gameStopNeeded = False
-    process = findGameProcess()
-    if process is None:
+    processList = findGameProcess()
+    if len(processList) == 0:
         Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
     else:
-        Log.info(f'{process.name()} - Game Sever Process already running.')
+        Log.info(f'{len(processList)} Game Sever Processes like {processList[0].name()} already running.')
