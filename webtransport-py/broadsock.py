@@ -166,8 +166,8 @@ def to_game_server(msg):
 async def to_game_client(msg):
     global game_client_websocket, game_client_web_transport
 
+    Log.info(f'TO-CLIENT: {msg}, {game_client_websocket}')
     if game_client_websocket is not None:
-        Log.info(f'TO-CLIENT: {msg}')
         if GameServerMessages.CONNECT_SELF in msg:
             client = get_client_by_ws(game_client_websocket)
             client.uid = int(msg[:msg.index('.')])
