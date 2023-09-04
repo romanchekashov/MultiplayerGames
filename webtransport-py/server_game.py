@@ -20,7 +20,8 @@ def findGameProcess() -> List[Any]:
     arr = []
     for process in psutil.process_iter():
         # Log.info(process.name())
-        if 'dmengine_headless' in process.cmdline()[0]:
+        cmdline = process.cmdline()
+        if len(cmdline) > 0 and 'dmengine_headless' in cmdline[0]:
             arr.append(process)
         # if 'engine_main' in process.name():
         #     Log.info(process.as_dict())
