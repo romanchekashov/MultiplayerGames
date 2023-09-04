@@ -23,7 +23,7 @@ async def handler(websocket):
                 to_game_server(f'{client.uid}.{message}')
 
         # client disconnected?
-        except websockets.ConnectionClosedOK:
+        except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
             Log.info(f'websocket DISCONECT {websocket}')
             await handle_client_disconnected(websocket)
             break
