@@ -1,4 +1,5 @@
 import os
+from sys import platform
 from typing import Any, List
 import psutil
 import asyncio
@@ -11,6 +12,10 @@ GAME_SERVER_STOP_TIMEOUT = 10
 event_loop = None
 gameStopNeeded = False
 
+isLinux = platform == "linux" or platform == "linux2"
+isMac = platform == "darwin"
+isWin = platform == "win32"
+
 def set_event_loop(loop):
     event_loop = loop
 
@@ -18,13 +23,15 @@ def set_event_loop(loop):
 def findGameProcess() -> List[Any]:
     # Log.info(f'len = {len(psutil.pids())}: {psutil.pids()}')
     arr = []
-    for process in psutil.process_iter():
-        # Log.info(process.name())
-        cmdline = process.cmdline()
-        if len(cmdline) > 0 and 'dmengine_headless' in cmdline[0]:
-            arr.append(process)
-        # if 'engine_main' in process.name():
-        #     Log.info(process.as_dict())
+    if isLinux:
+        for process in psutil.process_iter():
+            cmdline = process.cmdline()
+            if len(cmdline) > 0 and 'dmengine_headless' in cmdline[0]:
+                arr.append(process)
+    else:
+        for process in psutil.process_iter():
+            if 'dmengine_headless' in process.name():
+                arr.append(process)
         # children = process.children()
         # for p in children:
         #     Log.info(f'child: [pid: {p.pid}] {p.name()}')
