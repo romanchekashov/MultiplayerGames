@@ -275,7 +275,7 @@
 
 		function CreateWebСonnection() {
 			// Create WebSocket connection.
-			socket = new WebSocket(`ws://${BASE_ADDRESS}:5002`);
+			socket = new WebSocket(`wss://${BASE_ADDRESS}:5002`);
 	
 			// Connection opened
 			socket.addEventListener("open", (event) => {
