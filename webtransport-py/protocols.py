@@ -28,7 +28,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
         self._handler: Optional[CounterHandler] = None
 
     def quic_event_received(self, event: QuicEvent) -> None:
-        Log.info(f'quic_event_received: {event.__dict__}')
+        # Log.info(f'quic_event_received: {event.__dict__}')
         if isinstance(event, ProtocolNegotiated):
             self._http = H3Connection(self._quic, enable_webtransport=True)
         elif isinstance(event, StreamReset) and self._handler is not None:
@@ -42,7 +42,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
                 self._h3_event_received(h3_event)
 
     def _h3_event_received(self, event: H3Event) -> None:
-        Log.info(f'_h3_event_received: {event.__dict__}')
+        # Log.info(f'_h3_event_received: {event.__dict__}')
         if isinstance(event, HeadersReceived):
             headers = {}
             for header, value in event.headers:
