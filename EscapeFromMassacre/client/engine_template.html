@@ -251,21 +251,20 @@
 		}
 
 		function WebSocketReliableConnectionSendData(rawData) {
-			log('WS reliable: ', rawData);
+			log('[WS reliable]: ', rawData);
 			socket.send(rawData);
 		}
 
 		async function WebTransportSendData(rawData) {
 			if (currentTransport) {
-				log('WT unreliable&fast: ', rawData);
 				let encoder = new TextEncoder('utf-8');
 				let data = encoder.encode(rawData);
 				let transport = currentTransport;
 				try {
 					await currentTransportDatagramWriter.write(data);
-					log('Sent datagram: ' + rawData);
+					log('[WT unreliable&fast]: Sent datagram: ' + rawData);
 				} catch (e) {
-					log('Error while sending data: ' + e, 'error');
+					log('[WT unreliable&fast]: Error while sending data: ' + e, 'error');
 				}
 			} else {
 				WebSocketReliableConnectionSendData(rawData);
@@ -273,71 +272,78 @@
 		}
 		// --------------------------
 
-		function CreateWebСonnection() {
-			// Create WebSocket connection.
-			socket = new WebSocket(`wss://${BASE_ADDRESS}:5002`);
-	
-			// Connection opened
-			socket.addEventListener("open", (event) => {
-				log('WsConnection ready.');
-				JsToDef.send("RELIABLE_CONNECTION_READY", "");
-			});
-	
-			// Listen for messages
-			socket.addEventListener("message", (event) => {
-				log("Message from server ", event.data);
-				addToEventLog(event.data);
-			});
-	
+		async function CreateWebСonnection() {
+			console.log('CreateWebСonnection')
+			webSocketСonnect();
+			await webTransportСonnect();
+
+			function webSocketСonnect() {
+				console.log('webSocketСonnect')
+				// Create WebSocket connection.
+				socket = new WebSocket(`wss://${BASE_ADDRESS}:5002`);
+		
+				// Connection opened
+				socket.addEventListener("open", (event) => {
+					log('[WS reliable]: Connection ready.');
+					JsToDef.send("RELIABLE_CONNECTION_READY", "");
+				});
+		
+				// Listen for messages
+				socket.addEventListener("message", (event) => {
+					log("[WS reliable]: Message from server: ", event.data);
+					addToEventLog(event.data);
+				});
+			}
 	
 			// "Connect" button handler.
-			async function WebTransportСonnect() {
+			async function webTransportСonnect() {
+				console.log('webTransportСonnect');
 				// const url = 'https://game.look.ovh:4433/counter';
 				// const url = 'https://localhost:4433/counter';
 				try {
 					var transport = new WebTransport(`https://${BASE_ADDRESS}:4433/counter`);
-					log('Initiating connection...');
+					log('[WT unreliable&fast]: Initiating connection...');
 				} catch (e) {
-					log('Failed to create connection object. ' + e, 'error');
+					log('[WT unreliable&fast]: Failed to create connection object. ' + e, 'error');
 					return;
 				}
 	
 				try {
 					await transport.ready;
-					log('Connection ready.');
+					log('[WT unreliable&fast]: Connection ready.');
 				} catch (e) {
-					log('Connection failed. ' + e, 'error');		
+					log('[WT unreliable&fast]: Connection failed. ' + e, 'error');		
 					return;
 				}
 	
 				transport.closed
 					.then(() => {
-						log('Connection closed normally.');
+						log('[WT unreliable&fast]: Connection closed normally.');
 					})
 					.catch(() => {
-						log('Connection closed abruptly.', 'error');
+						log('[WT unreliable&fast]: Connection closed abruptly.', 'error');
 					});
 	
 				currentTransport = transport;
 				streamNumber = 1;
 				try {
 					currentTransportDatagramWriter = transport.datagrams.writable.getWriter();
-					log('Datagram writer ready.');
+					log('[WT unreliable&fast]: Datagram writer ready.');
 				} catch (e) {
-					log('Sending datagrams not supported: ' + e, 'error');
+					log('[WT unreliable&fast]: Sending datagrams not supported: ' + e, 'error');
 					return;
 				}
-				WebTransportReadDatagrams(transport);
+				webTransportReadDatagrams(transport);
 			}
 	
 			// Reads datagrams from |transport| into the event log until EOF is reached.
-			async function WebTransportReadDatagrams(transport) {
+			function webTransportReadDatagrams(transport) {
 				try {
 					var reader = transport.datagrams.readable.getReader();
-					log('Datagram reader ready.');
+					log('[WT unreliable&fast]: Datagram reader ready.');
 					JsToDef.send("FAST_UNRELIABLE_CONNECTION_READY", "");
 				} catch (e) {
-					log('Receiving datagrams not supported: ' + e, 'error');
+					log('[WT unreliable&fast]: Receiving datagrams not supported: ' + e, 'error');
 					return;
 				}
 				let decoder = new TextDecoder('utf-8');
@@ -345,7 +351,7 @@
 					while (true) {
 						const { value, done } = await reader.read();
 						if (done) {
-							log('Done reading datagrams!');
+							log('[WT unreliable&fast]: Done reading datagrams!');
 							return;
 						}
 						// let data = decoder.decode(value);
@@ -354,7 +360,7 @@
 						addToEventLog(String.fromCharCode.apply(null, value));
 					}
 				} catch (e) {
-					log('Error while reading datagrams: ' + e, 'error');
+					log('[WT unreliable&fast]: Error while reading datagrams: ' + e, 'error');
 				}
 			}
 		}		
