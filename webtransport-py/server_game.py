@@ -31,8 +31,8 @@ def findGameProcess() -> List[Any]:
     return arr
 
 def _terminate_game_server():
-    Log.info('server terminating...')
     processList = findGameProcess()
+    Log.info(f'Found {len(processList)} servers to terminate.')
     for process in processList:
         Log.info(f'{process.name()} - Process found. Terminating it.')
         process.terminate()
