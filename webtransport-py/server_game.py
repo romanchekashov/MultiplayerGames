@@ -38,7 +38,6 @@ async def _stop_game_server():
         Log.info('Connected clients found: stop_game_server cancelled.')
         return
     
-    Log.info('stoping...')
     processList = findGameProcess()
     for process in processList:
         Log.info(f'{process.name()} - Process found. Terminating it.')
