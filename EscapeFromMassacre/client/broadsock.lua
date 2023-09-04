@@ -18,7 +18,8 @@ local MSG_IDS = multiplayer.MSG_IDS
 -- @param on_disconnect
 -- @return instance Instance or nil if something went wrong
 -- @return error_message
-function M.create(server_ip, server_port, on_custom_message, on_connected, on_disconnect)
+function M.create(server_ip, server_port, on_custom_message, on_connected, on_disconnect,
+	sendToReliableConnection, sendToUnreliableAndFastConnection)
 
 	assert(server_ip, "You must provide a server IP")
 	assert(server_port, "You must provide a server port")
@@ -43,20 +44,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	local connection = {}
 
 	local send_cooldown = RATE_LIMIT
-
-	local function sendToReliableConnection(msg)
-		if html5 then
-			log("sendToReliableConnection", msg)
-			html5.run("WebSocketReliableConnectionSendData('".. msg .."')")
-		end
-	end
-
-	local function sendToUnreliableAndFastConnection(msg)
-		if html5 then
-			log("sendToUnreliableAndFastConnection", msg)
-			html5.run("WebTransportSendData('".. msg .."')")
-		end
-	end
 
 	local function add_client(uid_to_add)
 		log("add_client", uid_to_add)
@@ -312,9 +299,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 	connection.connected = true
 	log("created client", connection.connected)
-
-	sendToReliableConnection("CONNECT_ME")
-
 	return instance
 end
 

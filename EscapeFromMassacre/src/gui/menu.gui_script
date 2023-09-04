@@ -72,8 +72,6 @@ function on_input(self, action_id, action)
 
 				set_is_joined(self, true)
 
-				html5.run("WebTransportСonnect()")
-
 				server_nakama.find_opponent_and_join_match(function(success, message)
 					msg.post(".", "acquire_input_focus")
 					-- timer.cancel(timeout_handle)

@@ -5,10 +5,36 @@ local debugUtils = require "src.utils.debug-utils"
 
 local log = debugUtils.createLog("[broadsock.script]").log
 
+local CONNECTOR_MSG_IDS = {
+	RELIABLE_CONNECTION_READY = "RELIABLE_CONNECTION_READY",
+	FAST_UNRELIABLE_CONNECTION_READY = "FAST_UNRELIABLE_CONNECTION_READY",
+}
+local hasReliableConnection = false
+local hasFastUnreliableConnection = false
+
+local function sendToReliableConnection(msg)
+	if html5 and hasReliableConnection then
+		log("sendToReliableConnection", msg)
+		html5.run("WebSocketReliableConnectionSendData('".. msg .."')")
+	end
+end
+
+local function sendToUnreliableAndFastConnection(msg)
+	if html5 and hasFastUnreliableConnection then
+		log("sendToUnreliableAndFastConnection", msg)
+		html5.run("WebTransportSendData('".. msg .."')")
+	end
+end
+
 local function js_listener(self, message_id, message)
+	log(message_id, message)
 	if message_id == "ServerMsg" then
-		log("ServerMsg: ", message)
 		self.client.on_data(message, #message)
+	elseif message_id == CONNECTOR_MSG_IDS.RELIABLE_CONNECTION_READY then
+		hasReliableConnection = true
+		sendToReliableConnection("CONNECT_ME")
+	elseif message_id == CONNECTOR_MSG_IDS.FAST_UNRELIABLE_CONNECTION_READY then
+		hasFastUnreliableConnection = true
 	end
 end
 
@@ -38,7 +64,11 @@ local function connect(self, ip, port)
 		ip, port,
 		callback(on_custom_message),
 		callback(on_connected),
-		callback(on_disconnected))
+		callback(on_disconnected),
+		sendToReliableConnection,
+		sendToUnreliableAndFastConnection)
+
+	html5.run("CreateWebСonnection()")
 
 	if err then
 		log("Unable to connect to server", err)

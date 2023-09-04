@@ -245,59 +245,9 @@
 		const BASE_ADDRESS = 'game.look.ovh';
 		// const BASE_ADDRESS = 'localhost';
 
-		// Create WebSocket connection.
-		socket = new WebSocket(`ws://${BASE_ADDRESS}:5002`);
-
-		// Connection opened
-		socket.addEventListener("open", (event) => {
-			log('WsConnection ready.');
-		});
-
-		// Listen for messages
-		socket.addEventListener("message", (event) => {
-			log("Message from server ", event.data);
-			addToEventLog(event.data);
-		});
-
-
-		// "Connect" button handler.
-		async function WebTransportСonnect() {
-			// const url = 'https://game.look.ovh:4433/counter';
-			// const url = 'https://localhost:4433/counter';
-			try {
-				var transport = new WebTransport(`https://${BASE_ADDRESS}:4433/counter`);
-				log('Initiating connection...');
-			} catch (e) {
-				log('Failed to create connection object. ' + e, 'error');
-				return;
-			}
-
-			try {
-				await transport.ready;
-				log('Connection ready.');
-			} catch (e) {
-				log('Connection failed. ' + e, 'error');		
-				return;
-			}
-
-			transport.closed
-				.then(() => {
-					log('Connection closed normally.');
-				})
-				.catch(() => {
-					log('Connection closed abruptly.', 'error');
-				});
-
-			currentTransport = transport;
-			streamNumber = 1;
-			try {
-				currentTransportDatagramWriter = transport.datagrams.writable.getWriter();
-				log('Datagram writer ready.');
-			} catch (e) {
-				log('Sending datagrams not supported: ' + e, 'error');
-				return;
-			}
-			WebTransportReadDatagrams(transport);
+		// Send data to game client
+		function addToEventLog(text) {
+			JsToDef.send("ServerMsg", text);
 		}
 
 		function WebSocketReliableConnectionSendData(rawData) {
@@ -305,7 +255,6 @@
 			socket.send(rawData);
 		}
 
-		// "Send data" button handler.
 		async function WebTransportSendData(rawData) {
 			if (currentTransport) {
 				log('WT unreliable&fast: ', rawData);
@@ -322,38 +271,93 @@
 				WebSocketReliableConnectionSendData(rawData);
 			}			
 		}
+		// --------------------------
 
-		// Reads datagrams from |transport| into the event log until EOF is reached.
-		async function WebTransportReadDatagrams(transport) {
-			try {
-				var reader = transport.datagrams.readable.getReader();
-				log('Datagram reader ready.');
-				WebTransportSendData('PLAYER_READY');
-			} catch (e) {
-				log('Receiving datagrams not supported: ' + e, 'error');
-				return;
-			}
-			let decoder = new TextDecoder('utf-8');
-			try {
-				while (true) {
-					const { value, done } = await reader.read();
-					if (done) {
-						log('Done reading datagrams!');
-						return;
-					}
-					// let data = decoder.decode(value);
-					// addToEventLog('Datagram received: ' + data);
-					// addToEventLog(String.fromCharCode.apply(null, value.slice(2, -1)));
-					addToEventLog(String.fromCharCode.apply(null, value));
+		function CreateWebСonnection() {
+			// Create WebSocket connection.
+			socket = new WebSocket(`ws://${BASE_ADDRESS}:5002`);
+	
+			// Connection opened
+			socket.addEventListener("open", (event) => {
+				log('WsConnection ready.');
+				JsToDef.send("RELIABLE_CONNECTION_READY", "");
+			});
+	
+			// Listen for messages
+			socket.addEventListener("message", (event) => {
+				log("Message from server ", event.data);
+				addToEventLog(event.data);
+			});
+	
+	
+			// "Connect" button handler.
+			async function WebTransportСonnect() {
+				// const url = 'https://game.look.ovh:4433/counter';
+				// const url = 'https://localhost:4433/counter';
+				try {
+					var transport = new WebTransport(`https://${BASE_ADDRESS}:4433/counter`);
+					log('Initiating connection...');
+				} catch (e) {
+					log('Failed to create connection object. ' + e, 'error');
+					return;
 				}
-			} catch (e) {
-				log('Error while reading datagrams: ' + e, 'error');
+	
+				try {
+					await transport.ready;
+					log('Connection ready.');
+				} catch (e) {
+					log('Connection failed. ' + e, 'error');		
+					return;
+				}
+	
+				transport.closed
+					.then(() => {
+						log('Connection closed normally.');
+					})
+					.catch(() => {
+						log('Connection closed abruptly.', 'error');
+					});
+	
+				currentTransport = transport;
+				streamNumber = 1;
+				try {
+					currentTransportDatagramWriter = transport.datagrams.writable.getWriter();
+					log('Datagram writer ready.');
+				} catch (e) {
+					log('Sending datagrams not supported: ' + e, 'error');
+					return;
+				}
+				WebTransportReadDatagrams(transport);
 			}
-		}
-
-		function addToEventLog(text) {
-			JsToDef.send("ServerMsg", text);
-		}
+	
+			// Reads datagrams from |transport| into the event log until EOF is reached.
+			async function WebTransportReadDatagrams(transport) {
+				try {
+					var reader = transport.datagrams.readable.getReader();
+					log('Datagram reader ready.');
+					JsToDef.send("FAST_UNRELIABLE_CONNECTION_READY", "");
+				} catch (e) {
+					log('Receiving datagrams not supported: ' + e, 'error');
+					return;
+				}
+				let decoder = new TextDecoder('utf-8');
+				try {
+					while (true) {
+						const { value, done } = await reader.read();
+						if (done) {
+							log('Done reading datagrams!');
+							return;
+						}
+						// let data = decoder.decode(value);
+						// addToEventLog('Datagram received: ' + data);
+						// addToEventLog(String.fromCharCode.apply(null, value.slice(2, -1)));
+						addToEventLog(String.fromCharCode.apply(null, value));
+					}
+				} catch (e) {
+					log('Error while reading datagrams: ' + e, 'error');
+				}
+			}
+		}		
 	</script>
 </body>
 </html>
