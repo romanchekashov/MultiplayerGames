@@ -65,6 +65,7 @@ def handle_client_connected(websocket, web_transport):
     if client is None:
         client = Client(None, web_transport, websocket, None)
         clients.append(client)
+        Log.info(f'connected: clients = {len(clients)}')
     
     if websocket is not None:
         client.reliableWS = websocket
@@ -78,15 +79,16 @@ def handle_client_connected(websocket, web_transport):
 
 async def handle_client_disconnected(websocket):
     global clients
+    Log.info(f'disconnected: clients = {len(clients)}')
     if len(clients) == 0:
         return
     client = get_client_by_ws(websocket)
-    Log.info(f'clients: {len(clients)}')
     clients.remove(client)
     Log.info(f'{client.__dict__} {len(clients)}')
     msg = f'{client.uid}.{GameServerMessages.DISCONNECT}'
 
     if len(clients) == 0:
+        Log.info(f'clients = {len(clients)}: Need stop game server')
         stop_game_server()
     else:
         await send_message_all(msg)
