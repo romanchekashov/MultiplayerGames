@@ -12,11 +12,11 @@ local handle_client_connected = broadsock.handle_client_connected
 local handle_client_disconnected = broadsock.handle_client_disconnected
 local handle_client_message = broadsock.handle_client_message
 
+debugUtils.debug(false)
 local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_33_PERCENT)
 
 function init(self)
 	msg.post("@system:", "set_vsync", { swap_interval = 0 })
-	debugUtils.debug(false)
 
 	local ok, err = broadsock.start(self.port)
 	if ok then
