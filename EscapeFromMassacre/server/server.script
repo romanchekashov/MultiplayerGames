@@ -16,7 +16,7 @@ local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOU
 
 function init(self)
 	msg.post("@system:", "set_vsync", { swap_interval = 0 })
-	debugUtils.debug(true)
+	debugUtils.debug(false)
 
 	local ok, err = broadsock.start(self.port)
 	if ok then
