@@ -244,7 +244,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				sw.vector3(pos)
 				sw.quat(rot)
 				sw.vector3(scale)
-				-- log(gouid, gameobject.id, rot, scale, tostring(sw.tostring()))
+				-- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
 			end
 			instance.send(sw.tostring())
 

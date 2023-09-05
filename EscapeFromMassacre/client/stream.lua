@@ -93,10 +93,10 @@ function M.reader(str, str_length)
 	--- Read a Quaternion from the stream
 	-- @return The quaternion
 	function instance.quat()
-		local x = instance.number()
-		local y = instance.number()
-		local z = instance.number()
-		local w = instance.number()
+		local x = instance.number() / 1000
+		local y = instance.number() / 1000
+		local z = instance.number() / 1000
+		local w = instance.number() / 1000
 		return vmath.quat(x, y, z, w)
 	end
 
@@ -183,10 +183,10 @@ function M.writer()
 	-- @param quat The quaternion to write
 	-- @return The stream instance
 	function instance.quat(quat)
-		instance.number(quat.x)
-		instance.number(quat.y)
-		instance.number(quat.z)
-		instance.number(quat.w)
+		instance.number(quat.x * 1000)
+		instance.number(quat.y * 1000)
+		instance.number(quat.z * 1000)
+		instance.number(quat.w * 1000)
 		return instance
 	end
 
