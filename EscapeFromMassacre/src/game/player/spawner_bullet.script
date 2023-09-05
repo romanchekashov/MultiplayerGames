@@ -1,0 +1,16 @@
+local MainState = require "src.main_state"
+local Utils = require "src.utils.utils"
+local debugUtils = require "src.utils.debug-utils"
+
+local log = debugUtils.createLog("[spawner_bullet]").log
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("add_bullet") then
+		local to = message.pos + vmath.rotate(message.rot, vmath.vector3(0, 1000, 0))
+		local bullet = factory.create("#factory-bullet", message.pos, message.rot, {remote = false})
+
+		go.animate(bullet, "position", go.PLAYBACK_ONCE_FORWARD, to, go.EASING_LINEAR, 0.75, 0, function()
+			go.delete(bullet)
+		end)
+	end
+end

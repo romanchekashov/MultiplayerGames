@@ -21,7 +21,7 @@ function init(self)
 	msg.post(BROADSOCK, "connect", { ip = "127.0.0.1", port = 5001 })
 	msg.post(BROADSOCK, "register_factory", { url = "/spawner-player#factory-player", type = "player" })
 	msg.post(BROADSOCK, "register_factory", { url = "/spawner-zombie#factory-zombie", type = "zombie" })
-	msg.post(BROADSOCK, "register_factory", { url = "/player#bulletfactory", type = "bullet" })
+	msg.post(BROADSOCK, "register_factory", { url = "/spawner-bullet#factory-bullet", type = "bullet" })
 end
 
 function on_message(self, message_id, message, sender)
