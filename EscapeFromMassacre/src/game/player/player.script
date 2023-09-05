@@ -38,7 +38,7 @@ function init(self)
 	log("PLAYER CREATED: ", username)
 	label.set_text("#name", string.format("%.30s", username))
 
-	local obj = MainState.createGameObject(player_id)
+	local obj = MainState.createGameObject(player_id, username)
 	MainState.players:put(obj.id, obj)
 	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
 	log("player joined: " .. player_id)

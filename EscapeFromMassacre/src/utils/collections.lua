@@ -65,6 +65,12 @@ function Map:has(key)
 	return false
 end
 
+function Map:for_each(fn)
+	for k, v in pairs(self.items) do
+		fn(v)
+    end
+end
+
 function M.createMap()
 	return Map:new()
 end

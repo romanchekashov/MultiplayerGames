@@ -2,6 +2,7 @@ local MainState = require "src.main_state"
 local Buttons = require "src.utils.buttons"
 local btnAction = Buttons.action
 local server_nakama = require "client.server_nakama"
+local debugUtils = require "src.utils.debug-utils"
 
 local function set_is_joined(self, is_joined)
 	self.is_joined = is_joined
@@ -9,9 +10,19 @@ local function set_is_joined(self, is_joined)
 	gui.set_enabled(gui.get_node("btn-exit"), is_joined)
 end
 
+local function add_player_stat(player, pos)
+	-- print(debugUtils.printTable(player), pos)
+	-- Create a new text node
+	local new_textnode = gui.new_text_node(pos, player.username)
+	gui.set_font(new_textnode, "tictactoe")
+	gui.set_color(new_textnode, vmath.vector4(0.3, 0.3, 0.9, 1.0))
+	return new_textnode
+end
+
 function init(self)
 	msg.post(".", "acquire_input_focus")
 
+	self.playersTextNodes = {}
 	MainState.pause = true
 	set_is_joined(self, false)
 end
@@ -37,6 +48,20 @@ function on_message(self, message_id, message, sender)
 		local nodeId = gui.get_node("players-online")
         -- format score like: 006 with leading zeros
         gui.set_text(nodeId, string.format("Online: %03d", message.online_players))
+
+		for _,node in ipairs(self.playersTextNodes) do
+			gui.delete_node(node)
+		end
+		self.playersTextNodes = {}
+		print("menu_gui", debugUtils.printTable(MainState.players.items), MainState.players.length)
+		local pos = gui.get_position(nodeId)
+		pos.x = pos.x + 20
+		-- local pos = vmath.vector3(500, 1000, 0)
+		MainState.players:for_each(function (player)
+			pos.y = pos.y - 30
+			local textNode = add_player_stat(player, pos)
+			table.insert(self.playersTextNodes, textNode)
+		end)
 	elseif message_id == hash("set_username") then
 		local nodeId = gui.get_node("username")
         -- format max 30 characters
