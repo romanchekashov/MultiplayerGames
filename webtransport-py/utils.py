@@ -70,16 +70,12 @@ def getLogger(name):
     logger = logging.getLogger(name)
     # add_file_log(logger, 'webtransport.log')
     add_rotating_file_log(logger, 'webtransport.log')
-    # logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     
     # create console handler with a higher log level
     # ch = logging.StreamHandler()
-    # ch.setLevel(logging.NOTSET)
-
-    # create formatter and add it to the handlers
+    # ch.setLevel(logging.DEBUG)
     # formatter = logging.Formatter(LOG_FORMAT)
     # ch.setFormatter(formatter)
-
-    # add the handlers to logger
     # logger.addHandler(ch)
     return logger

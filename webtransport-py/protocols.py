@@ -61,9 +61,8 @@ class WebTransportProtocol(QuicConnectionProtocol):
                                 request_headers: Dict[bytes, bytes]) -> None:
         authority = request_headers.get(b":authority")
         path = request_headers.get(b":path")
-        Log.info(self)
-        Log.info(f'WebTransportProtocol({id(self)}')
-        Log.info(f'stream_id {stream_id}, authority {authority}, {threading.get_ident()}')
+        Log.debug(f'WebTransportProtocol({id(self)}')
+        Log.debug(f'stream_id {stream_id}, authority {authority}, {threading.get_ident()}')
         if authority is None or path is None:
             # `:authority` and `:path` must be provided.
             self._send_response(stream_id, 400, end_stream=True)
@@ -72,7 +71,7 @@ class WebTransportProtocol(QuicConnectionProtocol):
             assert(self._handler is None)
             self._handler = CounterHandler(stream_id, self._http)
             client = set_game_client_communication_web_transport(self._handler)
-            Log.info(f'handler: WT = {id(self._handler)}: client = {client}')
+            Log.debug(f'handler: WT = {id(self._handler)}: client = {client}')
             self._handler.client = client
             # client = handle_client_connected()
             # client.handler = self._handler
