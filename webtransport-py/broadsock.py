@@ -1,3 +1,5 @@
+import queue
+
 from stream import stream_encode, get_uid_from_msg
 from enum import Enum
 from typing import List
@@ -7,7 +9,7 @@ from server_game import start_game_server, stop_game_server
 
 Log = getLogger(__name__)
 
-class Messages:
+class GameClientMessages:
     CONNECT_ME = 'CONNECT_ME'
 
 class GameServerMessages:
@@ -26,7 +28,8 @@ class Client:
     def __str__(self):
         return f'Client(uid = {self.uid}, WS = {id(self.reliableWS)}, WT = {id(self.unreliableFastWT)})'
 
-
+# create a queue with no size limit
+cache_client_msg_while_server_not_ready_queue = queue.Queue()
 uid_sequence = 0
 clients: List[Client] = []
 game_server_reader = None
@@ -157,6 +160,10 @@ def set_game_server_communication(reader, writer):
     game_server_reader = reader
     game_server_writer = writer
     Log.info('SERVER connected.')
+    while not cache_client_msg_while_server_not_ready_queue.empty():
+        item = cache_client_msg_while_server_not_ready_queue.get()
+        # Log.debug(item)
+        to_game_server(item.get("msg"), item.get("client"))
 
 def set_game_client_communication_websocket(websocket) -> Client:
     global game_client_websocket, game_client_web_transport
@@ -171,12 +178,17 @@ def set_game_client_communication_web_transport(web_transport) -> Client:
 """
 Send messages to server and client
 """
-def to_game_server(msg):
+def to_game_server(msg, client: Client):
     global game_server_reader
+    if client.uid is not None:
+        msg = f'{client.uid}.{msg}'
+
+    Log.debug(f'TO-SERVER: {msg}, client: {client}')
     if game_server_writer is not None:
-        Log.debug(f'TO-SERVER: {msg}')
         out_data = stream_encode(msg)
         game_server_writer.write(out_data)
+    else:
+        cache_client_msg_while_server_not_ready_queue.put({'msg': msg, 'client': client})
 
 async def to_game_client(msg):
     Log.debug(f'TO-CLIENT: {msg}, WS: {id(game_client_websocket)}, WT: {id(game_client_web_transport)}')
@@ -188,7 +200,7 @@ async def to_game_client(msg):
         if client is not None and client.uid != uid:
             client.uid = uid
             client.unreliableFastWT = game_client_web_transport
-            # Log.info(client.uid)
+            Log.info(f'client get game server uid: {client}')
             await reliable_connection.send_msg_to(client, msg)
     elif GameServerMessages.CONNECT_OTHER in msg:
         await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))

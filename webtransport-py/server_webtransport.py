@@ -43,10 +43,7 @@ class CounterHandler:
         if isinstance(event, DatagramReceived):
             if self.client:
                 msg = event.data.decode(self._encoding)
-                if self.client.uid is None:
-                    to_game_server(msg)
-                else:
-                    to_game_server(f'{self.client.uid}.{msg}')
+                to_game_server(msg, self.client)
             # self.send_datagram(event.data)
 
         if isinstance(event, WebTransportStreamDataReceived):

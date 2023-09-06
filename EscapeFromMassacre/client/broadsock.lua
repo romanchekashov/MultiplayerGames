@@ -227,6 +227,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- Any registered game objects will send their transforms
 	-- This will also send any other queued data
 	function instance.update(dt)
+		if MainState.pause or uid == nil then
+			return
+		end
+
 		if connection.connected then
 			if rateLimiter(dt) then
 				return

@@ -19,6 +19,7 @@ local function sendToReliableConnection(msg)
 	end
 end
 
+-- UDP connection doesn't guaranty delivery!
 local function sendToUnreliableAndFastConnection(msg)
 	if html5 and hasFastUnreliableConnection then
 		log("sendToUnreliableAndFastConnection", msg)

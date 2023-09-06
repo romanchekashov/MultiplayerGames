@@ -20,11 +20,7 @@ async def handler(websocket):
         try:
             message = await websocket.recv()
             Log.debug(f'websocket = {id(websocket)}: client = {client}')
-            if client.uid is None:
-                to_game_server(message)
-            else:
-                to_game_server(f'{client.uid}.{message}')
-
+            to_game_server(message, client)
         # client disconnected?
         except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
             Log.debug(f'DISCONECT: websocket {id(websocket)}, client {client}')

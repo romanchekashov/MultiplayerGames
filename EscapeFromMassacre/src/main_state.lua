@@ -1,7 +1,7 @@
 local Collections = require "src.utils.collections"
 
 local M = {
-    pause = false, 
+    pause = true,
     players = Collections.createMap(),
     zombies = Collections.createMap(),
     player = {
