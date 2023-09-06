@@ -15,7 +15,11 @@ local function add_player_stat(player, pos)
 	-- Create a new text node
 	local new_textnode = gui.new_text_node(pos, player.username)
 	gui.set_font(new_textnode, "tictactoe")
-	gui.set_color(new_textnode, vmath.vector4(0.3, 0.3, 0.9, 1.0))
+	if MainState.player.uid == player.uid then
+		gui.set_color(new_textnode, vmath.vector4(0.9, 0.3, 0.3, 1.0))
+	else
+		gui.set_color(new_textnode, vmath.vector4(0.3, 0.3, 0.9, 1.0))
+	end
 	return new_textnode
 end
 
