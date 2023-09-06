@@ -40,6 +40,9 @@ function init(self)
 
 	local obj = MainState.createGameObject(self.uid, username, go_id)
 	MainState.players:put(obj.uid, obj)
+	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
+		MainState.playerUidToScore[tostring(obj.uid)] = 0
+	end
 	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
 	log("player joined: " .. username)
 end
@@ -50,7 +53,7 @@ function final(self)
 	if not self.remote then
 		msg.post(".", "release_input_focus")
 		msg.post("camera", "release_camera_focus")
-		msg.post("/broadsock", "unregister_gameobject", { id = go_id })
+		msg.post("/broadsock", "unregister_gameobject", { id = go_id, killer_uid = self.killer_uid })
 		msg.post("gui#menu", "non_remote_player_killed", {uid = self.uid})
 	end
 
@@ -143,7 +146,11 @@ function on_message(self, message_id, message, sender)
 	if message_id == COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
 			if not self.remote then
-				msg.post("spawner-player#script", "remove_player", {uid = self.uid, player_id = go.get_id()})
+				self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
+				MainState.increasePlayerScore(self.killer_uid)
+				msg.post("spawner-player#script", "remove_player", {
+					uid = self.uid,
+					player_id = go.get_id()})
 			end
 			-- log("I collided with", go.get_id(), message.other_id, message.other_group)
 		end

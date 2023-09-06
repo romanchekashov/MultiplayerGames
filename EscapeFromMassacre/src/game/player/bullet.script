@@ -1,14 +1,24 @@
+local MainState = require "src.main_state"
+
 go.property("remote", true)
+go.property("uid", 0)
 
 function init(self)
+	local id = go.get_id()
 	if not self.remote then
-		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = "bullet" })
+		msg.post("/broadsock", "register_gameobject", { id = id, type = "bullet" })
+	else
+		MainState.bulletBelongToPlayerUid[id] = self.uid
 	end
+	-- print("bullet from", self.uid)
 end
 
 function final(self)
+	local id = go.get_id()
 	if not self.remote then
 		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
+	else
+		MainState.bulletBelongToPlayerUid[id] = nil
 	end
 end
 

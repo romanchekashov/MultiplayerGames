@@ -4,6 +4,7 @@ local stream = require "client.stream"
 local debugUtils = require "src.utils.debug-utils"
 
 local log = debugUtils.createLog("[broadsock.script]").log
+debugUtils.debug(true)
 
 local CONNECTOR_MSG_IDS = {
 	RELIABLE_CONNECTION_READY = "RELIABLE_CONNECTION_READY",
@@ -109,7 +110,7 @@ function on_message(self, message_id, message, sender)
 		if message_id == hash("register_gameobject") then
 			self.client.register_gameobject(message.id, message.type)
 		elseif message_id == hash("unregister_gameobject") then
-			self.client.unregister_gameobject(message.id)
+			self.client.unregister_gameobject(message)
 		elseif message_id == hash("register_factory") then
 			self.client.register_factory(message.url, message.type)
 		elseif message_id == hash("send_message") then

@@ -6,6 +6,7 @@ local performance_utils = require "server.performance_utils"
 
 
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
+debugUtils.debug(true)
 local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._20_MILISECONDS)
 
 local M = {}
@@ -87,13 +88,20 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- This will result in a message to the server to notify connected clients
 	-- that the game object has been removed
 	-- @param id Id of the game object
-	function instance.unregister_gameobject(id)
+	function instance.unregister_gameobject(message)
+		local id = message.id
+		local killer_uid = message.killer_uid
 		log("unregister_gameobject", id)
 		for gouid,gameobject in pairs(gameobjects) do
 			if gameobject.id == id then
 				gameobjects[gouid] = nil
 				gameobject_count = gameobject_count - 1
-				instance.send(stream.writer().string("GOD").string(gouid).tostring())
+
+				local sw = stream.writer().string("GOD").string(gouid)
+				if killer_uid ~= nil then
+					sw.string(killer_uid)
+				end
+				instance.send(sw.tostring())
 				return
 			end
 		end
@@ -183,6 +191,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			log("GOD")
 			if clients[from_uid] then
 				local gouid = sr.string()
+				MainState.increasePlayerScore(sr.string())
 				local remote_gameobjects_for_user = remote_gameobjects[from_uid]
 				local id = remote_gameobjects_for_user[gouid].id
 				local ok, err = pcall(function()

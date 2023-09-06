@@ -7,8 +7,49 @@ local M = {
     player = {
         uid = 0,
         username = "N/A"
-    }
+    },
+    bulletBelongToPlayerUid = {},
+    playerUidToScore = {}
 }
+
+local function compare(a,b)
+    return a[1] < b[1]
+end
+
+local function getKeysSortedByValue(tbl, sortFunction)
+    local keys = {}
+    for key in pairs(tbl) do
+      table.insert(keys, key)
+    end
+  
+    table.sort(keys, function(a, b)
+      return sortFunction(tbl[a], tbl[b])
+    end)
+  
+    return keys
+end
+
+function M.increasePlayerScore(killer_uid)
+	if killer_uid ~= nil and killer_uid ~= "" then
+        killer_uid = tostring(killer_uid)
+        if M.playerUidToScore[killer_uid] == nil then
+            M.playerUidToScore[killer_uid] = 0
+        end
+
+        M.playerUidToScore[killer_uid] = M.playerUidToScore[killer_uid] + 1
+        -- local player = M.players:get(tonumber(killer_uid))
+        -- if player ~= nil then
+        --     player.score = player.score + 1
+        -- end
+    end
+end
+
+function M.playerUidToScoreSortedForEach(fn)
+    local sortedKeys = getKeysSortedByValue(M.playerUidToScore, function(a, b) return a > b end)
+    for _, key in ipairs(sortedKeys) do
+        fn(key)
+    end
+end
 
 local pauseBound = {
     x1 = 0,
@@ -31,14 +72,12 @@ function M.insidePauseBound(action)
         and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
 end
 
-function M.createGameObject(uid, username, go_id, pos, rot, scale)
+function M.createGameObject(uid, username, go_id)
     local obj = {
         uid = uid or nil,
         username = username or nil,
         go_id = go_id or nil,
-        pos = pos or nil,
-        rot = rot or nil,
-        scale = scale or nil
+        score = 0
     }
     return obj
 end
