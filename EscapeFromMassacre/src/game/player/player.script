@@ -51,6 +51,7 @@ function final(self)
 		msg.post(".", "release_input_focus")
 		msg.post("camera", "release_camera_focus")
 		msg.post("/broadsock", "unregister_gameobject", { id = go_id })
+		msg.post("gui#menu", "non_remote_player_killed", {uid = self.uid})
 	end
 
 	MainState.players:remove(self.uid)

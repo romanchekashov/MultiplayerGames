@@ -19,6 +19,12 @@ local function add_player_stat(player, pos)
 	return new_textnode
 end
 
+local function onBtnExit(self)
+	-- msg.post("spawner-player#script", "remove_player")
+	set_is_joined(self, false)
+	MainState.pause = true
+end
+
 function init(self)
 	msg.post(".", "acquire_input_focus")
 
@@ -62,6 +68,8 @@ function on_message(self, message_id, message, sender)
 			local textNode = add_player_stat(player, pos)
 			table.insert(self.playersTextNodes, textNode)
 		end)
+	elseif message_id == hash("non_remote_player_killed") then
+		onBtnExit(self)
 	elseif message_id == hash("set_username") then
 		local nodeId = gui.get_node("username")
         -- format max 30 characters
@@ -83,9 +91,7 @@ function on_input(self, action_id, action)
 	if action_id == hash("touch") then
 		if self.is_joined then
 			btnAction(action, "btn-exit", nil, nil, function ()
-				-- msg.post("spawner-player#script", "remove_player")
-				set_is_joined(self, false)
-				MainState.pause = true
+				onBtnExit(self)
 			end)
 		else
 			btnAction(action, "btn-join", nil, nil, function ()
