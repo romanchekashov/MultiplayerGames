@@ -13,7 +13,7 @@ local handle_client_disconnected = broadsock.handle_client_disconnected
 local handle_client_message = broadsock.handle_client_message
 
 debugUtils.debug(false)
-local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_5_PERCENT)
+local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_20_PERCENT)
 
 -- print decorator
 old_print = print
