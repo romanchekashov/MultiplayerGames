@@ -1,6 +1,11 @@
 echo "Stopping docker-compose..."
 docker-compose --env-file .env.local down
 
+# echo "Copy ssl cetf to use from docker: only once"
+# mkdir certificate
+# cp /etc/letsencrypt/live/look.ovh/fullchain.pem certificate/fullchain.pem
+# cp /etc/letsencrypt/live/look.ovh/privkey.pem certificate/privkey.pem
+
 cd EscapeFromMassacre
 ./build_game_server.sh -P x86_64-linux
 cd ..
