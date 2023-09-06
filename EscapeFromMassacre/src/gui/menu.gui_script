@@ -10,10 +10,11 @@ local function set_is_joined(self, is_joined)
 	gui.set_enabled(gui.get_node("btn-exit"), is_joined)
 end
 
-local function add_player_stat(player, pos)
+local function add_player_stat(player, pos, scale)
 	-- print(debugUtils.printTable(player), pos)
 	-- Create a new text node
 	local new_textnode = gui.new_text_node(pos, player.username)
+	gui.set_scale(new_textnode, scale)
 	gui.set_font(new_textnode, "tictactoe")
 	if MainState.player.uid == player.uid then
 		gui.set_color(new_textnode, vmath.vector4(0.9, 0.3, 0.3, 1.0))
@@ -66,10 +67,11 @@ function on_message(self, message_id, message, sender)
 		print("menu_gui: players.length", MainState.players.length)
 		local pos = gui.get_position(nodeId)
 		pos.x = pos.x + 20
+		local scale = gui.get_scale(nodeId)
 		-- local pos = vmath.vector3(500, 1000, 0)
 		MainState.players:for_each(function (player)
-			pos.y = pos.y - 30
-			local textNode = add_player_stat(player, pos)
+			pos.y = pos.y - 20
+			local textNode = add_player_stat(player, pos, scale)
 			table.insert(self.playersTextNodes, textNode)
 		end)
 	elseif message_id == hash("non_remote_player_killed") then
