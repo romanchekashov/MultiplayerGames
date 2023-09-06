@@ -32,6 +32,7 @@ async def handle_client(reader, writer):
             error_message = "resetting connection: {}".format(e.args)
             Log.error(error_message)
             request = 'quit'
+            writer.write_eof()
             # raise Exception(error_message)
 
     writer.close()
