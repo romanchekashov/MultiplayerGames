@@ -12,23 +12,6 @@ local M = {
     playerUidToScore = {}
 }
 
-local function compare(a,b)
-    return a[1] < b[1]
-end
-
-local function getKeysSortedByValue(tbl, sortFunction)
-    local keys = {}
-    for key in pairs(tbl) do
-      table.insert(keys, key)
-    end
-  
-    table.sort(keys, function(a, b)
-      return sortFunction(tbl[a], tbl[b])
-    end)
-  
-    return keys
-end
-
 function M.increasePlayerScore(killer_uid)
 	if killer_uid ~= nil and killer_uid ~= "" then
         killer_uid = tostring(killer_uid)
@@ -45,10 +28,22 @@ function M.increasePlayerScore(killer_uid)
 end
 
 function M.playerUidToScoreSortedForEach(fn)
-    local sortedKeys = getKeysSortedByValue(M.playerUidToScore, function(a, b) return a > b end)
-    for _, key in ipairs(sortedKeys) do
-        fn(key)
-    end
+    local list = {}
+
+	M.players:for_each(function (player)
+		local item = {player = player, score = M.playerUidToScore[tostring(player.uid)]}
+		table.insert(list, item)
+	end)
+
+	local function compare(a,b)
+		return a.score > b.score
+	end
+
+	table.sort(list, compare)
+
+	for _, item in ipairs(list) do
+        fn(item.player)
+	end
 end
 
 local pauseBound = {

@@ -72,8 +72,8 @@ function on_message(self, message_id, message, sender)
 		local scale = gui.get_scale(nodeId)
 		-- local pos = vmath.vector3(500, 1000, 0)
 		local scorePosX = gui.get_position(gui.get_node("stats-score")).x
-		
-		MainState.players:for_each(function (player)
+
+		MainState.playerUidToScoreSortedForEach(function (player)
 			pos.y = pos.y - 20
 			local textNode = add_player_stat(player, pos, scale, parent, scorePosX)
 			table.insert(self.playersTextNodes, textNode)
