@@ -149,8 +149,7 @@ async def handle_client_disconnected(websocket):
         Log.info(f'clients = {len(clients)}: Need stop game server')
         stop_game_server()
     elif client.uid is not None:
-        msg = f'{client.uid}.{GameServerMessages.DISCONNECT}'
-        to_game_server(msg)
+        to_game_server(GameServerMessages.DISCONNECT, client)
 
 
 """
@@ -208,6 +207,7 @@ async def to_game_client(msg):
     elif GameServerMessages.CONNECT_OTHER in msg:
         await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
     elif GameServerMessages.DISCONNECT in msg:
+        Log.info(f'TO-CLIENT: {msg}')
         await reliable_connection.send_message_all(msg)
     else:
         await fast_unreliable_connection.send_message_all(msg)

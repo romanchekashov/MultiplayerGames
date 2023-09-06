@@ -90,7 +90,11 @@ function M.printTable(tbl)
         line = line .. "[" .. index .. "] {"
         for key, value in pairs(data) do
             -- print('\t', key, value)
-            line = line .. key .. ', '.. value .. ', '
+            if type(value) == "table" then
+                line = line .. key .. ', '.. table.concat(value, ";") .. ', '
+            else
+                line = line .. key .. ', '.. value .. ', '
+            end
         end
         line = line .. "}"
     end
