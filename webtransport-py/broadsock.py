@@ -28,35 +28,16 @@ game_client_websocket = None
 game_client_web_transport = None
 
 
-class FastUnreliableConnection:
-    def __init__(self):
-        print()
-
-    async def send_msg_to(self, client, msg):
-        if client.unreliableFastWT is not None:
-            client.unreliableFastWT.send_datagram(msg)
-        elif client.reliableWS is not None:
-            await client.reliableWS.send(msg)
-
-    async def send_message_all(self, msg: str) -> None:
-        global clients
-        for client in clients:
-            await self.send_msg_to(client, msg)
-
-    async def send_message_others(self, msg: str, c_uid: int) -> None:
-        global clients
-        for client in clients:
-            if client.uid != c_uid:
-                await self.send_msg_to(client, msg)
-
-
 class ReliableConnection:
     def __init__(self):
         print()
 
     async def send_msg_to(self, client, msg):
         if client.reliableWS is not None:
-            await client.reliableWS.send(msg)
+            try:
+                await client.reliableWS.send(msg)
+            except Exception as e:
+                Log.info(f'Cannot send to {client} because {str(e)}')
             
     async def send_message_all(self, msg: str) -> None:
         global clients
@@ -71,8 +52,30 @@ class ReliableConnection:
                 await self.send_msg_to(client, msg)
 
 
+class FastUnreliableConnection:
+    def __init__(self, reliable_con: ReliableConnection):
+        self.reliable_con = reliable_con
+
+    async def send_msg_to(self, client, msg):
+        if client.unreliableFastWT is not None:
+            client.unreliableFastWT.send_datagram(msg)
+        else:
+            await self.reliable_con.send_msg_to(client, msg)
+
+    async def send_message_all(self, msg: str) -> None:
+        global clients
+        for client in clients:
+            await self.send_msg_to(client, msg)
+
+    async def send_message_others(self, msg: str, c_uid: int) -> None:
+        global clients
+        for client in clients:
+            if client.uid != c_uid:
+                await self.send_msg_to(client, msg)
+
+
 reliable_connection = ReliableConnection()
-fast_unreliable_connection = FastUnreliableConnection()
+fast_unreliable_connection = FastUnreliableConnection(reliable_connection)
 
 
 def get_next_uid_sequence() -> int:
