@@ -57,6 +57,10 @@ function Map:remove(key)
 	end
 end
 
+function Map:get(key)
+	return self.items[key]
+end
+
 function Map:has(key)
 	if self.items[key] then
 		return true

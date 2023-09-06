@@ -48,11 +48,10 @@ function on_message(self, message_id, message, sender)
 		-- start position outside screen edge
 		local player_id = factory.create("#factory-player", random_position(), nil, {remote = false, uid = message.uid})
 	elseif message_id == hash("remove_player") then
-		local player_id = message.player_id
-
-		if self.players:has(player_id) then
-			log("Player killed with bullet", player_id)
-			go.delete(player_id)
+		if self.players:has(message.uid) then
+			local player = self.players:get(message.uid)
+			log("Bullet killed player", player.username)
+			go.delete(player.go_id)
 		end
 		-- for m, _ in pairs(self.players) do
         --     go.delete(m)

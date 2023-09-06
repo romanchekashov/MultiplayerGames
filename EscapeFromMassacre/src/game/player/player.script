@@ -22,12 +22,12 @@ local ZOMBIE = hash("zombie")
 local BULLET = hash("bullet")
 
 function init(self)
-	local player_id = go.get_id()
+	local go_id = go.get_id()
 
 	if not self.remote then
 		msg.post(".", "acquire_input_focus")
 		msg.post("camera", "acquire_camera_focus")
-		msg.post("/broadsock", "register_gameobject", { id = player_id, type = "player" })
+		msg.post("/broadsock", "register_gameobject", { id = go_id, type = "player" })
 	end
 
 
@@ -38,22 +38,22 @@ function init(self)
 	log("PLAYER CREATED: ", username)
 	label.set_text("#name", string.format("%.30s", username))
 
-	local obj = MainState.createGameObject(player_id, username)
-	MainState.players:put(obj.id, obj)
+	local obj = MainState.createGameObject(self.uid, username, go_id)
+	MainState.players:put(obj.uid, obj)
 	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
-	log("player joined: " .. player_id)
+	log("player joined: " .. username)
 end
 
 function final(self)
-	local player_id = go.get_id()
+	local go_id = go.get_id()
 
 	if not self.remote then
 		msg.post(".", "release_input_focus")
 		msg.post("camera", "release_camera_focus")
-		msg.post("/broadsock", "unregister_gameobject", { id = player_id })
+		msg.post("/broadsock", "unregister_gameobject", { id = go_id })
 	end
 
-	MainState.players:remove(player_id)
+	MainState.players:remove(self.uid)
 	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
 end
 
@@ -141,7 +141,7 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
-			msg.post("spawner-player#script", "remove_player", {player_id = go.get_id()})
+			msg.post("spawner-player#script", "remove_player", {uid = self.uid, player_id = go.get_id()})
 			-- log("I collided with", go.get_id(), message.other_id, message.other_group)
 		end
 	elseif message_id == CONTACT_POINT_RESPONSE then

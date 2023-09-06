@@ -31,10 +31,11 @@ function M.insidePauseBound(action)
         and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
 end
 
-function M.createGameObject(id, username, pos, rot, scale)
+function M.createGameObject(uid, username, go_id, pos, rot, scale)
     local obj = {
-        id = id or nil,
+        uid = uid or nil,
         username = username or nil,
+        go_id = go_id or nil,
         pos = pos or nil,
         rot = rot or nil,
         scale = scale or nil

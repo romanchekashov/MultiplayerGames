@@ -49,10 +49,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		clients[uid_to_add] = { uid = uid_to_add }
 		remote_gameobjects[uid_to_add] = {}
 		client_count = client_count + 1
-
-		MainState.player.username = "user-" .. tostring(uid_to_add)
-		MainState.player.uid = uid_to_add
-		msg.post("gui#menu", "set_username", {username = MainState.player.username})
 	end
 
 	local function remove_client(uid_to_remove)
@@ -202,6 +198,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			add_client(from_uid)
 			uid = from_uid
 			on_connected()
+
+			MainState.player.username = "user-" .. tostring(uid)
+			MainState.player.uid = uid
+			msg.post("gui#menu", "set_username", {username = MainState.player.username})
 		elseif msg_id == MSG_IDS.DISCONNECT then
 			log("DISCONNECT")
 			remove_client(from_uid)
