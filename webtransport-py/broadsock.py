@@ -5,19 +5,9 @@ from enum import Enum
 from typing import List
 from utils import getLogger
 
-from server_game import start_game_server, stop_game_server
+from server_game import start_game_server, stop_game_server, GameServer, GameServerMessages
 
 Log = getLogger(__name__)
-
-class GameClientMessages:
-    CONNECT_ME = 'CONNECT_ME'
-
-class GameServerMessages:
-    GO = 'GO'
-    GOD = 'GOD'
-    CONNECT_SELF = 'CONNECT_SELF'
-    CONNECT_OTHER = 'CONNECT_OTHER'
-    DISCONNECT = 'DISCONNECT'
 
 class Client:
     def __init__(self, uid, web_transport, websocket, data):
@@ -33,8 +23,7 @@ class Client:
 cache_client_msg_while_server_not_ready_queue = queue.Queue()
 uid_sequence = 0
 clients: List[Client] = []
-game_server_reader = None
-game_server_writer = None
+game_server = None
 game_client_websocket = None
 game_client_web_transport = None
 
@@ -108,9 +97,9 @@ def get_client_by_wt(wt) -> Client:
             return c
 
 def game_server_stopped_clear_communication():
-    global game_server_reader, game_server_writer
-    game_server_reader = None
-    game_server_writer = None
+    global game_server
+    game_server = None
+    Log.info(f'SERVER stopped.')
 
 """
 Client connect/disconnect
@@ -160,10 +149,8 @@ async def handle_client_disconnected(websocket):
 Set client/server connection
 """
 def set_game_server_communication(reader, writer):
-    global game_server_reader, game_server_writer
-    game_server_reader = reader
-    game_server_writer = writer
-    Log.info('SERVER connected.')
+    global game_server
+    game_server = GameServer(reader, writer)
     while not cache_client_msg_while_server_not_ready_queue.empty():
         item = cache_client_msg_while_server_not_ready_queue.get()
         # Log.debug(item)
@@ -183,14 +170,13 @@ def set_game_client_communication_web_transport(web_transport) -> Client:
 Send messages to server and client
 """
 def to_game_server(msg, client: Client):
-    global game_server_reader
+    global game_server
     if client.uid is not None:
         msg = f'{client.uid}.{msg}'
 
     Log.debug(f'TO-SERVER: {msg}, client: {client}')
-    if game_server_writer is not None:
-        out_data = stream_encode(msg)
-        game_server_writer.write(out_data)
+    if game_server is not None:
+        game_server.write(msg)
     else:
         cache_client_msg_while_server_not_ready_queue.put({'msg': msg, 'client': client})
 

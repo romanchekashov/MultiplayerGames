@@ -1,12 +1,36 @@
 import os
-from sys import platform
-from typing import Any, List
 import psutil
 import asyncio
+
+from sys import platform
+from typing import Any, List
 from subprocess import Popen
 from utils import getLogger
+from stream import stream_encode
+
 
 Log = getLogger(__name__)
+
+class GameServerMessages:
+    CONNECT_ME = 'CONNECT_ME'
+    GO = 'GO'
+    GOD = 'GOD'
+    CONNECT_SELF = 'CONNECT_SELF'
+    CONNECT_OTHER = 'CONNECT_OTHER'
+    DISCONNECT = 'DISCONNECT'
+
+class GameServer:
+    def __init__(self, reader, writer):
+        self.reader = reader
+        self.writer = writer
+        Log.info(f'SERVER connected: {self}')
+    
+    def write(self, msg):
+        out_data = stream_encode(msg)
+        self.writer.write(out_data)
+
+    def __str__(self):
+        return f'GameServer(reader = {id(self.reader)}, writer = {id(self.writer)})'
 
 GAME_SERVER_STOP_TIMEOUT = 10
 event_loop = None
