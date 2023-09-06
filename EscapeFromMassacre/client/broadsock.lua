@@ -6,7 +6,7 @@ local performance_utils = require "server.performance_utils"
 
 
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
-debugUtils.debug(true)
+debugUtils.debug(false)
 local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._20_MILISECONDS)
 
 local M = {}
