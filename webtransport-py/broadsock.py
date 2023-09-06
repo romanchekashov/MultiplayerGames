@@ -107,6 +107,10 @@ def get_client_by_wt(wt) -> Client:
         if c.unreliableFastWT is wt:
             return c
 
+def game_server_stopped_clear_communication():
+    global game_server_reader, game_server_writer
+    game_server_reader = None
+    game_server_writer = None
 
 """
 Client connect/disconnect
@@ -147,7 +151,7 @@ async def handle_client_disconnected(websocket):
 
     if len(clients) == 0:
         Log.info(f'clients = {len(clients)}: Need stop game server')
-        stop_game_server()
+        stop_game_server(game_server_stopped_clear_communication)
     elif client.uid is not None:
         to_game_server(GameServerMessages.DISCONNECT, client)
 

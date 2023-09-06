@@ -11,6 +11,7 @@ Log = getLogger(__name__)
 GAME_SERVER_STOP_TIMEOUT = 10
 event_loop = None
 gameStopNeeded = False
+gameServerStopCallbackFn = None
 
 isLinux = platform == "linux" or platform == "linux2"
 isMac = platform == "darwin"
@@ -38,12 +39,16 @@ def findGameProcess() -> List[Any]:
     return arr
 
 def _terminate_game_server():
+    global gameServerStopCallbackFn
     processList = findGameProcess()
     Log.info(f'Found {len(processList)} servers to terminate.')
     for process in processList:
         Log.info(f'{process.name()} - Process found. Terminating it.')
         process.terminate()
         process.wait()
+    
+    if gameServerStopCallbackFn is not None:
+        gameServerStopCallbackFn()
 
 async def _stop_game_server():
     Log.info('stop started...')
@@ -53,8 +58,9 @@ async def _stop_game_server():
         return
     _terminate_game_server()
 
-def stop_game_server():
-    global gameStopNeeded
+def stop_game_server(fn):
+    global gameStopNeeded, gameServerStopCallbackFn
+    gameServerStopCallbackFn = fn
     gameStopNeeded = True
     Log.info(f'stop {gameStopNeeded}')
     asyncio.ensure_future(_stop_game_server(), loop=event_loop)
