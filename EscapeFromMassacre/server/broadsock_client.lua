@@ -190,6 +190,8 @@ local function on_data(data, data_length)
 		-- 	return
 		-- end
 		M.send(data)
+	elseif msg_id == MSG_IDS.GOD then
+		M.send(data)
 	elseif msg_id == MSG_IDS.DISCONNECT then
 		M.handle_client_disconnected(from_uid)
 	end

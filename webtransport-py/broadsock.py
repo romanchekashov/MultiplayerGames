@@ -14,6 +14,7 @@ class GameClientMessages:
 
 class GameServerMessages:
     GO = 'GO'
+    GOD = 'GOD'
     CONNECT_SELF = 'CONNECT_SELF'
     CONNECT_OTHER = 'CONNECT_OTHER'
     DISCONNECT = 'DISCONNECT'
@@ -194,6 +195,8 @@ async def to_game_client(msg):
     Log.debug(f'TO-CLIENT: {msg}, WS: {id(game_client_websocket)}, WT: {id(game_client_web_transport)}')
     if GameServerMessages.GO in msg:
         await fast_unreliable_connection.send_message_others(msg, get_uid_from_msg(msg))
+    elif GameServerMessages.GOD in msg:
+        await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
     elif GameServerMessages.CONNECT_SELF in msg:
         client = get_client_by_ws(game_client_websocket)
         uid = get_uid_from_msg(msg)
