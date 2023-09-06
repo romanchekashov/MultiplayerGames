@@ -127,13 +127,13 @@ end
 
 function M.handle_client_disconnected(client_uid)
 	assert(client_uid, "You must provide a client")
-	local disconnect_message = tomessage(
-		stream.writer()
-			.number(client_uid)
-			.string(MSG_IDS.DISCONNECT)
-			.tostring()
-	)
-	M.send_message_all(disconnect_message)
+	local _disconnect_message = stream.writer()
+		.number(client_uid)
+		.string(MSG_IDS.DISCONNECT)
+		.tostring()
+	-- local disconnect_message = tomessage(_disconnect_message)
+	-- M.send_message_all(disconnect_message)
+	M.send(_disconnect_message)
 
 	remove_client(client_uid)
 end
