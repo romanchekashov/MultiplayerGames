@@ -52,7 +52,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	end
 
 	local function remove_client(uid_to_remove)
-		log("remove_client", uid_to_remove, "remote_gameobjects", debugUtils.printTable(remote_gameobjects))
+		log("remove_client", uid_to_remove, "remote_gameobjects.length:", #remote_gameobjects)
 		clients[uid_to_remove] = nil
 		for _,gameobject in pairs(remote_gameobjects[uid_to_remove]) do
 			go.delete(gameobject.id)
@@ -235,7 +235,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			if rateLimiter(dt) then
 				return
 			end
-			log("update - sending game objects", instance.gameobject_count(), debugUtils.printTable(gameobjects))
+			log("update - sending game objects", instance.gameobject_count(), "gameobjects.length:", #gameobjects)
 			local sw = stream.writer()
 			sw.string("GO")
 			sw.number(gameobject_count)

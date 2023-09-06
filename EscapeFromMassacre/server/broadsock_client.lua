@@ -41,7 +41,7 @@ end
 local function add_client(client)
 	assert(client)
 	table.insert(clients, client)
-	log("add_client", client.uid, debugUtils.printTable(clients))
+	log("add_client", client.uid, "clients.length = ", #clients)
 end
 
 local function remove_client(uid_to_remove)
@@ -55,7 +55,7 @@ local function remove_client(uid_to_remove)
 			return
 		end
 	end
-	log("remove_client", uid_to_remove, debugUtils.printTable(clients))
+	log("remove_client", uid_to_remove, "clients.length:", #clients)
 end
 
 function M.client_count()

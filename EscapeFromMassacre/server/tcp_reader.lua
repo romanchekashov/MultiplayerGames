@@ -24,7 +24,7 @@ function M.create(socket, on_data)
 		local received_data = ""
 		while #received_data < bytes do
 			local data, err, partial = socket:receive(bytes - #received_data)
-			log(data)
+			-- log(data)
 			if data then
 				received_data = received_data .. data
 			elseif err == "closed" then

@@ -53,7 +53,7 @@ function on_message(self, message_id, message, sender)
 			gui.delete_node(node)
 		end
 		self.playersTextNodes = {}
-		print("menu_gui", debugUtils.printTable(MainState.players.items), MainState.players.length)
+		print("menu_gui: players.length", MainState.players.length)
 		local pos = gui.get_position(nodeId)
 		pos.x = pos.x + 20
 		-- local pos = vmath.vector3(500, 1000, 0)
