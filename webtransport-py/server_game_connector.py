@@ -31,7 +31,8 @@ async def handle_client(reader, writer):
             # asyncio.exceptions.IncompleteReadError: 0 bytes read on a total of 4 expected bytes
             error_message = "resetting connection: {}".format(e.args)
             Log.error(error_message)
-            raise Exception(error_message)
+            request = 'quit'
+            # raise Exception(error_message)
 
     writer.close()
 
