@@ -141,7 +141,9 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
-			msg.post("spawner-player#script", "remove_player", {uid = self.uid, player_id = go.get_id()})
+			if not self.remote then
+				msg.post("spawner-player#script", "remove_player", {uid = self.uid, player_id = go.get_id()})
+			end
 			-- log("I collided with", go.get_id(), message.other_id, message.other_group)
 		end
 	elseif message_id == CONTACT_POINT_RESPONSE then
