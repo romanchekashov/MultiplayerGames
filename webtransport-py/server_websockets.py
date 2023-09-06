@@ -12,7 +12,7 @@ Log = getLogger(__name__)
 async def handler(websocket):
 
     client = set_game_client_communication_websocket(websocket)
-    Log.debug(f'handler: websocket = {id(websocket)}: client = {client}')
+    Log.info(f'handler: websocket = {id(websocket)}: client = {client}')
     # create periodic task:
     # asyncio.create_task(send(websocket))
 
