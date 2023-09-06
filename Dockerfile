@@ -32,7 +32,7 @@ RUN ./install_webtransport-py.sh
 # CMD python3.10 main.py $BIND_ADDRESS $CERT $CERT_KEY
 # CMD python3.10 main.py certificate/fullchain.pem certificate/privkey.pem
 # CMD ["python3.10", "main.py", "certificate/fullchain.pem", "certificate/privkey.pem"]
-CMD ./run_dev.sh
+CMD ./run.sh
 
 EXPOSE 4433/udp
 EXPOSE 5002/tcp
