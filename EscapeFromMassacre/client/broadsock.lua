@@ -6,7 +6,6 @@ local performance_utils = require "server.performance_utils"
 
 
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
-debugUtils.debug(false)
 local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._20_MILISECONDS)
 
 local M = {}
@@ -156,7 +155,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				add_client(from_uid)
 				log("remote GO add_client", from_uid)
 			end
-			
+
 			local remote_gameobjects_for_user = remote_gameobjects[from_uid]
 			local count = sr.number()
 			log("remote GO", tostring(count))
@@ -168,28 +167,29 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				local rot = sr.quat()
 				local scale = sr.vector3()
 
-				-- if uid ~= gouid then
-				-- end
-				if not remote_gameobjects_for_user[gouid] then
-					local factory_url = factories[type]
-					if factory_url then
-						log("GO create obj", from_uid, tostring(type))
-						local id = factory.create(factory_url, pos, rot, {remote = true, uid = from_uid}, scale)
-						remote_gameobjects_for_user[gouid] = { id = id, type = type }
+				if from_uid ~= uid then
+					if not remote_gameobjects_for_user[gouid] then
+						local factory_url = factories[type]
+						if factory_url then
+							log("GO create obj", from_uid, tostring(type))
+							local id = factory.create(factory_url, pos, rot, {remote = true, uid = from_uid}, scale)
+							remote_gameobjects_for_user[gouid] = { id = id, type = type }
+						end
+					else
+						local id = remote_gameobjects_for_user[gouid].id
+						local ok, err = pcall(function()
+							go.set_position(pos, id)
+							go.set_rotation(rot, id)
+							go.set_scale(scale, id)
+						end)
 					end
-				else
-					local id = remote_gameobjects_for_user[gouid].id
-					local ok, err = pcall(function()
-						go.set_position(pos, id)
-						go.set_rotation(rot, id)
-						go.set_scale(scale, id)
-					end)
 				end
-
 			end
+
+			MainState.playerUidToWsLatency[from_uid] = sr.number()
 		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")
-			if clients[from_uid] then
+			if clients[from_uid] and from_uid ~= uid then
 				local gouid = sr.string()
 				MainState.increasePlayerScore(sr.string())
 				local remote_gameobjects_for_user = remote_gameobjects[from_uid]

@@ -9,7 +9,8 @@ local M = {
         username = "N/A"
     },
     bulletBelongToPlayerUid = {},
-    playerUidToScore = {}
+    playerUidToScore = {},
+    playerUidToWsLatency = {}
 }
 
 function M.increasePlayerScore(killer_uid)

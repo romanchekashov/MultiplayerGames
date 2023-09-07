@@ -13,7 +13,9 @@ end
 local function add_player_stat(player, pos, scale, parent, scorePosX)
 	-- print(debugUtils.printTable(player), pos)
 	-- Create a new text node
-	local new_textnode = gui.new_text_node(pos, player.username .. "   " .. tostring(MainState.playerUidToScore[tostring(player.uid)]))
+	local score = tostring(MainState.playerUidToScore[tostring(player.uid)])
+	local ws_latency = tostring(MainState.playerUidToWsLatency[player.uid])
+	local new_textnode = gui.new_text_node(pos, player.username .. " ws" .. ws_latency .. "   " .. score)
 	gui.set_scale(new_textnode, scale)
 	gui.set_font(new_textnode, "tictactoe")
 	if MainState.player.uid == player.uid then
@@ -31,12 +33,39 @@ local function onBtnExit(self)
 	MainState.pause = true
 end
 
+local function update_stats(self)
+	local nodeId = gui.get_node("stats-playing")
+        -- format score like: 006 with leading zeros
+		gui.set_text(nodeId, string.format("Playing: %03d", MainState.players.length))
+
+		for _,node in ipairs(self.playersTextNodes) do
+			gui.delete_node(node)
+		end
+		self.playersTextNodes = {}
+		-- print("menu_gui: players.length", MainState.players.length)
+		local parent = gui.get_parent(nodeId)
+		local pos = gui.get_position(nodeId)
+		pos.x = pos.x + 20
+		local scale = gui.get_scale(nodeId)
+		-- local pos = vmath.vector3(500, 1000, 0)
+		local scorePosX = gui.get_position(gui.get_node("stats-score")).x
+
+		MainState.playerUidToScoreSortedForEach(function (player)
+			pos.y = pos.y - 20
+			local textNode = add_player_stat(player, pos, scale, parent, scorePosX)
+			table.insert(self.playersTextNodes, textNode)
+		end)
+end
+
+local UPDATE_STATS_INTERVAL = 5
+
 function init(self)
 	msg.post(".", "acquire_input_focus")
 
 	self.playersTextNodes = {}
 	MainState.pause = true
 	set_is_joined(self, false)
+	self.update_stats_timeframe = UPDATE_STATS_INTERVAL
 end
 
 function final(self)
@@ -50,6 +79,12 @@ function update(self, dt)
 	-- Add update code here
 	-- Learn more: https://defold.com/manuals/script/
 	-- Remove this function if not needed
+	if self.update_stats_timeframe < 0 then
+		update_stats(self)
+		self.update_stats_timeframe = UPDATE_STATS_INTERVAL
+	end
+
+	self.update_stats_timeframe = self.update_stats_timeframe - dt
 end
 
 function on_message(self, message_id, message, sender)
@@ -57,27 +92,7 @@ function on_message(self, message_id, message, sender)
 	-- Learn more: https://defold.com/manuals/message-passing/
 	-- Remove this function if not needed
 	if message_id == hash("set_online_players") then
-		local nodeId = gui.get_node("stats-playing")
-        -- format score like: 006 with leading zeros
-		gui.set_text(nodeId, string.format("Playing: %03d", message.online_players))
-
-		for _,node in ipairs(self.playersTextNodes) do
-			gui.delete_node(node)
-		end
-		self.playersTextNodes = {}
-		print("menu_gui: players.length", MainState.players.length)
-		local parent = gui.get_parent(nodeId)
-		local pos = gui.get_position(nodeId)
-		pos.x = pos.x + 20
-		local scale = gui.get_scale(nodeId)
-		-- local pos = vmath.vector3(500, 1000, 0)
-		local scorePosX = gui.get_position(gui.get_node("stats-score")).x
-
-		MainState.playerUidToScoreSortedForEach(function (player)
-			pos.y = pos.y - 20
-			local textNode = add_player_stat(player, pos, scale, parent, scorePosX)
-			table.insert(self.playersTextNodes, textNode)
-		end)
+		update_stats(self)
 	elseif message_id == hash("non_remote_player_killed") then
 		onBtnExit(self)
 	elseif message_id == hash("set_username") then

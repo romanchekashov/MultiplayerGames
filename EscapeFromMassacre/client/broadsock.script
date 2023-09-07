@@ -4,7 +4,6 @@ local stream = require "client.stream"
 local debugUtils = require "src.utils.debug-utils"
 
 local log = debugUtils.createLog("[broadsock.script]").log
-debugUtils.debug(false)
 
 local CONNECTOR_MSG_IDS = {
 	RELIABLE_CONNECTION_READY = "RELIABLE_CONNECTION_READY",

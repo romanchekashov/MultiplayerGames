@@ -19,7 +19,7 @@ async def handler(websocket):
     while True:
         try:
             message = await websocket.recv()
-            Log.debug(f'websocket = {id(websocket)}: client = {client}')
+            Log.debug(f'websocket = {id(websocket)}, latency = {websocket.latency}: client = {client}')
             to_game_server(message, client)
         # client disconnected?
         except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):

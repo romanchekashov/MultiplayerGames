@@ -33,18 +33,20 @@ function init(self)
 
 	self.move = 0		-- direction of movement (0 = standing still, 1 = forward, -1 = backward)
 	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)	
+	self.username = "user-" .. tostring(self.uid)
 
-	local username = "user-" .. tostring(self.uid)
-	log("PLAYER CREATED: ", username)
-	label.set_text("#name", string.format("%.30s", username))
+	label.set_text("#name", string.format("%.30s", self.username))
 
-	local obj = MainState.createGameObject(self.uid, username, go_id)
+	local obj = MainState.createGameObject(self.uid, self.username, go_id)
 	MainState.players:put(obj.uid, obj)
 	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
 		MainState.playerUidToScore[tostring(obj.uid)] = 0
 	end
+	if MainState.playerUidToWsLatency[obj.uid] == nil then
+		MainState.playerUidToWsLatency[obj.uid] = -1
+	end
 	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
-	log("player joined: " .. username)
+	log("player joined: " .. self.username)
 end
 
 function final(self)

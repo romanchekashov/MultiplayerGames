@@ -27,15 +27,21 @@ game_server = None
 game_client_websocket = None
 game_client_web_transport = None
 
+# https://websockets.readthedocs.io/en/stable/reference/asyncio/common.html#websockets.legacy.protocol.WebSocketCommonProtocol.latency
+def get_ws_latency_in_ms(ws):
+    return int(ws.latency * 1000)
 
 class ReliableConnection:
     def __init__(self):
         print()
 
-    async def send_msg_to(self, client, msg):
+    async def send_msg_to(self, client: Client, msg):
         if client.reliableWS is not None:
             try:
-                await client.reliableWS.send(msg)
+                if GameServerMessages.GO in msg:
+                    await client.reliableWS.send(msg + f'.{get_ws_latency_in_ms(client.reliableWS)}')
+                else:
+                    await client.reliableWS.send(msg)
             except Exception as e:
                 Log.info(f'Cannot send to {client} because {str(e)}')
             
@@ -185,10 +191,11 @@ def to_game_server(msg, client: Client):
 
 async def to_game_client(msg):
     Log.debug(f'TO-CLIENT: {msg}, WS: {id(game_client_websocket)}, WT: {id(game_client_web_transport)}')
-    if GameServerMessages.GO in msg:
-        await fast_unreliable_connection.send_message_others(msg, get_uid_from_msg(msg))
-    elif GameServerMessages.GOD in msg:
-        await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
+    if GameServerMessages.GO in msg: # and GOD
+        # await fast_unreliable_connection.send_message_others(msg, get_uid_from_msg(msg))
+        await fast_unreliable_connection.send_message_all(msg)
+    # elif GameServerMessages.GOD in msg:
+    #     await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
     elif GameServerMessages.CONNECT_SELF in msg:
         client = get_client_by_ws(game_client_websocket)
         uid = get_uid_from_msg(msg)
@@ -200,7 +207,6 @@ async def to_game_client(msg):
     elif GameServerMessages.CONNECT_OTHER in msg:
         await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
     elif GameServerMessages.DISCONNECT in msg:
-        Log.info(f'TO-CLIENT: {msg}')
         await reliable_connection.send_message_all(msg)
     else:
         await fast_unreliable_connection.send_message_all(msg)
