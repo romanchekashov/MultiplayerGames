@@ -6,6 +6,7 @@ dependencies#1 = https://github.com/heroiclabs/nakama-defold/archive/refs/tags/3
 dependencies#2 = https://github.com/britzl/defold-input/archive/master.zip
 dependencies#3 = https://github.com/britzl/broadsock/archive/1.1.1.zip
 dependencies#4 = https://github.com/AGulev/jstodef/archive/refs/tags/2.0.0.zip
+dependencies#5 = https://github.com/britzl/ludobits/archive/1.2.zip
 
 [bootstrap]
 main_collection = /src/main.collectionc
@@ -61,5 +62,5 @@ max_component_count = 64
 
 [html5]
 htmlfile = /client/engine_template.html
-archive_location_suffix = ?v=0.1.1
+archive_location_suffix = ?v=0.1.2
 

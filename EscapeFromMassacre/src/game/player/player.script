@@ -1,3 +1,5 @@
+local input = require "ludobits.m.input"
+
 local MainState = require "src.main_state"
 local debugUtils = require "src.utils.debug-utils"
 
@@ -21,6 +23,8 @@ local WALL = hash("wall")
 local ZOMBIE = hash("zombie")
 local BULLET = hash("bullet")
 
+local PLAYER_SPEED = 275
+
 function init(self)
 	local go_id = go.get_id()
 
@@ -34,6 +38,7 @@ function init(self)
 	self.move = 0		-- direction of movement (0 = standing still, 1 = forward, -1 = backward)
 	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)	
 	self.username = "user-" .. tostring(self.uid)
+	self.velocity = vmath.vector3()
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
@@ -88,15 +93,27 @@ function update(self, dt)
 	
 	-- move in direction of rotation
 	local pos = go.get_position()
-	if self.move ~= 0 then
-		local distance = self.linear_velocity * self.move * dt
-		local direction = vmath.rotate(rotation, vmath.vector3(0, distance, 0))
-		pos = pos + direction
-		go.set_position(pos)
+	pos = pos + self.velocity * dt
+	go.set_position(pos)
+
+	if input.is_pressed(LEFT) then
+		self.velocity.x = -PLAYER_SPEED
+	elseif input.is_pressed(RIGHT) then
+		self.velocity.x = PLAYER_SPEED
+	else
+		self.velocity.x = 0
 	end
-	
+	if input.is_pressed(UP) then
+		self.velocity.y = PLAYER_SPEED
+	elseif input.is_pressed(DOWN) then
+		self.velocity.y = -PLAYER_SPEED
+	else
+		self.velocity.y = 0
+	end
+
 	-- update camera position
 	go.set_position(pos + vmath.vector3(-568, - 320, 0), "camera")
+
 end
 
 function on_input(self, action_id, action)
@@ -104,31 +121,13 @@ function on_input(self, action_id, action)
         return
     end
 
-	if action_id == LEFT then
-		self.rotate = action.released and 0 or 1
-		-- the above one-liner is equivalent to the if-elseif case below
-		if action.released then
-			self.rotate = 0
-		else
-			self.rotate = 1
-		end
-	elseif action_id == RIGHT then
-		self.rotate = action.released and 0 or -1
-	end
-	
-	if action_id == UP then
-		self.move = action.released and 0 or 1
-	elseif action_id == DOWN then
-		self.move = action.released and 0 or -1
-	end
+	input.update(action_id, action)
 
 	-- handle touch/mouse movement by holding down the finger/mouse button
 	if (action_id == hash("trigger") or action_id == hash("touch")) then
 		if action.pressed then
-			self.move = 1
 			self.pressed_time = socket.gettime()
 		elseif action.released then
-			self.move = 0
 			-- fire a bullet if the time between press and release is sufficiently short
 			if socket.gettime() - self.pressed_time < 0.2 then
 				local rotation = go.get_rotation()
