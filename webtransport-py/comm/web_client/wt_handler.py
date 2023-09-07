@@ -54,7 +54,7 @@ class CounterHandler:
                 Log.info(f'handler: WT = {id(self)}: client = {self.client}')
                 self.send_datagram(f'BIND_WT_CONNECTED.{self.client.uid}')
             elif self.client:
-                if msg is 'PING':
+                if msg == 'PING':
                     self.client.wt_latency = int((datetime.now() - self.now).total_seconds() * 1000 / 2)
                     Log.info(f'{self.client.wt_latency}, {(datetime.now() - self.now).total_seconds()}')
                 else:
