@@ -11,7 +11,7 @@ from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
-from server_webtransport import CounterHandler
+from comm.web_client.wt_handler import CounterHandler
 from broadsock import set_game_client_communication_web_transport
 import threading
 

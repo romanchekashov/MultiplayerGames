@@ -5,7 +5,7 @@ from enum import Enum
 from typing import List
 from utils import getLogger
 
-from server_game import start_game_server, stop_game_server, GameServer, GameServerMessages
+from comm.game_server.gs_manager import start_game_server, stop_game_server, GameServer, GameServerMessages
 
 Log = getLogger(__name__)
 
