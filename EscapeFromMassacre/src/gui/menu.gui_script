@@ -15,7 +15,7 @@ local function add_player_stat(player, pos, scale, parent, scorePosX)
 	-- Create a new text node
 	local score = tostring(MainState.playerUidToScore[tostring(player.uid)])
 	local ws_latency = tostring(MainState.playerUidToWsLatency[player.uid])
-	local new_textnode = gui.new_text_node(pos, player.username .. " ws" .. ws_latency .. "   " .. score)
+	local new_textnode = gui.new_text_node(pos, player.username .. " ping" .. ws_latency .. "   " .. score)
 	gui.set_scale(new_textnode, scale)
 	gui.set_font(new_textnode, "tictactoe")
 	if MainState.player.uid == player.uid then
@@ -57,7 +57,7 @@ local function update_stats(self)
 		end)
 end
 
-local UPDATE_STATS_INTERVAL = 5
+local UPDATE_STATS_INTERVAL = 2
 
 function init(self)
 	msg.post(".", "acquire_input_focus")

@@ -275,6 +275,11 @@
 		let uidBoundToFastUnreliableConnection = false, playerUid = 0, uidBoundToWtIntervalKey;
 
 		function onMsgFromWebTransport(text) {
+			if (text === 'PING') {
+				WebTransportSendData('PING');
+				return;
+			}
+			
 			if (uidBoundToFastUnreliableConnection) {
 				addToEventLog(text);
 				return;

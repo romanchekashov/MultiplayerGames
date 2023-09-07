@@ -14,8 +14,13 @@ from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
 from broadsock import to_game_server, Client
 from broadsock import set_game_client_communication_web_transport
+from datetime import datetime
+
 
 Log = getLogger(__name__)
+
+now = datetime.now()
+# difference = (datetime.now() - now).total_seconds()
 
 # CounterHandler implements a really simple protocol:
 #   - For every incoming bidirectional stream, it counts bytes it receives on
@@ -49,7 +54,14 @@ class CounterHandler:
                 Log.info(f'handler: WT = {id(self)}: client = {self.client}')
                 self.send_datagram(f'BIND_WT_CONNECTED.{self.client.uid}')
             elif self.client:
-                to_game_server(msg, self.client)
+                if msg is 'PING':
+                    self.client.wt_latency = int((datetime.now() - now).total_seconds() * 1000 / 2)
+                else:
+                    to_game_server(msg, self.client)
+                
+                if (datetime.now() - now).total_seconds() > 5:
+                    now = datetime.now()
+                    self.send_datagram('PING')
 
         if isinstance(event, WebTransportStreamDataReceived):
             self._counters[event.stream_id] += len(event.data)

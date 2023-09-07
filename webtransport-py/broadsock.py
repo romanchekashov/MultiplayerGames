@@ -14,6 +14,7 @@ class Client:
         self.uid = uid
         self.reliableWS = websocket
         self.unreliableFastWT = web_transport
+        self.wt_latency = -1
         self.data = data
 
     def __str__(self):
@@ -38,7 +39,7 @@ class ReliableConnection:
         if client.reliableWS is not None:
             try:
                 if GameServerMessages.GO in msg:
-                    await client.reliableWS.send(msg + f'.{get_ws_latency_in_ms(client.reliableWS)}')
+                    await client.reliableWS.send(f'{msg}.{get_ws_latency_in_ms(client.reliableWS)}')
                 else:
                     await client.reliableWS.send(msg)
             except Exception as e:
@@ -61,9 +62,12 @@ class FastUnreliableConnection:
     def __init__(self, reliable_con: ReliableConnection):
         self.reliable_con = reliable_con
 
-    async def send_msg_to(self, client, msg):
+    async def send_msg_to(self, client: Client, msg):
         if client.unreliableFastWT is not None:
-            client.unreliableFastWT.send_datagram(msg)
+            if GameServerMessages.GO in msg:
+                client.unreliableFastWT.send_datagram(f'{msg}.{client.wt_latency}')
+            else:
+                client.unreliableFastWT.send_datagram(msg)
         else:
             await self.reliable_con.send_msg_to(client, msg)
 
