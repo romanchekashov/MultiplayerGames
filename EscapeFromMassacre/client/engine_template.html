@@ -382,7 +382,7 @@
 						// let data = decoder.decode(value);
 						// addToEventLog('Datagram received: ' + data);
 						// addToEventLog(String.fromCharCode.apply(null, value.slice(2, -1)));
-						addToEventLog(String.fromCharCode.apply(null, value));
+						onMsgFromWebTransport(String.fromCharCode.apply(null, value));
 					}
 				} catch (e) {
 					log('[WT unreliable&fast]: Error while reading datagrams: ' + e, 'error');
