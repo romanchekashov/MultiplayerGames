@@ -71,3 +71,4 @@ EscapeFromMassacre/bob.jar
 webtransport-py/venv
 webtransport-py/__pycache__
 webtransport-py/certificate
+webtransport-py/logs

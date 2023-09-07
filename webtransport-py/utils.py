@@ -69,7 +69,7 @@ def add_rotating_file_log(logger, file_path, maxMbPerFile = 5):
 def getLogger(name):
     logger = logging.getLogger(name)
     # add_file_log(logger, 'webtransport.log')
-    add_rotating_file_log(logger, 'webtransport.log')
+    add_rotating_file_log(logger, 'logs/webtransport.log')
     # logger.setLevel(logging.DEBUG)
     logger.setLevel(logging.INFO)
     
