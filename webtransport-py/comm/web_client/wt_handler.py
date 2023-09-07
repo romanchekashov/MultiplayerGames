@@ -56,7 +56,7 @@ class CounterHandler:
             elif self.client:
                 if msg == 'PING':
                     self.client.wt_latency = int((datetime.now() - self.now).total_seconds() * 1000 / 2)
-                    Log.info(f'{self.client.wt_latency}, {(datetime.now() - self.now).total_seconds()}')
+                    # Log.info(f'{self.client.wt_latency}, {(datetime.now() - self.now).total_seconds()}')
                 else:
                     to_game_server(msg, self.client)
                 
