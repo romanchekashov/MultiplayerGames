@@ -19,7 +19,6 @@ from datetime import datetime
 
 Log = getLogger(__name__)
 
-now = datetime.now()
 # difference = (datetime.now() - now).total_seconds()
 
 # CounterHandler implements a really simple protocol:
@@ -39,6 +38,7 @@ class CounterHandler:
         self._counters = defaultdict(int)
         self._encoding = 'ascii'
         self.client = None
+        self.now = datetime.now()
         # self._encoding = 'utf-8'
     
     def send_datagram(self, data) -> None:
@@ -55,12 +55,12 @@ class CounterHandler:
                 self.send_datagram(f'BIND_WT_CONNECTED.{self.client.uid}')
             elif self.client:
                 if msg is 'PING':
-                    self.client.wt_latency = int((datetime.now() - now).total_seconds() * 1000 / 2)
+                    self.client.wt_latency = int((datetime.now() - self.now).total_seconds() * 1000 / 2)
                 else:
                     to_game_server(msg, self.client)
                 
-                if (datetime.now() - now).total_seconds() > 5:
-                    now = datetime.now()
+                if (datetime.now() - self.now).total_seconds() > 5:
+                    self.now = datetime.now()
                     self.send_datagram('PING')
 
         if isinstance(event, WebTransportStreamDataReceived):
