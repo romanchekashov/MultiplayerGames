@@ -25,7 +25,6 @@ uid_sequence = 0
 clients: List[Client] = []
 game_server = None
 game_client_websocket = None
-game_client_web_transport = None
 
 # https://websockets.readthedocs.io/en/stable/reference/asyncio/common.html#websockets.legacy.protocol.WebSocketCommonProtocol.latency
 def get_ws_latency_in_ms(ws):
@@ -113,22 +112,18 @@ def game_server_stopped_clear_communication():
 """
 Client connect/disconnect
 """
-def handle_client_connected(websocket, web_transport):
+def handle_client_connected(websocket) -> Client:
     if websocket is not None:
         client = get_client_by_ws(websocket)
-    if client is None and web_transport is not None:
-        client = get_client_by_wt(web_transport)
     
     # uid_sequence += 1
     
     if client is None:
-        client = Client(None, web_transport, websocket, None)
+        client = Client(None, None, websocket, None)
         clients.append(client)
     
     if client.reliableWS is None and websocket is not None:
         client.reliableWS = websocket
-    if client.unreliableFastWT is None and web_transport is not None:
-        client.unreliableFastWT = web_transport
 
     Log.info(f'client connected: {client}, clients = {len(clients)}')
 
@@ -166,14 +161,15 @@ def set_game_server_communication(reader, writer):
         to_game_server(item.get("msg"), item.get("client"))
 
 def set_game_client_communication_websocket(websocket) -> Client:
-    global game_client_websocket, game_client_web_transport
+    global game_client_websocket
     game_client_websocket = websocket
-    return handle_client_connected(websocket, game_client_web_transport)
+    return handle_client_connected(websocket)
 
-def set_game_client_communication_web_transport(web_transport) -> Client:
-    global game_client_web_transport
-    game_client_web_transport = web_transport
-    return handle_client_connected(game_client_websocket, web_transport)
+def set_game_client_communication_web_transport(c_uid: int, web_transport) -> Client:
+    for client in clients:
+        if client.uid == c_uid:
+            client.unreliableFastWT = web_transport
+            return client
 
 """
 Send messages to server and client
@@ -190,7 +186,7 @@ def to_game_server(msg, client: Client):
         cache_client_msg_while_server_not_ready_queue.put({'msg': msg, 'client': client})
 
 async def to_game_client(msg):
-    Log.debug(f'TO-CLIENT: {msg}, WS: {id(game_client_websocket)}, WT: {id(game_client_web_transport)}')
+    Log.debug(f'TO-CLIENT: {msg}')
     if GameServerMessages.GO in msg: # and GOD
         # await fast_unreliable_connection.send_message_others(msg, get_uid_from_msg(msg))
         await fast_unreliable_connection.send_message_all(msg)
@@ -201,7 +197,6 @@ async def to_game_client(msg):
         uid = get_uid_from_msg(msg)
         if client is not None and client.uid != uid:
             client.uid = uid
-            client.unreliableFastWT = game_client_web_transport
             Log.info(f'client get game server uid: {client}')
             await reliable_connection.send_msg_to(client, msg)
     elif GameServerMessages.CONNECT_OTHER in msg:

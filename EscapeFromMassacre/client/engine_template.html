@@ -270,7 +270,31 @@
 				WebSocketReliableConnectionSendData(rawData);
 			}			
 		}
-		// --------------------------
+
+
+		let uidBoundToFastUnreliableConnection = false, playerUid = 0, uidBoundToWtIntervalKey;
+
+		function onMsgFromWebTransport(text) {
+			if (uidBoundToFastUnreliableConnection) {
+				addToEventLog(text);
+				return;
+			}
+
+			if (text === `BIND_WT_CONNECTED.${playerUid}`) {
+				JsToDef.send("FAST_UNRELIABLE_CONNECTION_READY", "");
+				uidBoundToFastUnreliableConnection = true;
+			} else {
+				uidBoundToWtIntervalKey = setInterval(() => {
+					if (uidBoundToFastUnreliableConnection) {
+						clearInterval(uidBoundToWtIntervalKey);
+						return;
+					}
+					WebTransportSendData('BIND_WT_CONNECTION.' + playerUid);
+				}, 1000);
+			}
+		}
+
+		// =============================================================================
 
 		async function CreateWebСonnection() {
 			webSocketСonnect();
@@ -291,7 +315,8 @@
 					addToEventLog(event.data);
 					if (event.data.includes('CONNECT_SELF')) {
 						// WebTransport should be associated with websocket(by sending msg or smth)
-						// await webTransportСonnect();
+						playerUid = +event.data.split('.')[0];
+						await webTransportСonnect();
 					}
 				});
 			}
@@ -341,7 +366,7 @@
 				try {
 					var reader = transport.datagrams.readable.getReader();
 					log('[WT unreliable&fast]: Datagram reader ready.');
-					JsToDef.send("FAST_UNRELIABLE_CONNECTION_READY", "");
+					onMsgFromWebTransport();
 				} catch (e) {
 					log('[WT unreliable&fast]: Receiving datagrams not supported: ' + e, 'error');
 					return;

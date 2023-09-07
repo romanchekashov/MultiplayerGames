@@ -12,7 +12,6 @@ from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
 from comm.web_client.wt_handler import CounterHandler
-from broadsock import set_game_client_communication_web_transport
 import threading
 
 Log = getLogger(__name__)
@@ -70,9 +69,6 @@ class WebTransportProtocol(QuicConnectionProtocol):
         if path == b"/counter":
             assert(self._handler is None)
             self._handler = CounterHandler(stream_id, self._http)
-            client = set_game_client_communication_web_transport(self._handler)
-            Log.debug(f'handler: WT = {id(self._handler)}: client = {client}')
-            self._handler.client = client
             # client = handle_client_connected()
             # client.handler = self._handler
             self._send_response(stream_id, 200)

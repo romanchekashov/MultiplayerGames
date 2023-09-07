@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import logging
+from utils import getLogger
 from collections import defaultdict
 from typing import Dict, Optional
 
@@ -12,8 +13,9 @@ from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
 from broadsock import to_game_server, Client
+from broadsock import set_game_client_communication_web_transport
 
-logger = logging.getLogger(__name__)
+Log = getLogger(__name__)
 
 # CounterHandler implements a really simple protocol:
 #   - For every incoming bidirectional stream, it counts bytes it receives on
@@ -41,10 +43,13 @@ class CounterHandler:
 
     def h3_event_received(self, event: H3Event) -> None:
         if isinstance(event, DatagramReceived):
-            if self.client:
-                msg = event.data.decode(self._encoding)
+            msg = event.data.decode(self._encoding)
+            if 'BIND_WT_CONNECTION' in msg:
+                self.client = set_game_client_communication_web_transport(int(msg.split('.')[1]), self)
+                Log.info(f'handler: WT = {id(self)}: client = {self.client}')
+                self.send_datagram(f'BIND_WT_CONNECTED.{self.client.uid}')
+            elif self.client:
                 to_game_server(msg, self.client)
-            # self.send_datagram(event.data)
 
         if isinstance(event, WebTransportStreamDataReceived):
             self._counters[event.stream_id] += len(event.data)
