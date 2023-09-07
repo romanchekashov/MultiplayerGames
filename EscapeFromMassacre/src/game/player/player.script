@@ -68,7 +68,7 @@ function update(self, dt)
 		return
 	end
 	
-	msg.post("@render:", "draw_text", { text = "Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
+	msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
 
 	local rotation = go.get_rotation()
 	-- handle rotation from key input left/right
