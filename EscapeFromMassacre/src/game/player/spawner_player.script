@@ -6,6 +6,10 @@ local log = debugUtils.createLog("[spawner_player]").log
 
 local random_position = Utils.random_position
 
+-- local function random_position()
+-- 	return vmath.vector3(9000, 4000, 0) -- vmath.vector3(x,y,z)
+-- end
+
 function init(self)
 	-- Add initialization code here
 	-- Learn more: https://defold.com/manuals/script/

@@ -1,0 +1,86 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "#topdown_tilesheet_complete2": {
+            "scaleInDock": 1
+        },
+        "FamilyHouse.tmx": {
+            "scale": 0.0625,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 6152,
+                "y": 7520
+            }
+        },
+        "FamilyHouse.tmx#topdown_tilesheet_complete2": {
+            "scaleInDock": 1
+        },
+        "FamilyHouse2.tmx": {
+            "expandedGroupLayers": [
+                5
+            ],
+            "scale": 0.25,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1372,
+                "y": 7628
+            }
+        },
+        "FamilyHouse2.tmx#topdown_tilesheet_complete2": {
+            "scaleInDock": 1
+        },
+        "bg.tmx": {
+            "scale": 0.301328125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1923.152709359606,
+                "y": 1088.5143894218306
+            }
+        },
+        "bg.tmx#topdown_tilesheet_complete2": {
+            "scaleInDock": 1
+        },
+        "house.tmx": {
+            "scale": 0.33,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1096.9696969696968,
+                "y": 1118.1818181818182
+            }
+        },
+        "house.tmx#topdown_tilesheet_complete2": {
+            "scaleInDock": 0.5
+        }
+    },
+    "last.exportedFilePath": "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeFromMassacre/src/game",
+    "last.imagePath": "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeFromMassacre/assets/images",
+    "last.worldFilePath": "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeItems",
+    "loadedWorlds": [
+        "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeItems/FamilyHouse.world"
+    ],
+    "map.fixedSize": true,
+    "map.height": 34,
+    "map.lastUsedExportFilter": "Defold Tile Map (*.tilemap)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "map.width": 60,
+    "openFiles": [
+    ],
+    "project": "FamilyHouse.tiled-project",
+    "recentFiles": [
+        "FamilyHouse.tmx",
+        "bg.tmx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 64
+    }
+}
