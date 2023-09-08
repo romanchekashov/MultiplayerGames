@@ -70,3 +70,11 @@ gamepad_trigger {
   input: GAMEPAD_LPAD_UP
   action: "up"
 }
+gamepad_trigger {
+  input: GAMEPAD_RSTICK_LEFT
+  action: "rs_left"
+}
+gamepad_trigger {
+  input: GAMEPAD_RSTICK_RIGHT
+  action: "rs_right"
+}

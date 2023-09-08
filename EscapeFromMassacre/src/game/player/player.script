@@ -132,6 +132,12 @@ function on_input(self, action_id, action)
 
 	input.update(action_id, action)
 
+	if action_id == hash("rs_left") then
+		self.rotate = action.value
+	elseif action_id == hash("rs_right") then
+		self.rotate = -action.value
+	end
+
 	-- handle touch/mouse movement by holding down the finger/mouse button
 	if (action_id == hash("trigger") or action_id == hash("touch")) then
 		if action.pressed then
