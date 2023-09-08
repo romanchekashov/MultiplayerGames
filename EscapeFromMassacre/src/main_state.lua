@@ -14,7 +14,8 @@ local M = {
     COLORS = {
         GREEN = vmath.vector4(39 / 255, 174 / 255, 96 / 255, 0),
         RED_DARK = vmath.vector4(128 / 255, 36 / 255, 15 / 255, 0),
-    }
+    },
+    playerSlots = {}
 }
 
 function M.increasePlayerScore(killer_uid)

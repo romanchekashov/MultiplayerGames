@@ -22,6 +22,9 @@ local CONTACT_POINT_RESPONSE = hash("contact_point_response")
 local WALL = hash("wall")
 local STAIRS_TO_BASEMENT = hash("stairs_to_basement")
 local STAIRS_TO_HOUSE = hash("stairs_to_house")
+local FUSE_BOX = hash("fuse_box")
+local KNIFE = hash("knife")
+
 local ZOMBIE = hash("zombie")
 local BULLET = hash("bullet")
 

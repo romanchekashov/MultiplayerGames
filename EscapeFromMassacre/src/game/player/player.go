@@ -28,6 +28,8 @@ embedded_components {
   "mask: \"detection\"\n"
   "mask: \"stairs_to_basement\"\n"
   "mask: \"stairs_to_house\"\n"
+  "mask: \"knife\"\n"
+  "mask: \"fuse_box\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_SPHERE\n"
