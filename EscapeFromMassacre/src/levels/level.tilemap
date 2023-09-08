@@ -1,4 +1,4 @@
-tile_set: "/src/game/topdown.tilesource"
+tile_set: "/src/levels/topdown.tilesource"
 layers {
   id: "bg"
   z: 0.0
