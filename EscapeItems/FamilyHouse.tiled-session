@@ -37,11 +37,11 @@
             "scaleInDock": 1
         },
         "basement.tmx": {
-            "scale": 0.41110733695652174,
-            "selectedLayer": 4,
+            "scale": 0.3826,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1859.6116665289599,
-                "y": 1537.3114103941173
+                "x": 1655.7762676424463,
+                "y": 1845.2692106638788
             }
         },
         "basement.tmx#topdown_tilesheet_complete2": {
