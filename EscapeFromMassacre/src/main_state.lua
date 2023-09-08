@@ -10,7 +10,10 @@ local M = {
     },
     bulletBelongToPlayerUid = {},
     playerUidToScore = {},
-    playerUidToWsLatency = {}
+    playerUidToWsLatency = {},
+    COLORS = {
+        GREEN = vmath.vector4(39 / 255, 174 / 255, 96 / 255, 0)
+    }
 }
 
 function M.increasePlayerScore(killer_uid)
