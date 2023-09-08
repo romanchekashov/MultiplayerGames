@@ -38,10 +38,10 @@
         },
         "basement.tmx": {
             "scale": 0.3826,
-            "selectedLayer": 3,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1655.7762676424463,
-                "y": 1845.2692106638788
+                "x": 1723.7323575535806,
+                "y": 1557.7626764244642
             }
         },
         "basement.tmx#topdown_tilesheet_complete2": {
@@ -70,11 +70,11 @@
             "scaleInDock": 1
         },
         "house.tmx": {
-            "scale": 0.4418,
+            "scale": 0.4709,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 944.9977365323673,
-                "y": 1745.133544590312
+                "x": 1697.8126990868548,
+                "y": 1327.2456997239328
             }
         },
         "house.tmx#topdown_tilesheet_complete2": {

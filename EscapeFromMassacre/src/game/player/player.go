@@ -68,7 +68,7 @@ embedded_components {
   id: "sprite"
   type: "sprite"
   data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
-  "default_animation: \"hitman1_machine\"\n"
+  "default_animation: \"hitman1_stand\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   ""
@@ -80,8 +80,8 @@ embedded_components {
   rotation {
     x: 0.0
     y: 0.0
-    z: 0.70710677
-    w: 0.70710677
+    z: 0.0
+    w: 1.0
   }
 }
 embedded_components {
