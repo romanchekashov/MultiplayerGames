@@ -3,8 +3,9 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "house.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
         "#topdown_tilesheet_complete2": {
@@ -28,30 +29,52 @@
             "scale": 0.33,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 12846.969696969696,
-                "y": 1681.8181818181818
+                "x": 7421.21212121212,
+                "y": 4396.969696969697
             }
         },
         "FamilyHouse2.tmx#topdown_tilesheet_complete2": {
+            "scaleInDock": 1
+        },
+        "basement.tmx": {
+            "scale": 0.41110733695652174,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 1859.6116665289599,
+                "y": 1539.7438651573991
+            }
+        },
+        "basement.tmx#topdown_tilesheet_complete2": {
             "scaleInDock": 1
         },
         "bg.tmx": {
             "scale": 0.33,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 1962.121212121212,
-                "y": 1651.5151515151515
+                "x": 1857.5757575757573,
+                "y": 1472.7272727272727
             }
         },
         "bg.tmx#topdown_tilesheet_complete2": {
             "scaleInDock": 0.33
         },
+        "house copy.tmx": {
+            "scale": 0.25,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 2240,
+                "y": 1234
+            }
+        },
+        "house copy.tmx#topdown_tilesheet_complete2": {
+            "scaleInDock": 1
+        },
         "house.tmx": {
             "scale": 0.25,
-            "selectedLayer": 5,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 1266,
-                "y": 2004
+                "x": 1086,
+                "y": 1942
             }
         },
         "house.tmx#topdown_tilesheet_complete2": {
@@ -72,11 +95,19 @@
     "map.tileWidth": 64,
     "map.width": 60,
     "openFiles": [
+        "FamilyHouse2.tmx",
+        "bg.tmx",
+        "house.tmx",
+        "basement.tmx"
     ],
     "project": "FamilyHouse.tiled-project",
     "recentFiles": [
-        "FamilyHouse.tmx",
-        "bg.tmx"
+        "FamilyHouse2.tmx",
+        "bg.tmx",
+        "basement.tmx",
+        "house.tmx",
+        "house copy.tmx",
+        "FamilyHouse.tmx"
     ],
     "tileset.embedInMap": true,
     "tileset.tileSize": {
