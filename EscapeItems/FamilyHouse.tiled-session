@@ -25,33 +25,33 @@
             "expandedGroupLayers": [
                 5
             ],
-            "scale": 0.25,
+            "scale": 0.33,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1372,
-                "y": 7628
+                "x": 12846.969696969696,
+                "y": 1681.8181818181818
             }
         },
         "FamilyHouse2.tmx#topdown_tilesheet_complete2": {
             "scaleInDock": 1
         },
         "bg.tmx": {
-            "scale": 0.301328125,
-            "selectedLayer": 0,
-            "viewCenter": {
-                "x": 1923.152709359606,
-                "y": 1088.5143894218306
-            }
-        },
-        "bg.tmx#topdown_tilesheet_complete2": {
-            "scaleInDock": 1
-        },
-        "house.tmx": {
             "scale": 0.33,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 1096.9696969696968,
-                "y": 1118.1818181818182
+                "x": 1962.121212121212,
+                "y": 1651.5151515151515
+            }
+        },
+        "bg.tmx#topdown_tilesheet_complete2": {
+            "scaleInDock": 0.33
+        },
+        "house.tmx": {
+            "scale": 0.3008,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1471.0771276595742,
+                "y": 1456.117021276596
             }
         },
         "house.tmx#topdown_tilesheet_complete2": {
