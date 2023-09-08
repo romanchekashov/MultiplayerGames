@@ -1,0 +1,9 @@
+local basement_bg_music = "default:/music#basement_bg"
+
+function init(self)
+	msg.post(basement_bg_music, "play_sound")
+end
+
+function final(self)
+	msg.post(basement_bg_music, "stop_sound")
+end
