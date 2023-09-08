@@ -26,6 +26,8 @@ embedded_components {
   "mask: \"bullet\"\n"
   "mask: \"zombie\"\n"
   "mask: \"detection\"\n"
+  "mask: \"stairs_to_basement\"\n"
+  "mask: \"stairs_to_house\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_SPHERE\n"

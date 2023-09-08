@@ -28077,26 +28077,26 @@ layers {
   cell {
     x: 28
     y: 21
-    tile: 155
+    tile: 127
     h_flip: 0
     v_flip: 0
-    rotate90: 0
+    rotate90: 1
   }
   cell {
     x: 29
     y: 21
-    tile: 123
-    h_flip: 0
-    v_flip: 0
-    rotate90: 0
+    tile: 151
+    h_flip: 1
+    v_flip: 1
+    rotate90: 1
   }
   cell {
     x: 30
     y: 21
-    tile: 123
-    h_flip: 0
-    v_flip: 0
-    rotate90: 0
+    tile: 151
+    h_flip: 1
+    v_flip: 1
+    rotate90: 1
   }
   cell {
     x: 31

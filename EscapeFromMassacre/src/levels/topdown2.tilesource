@@ -643,7 +643,7 @@ convex_hulls {
 convex_hulls {
   index: 500
   count: 4
-  collision_group: ""
+  collision_group: "stairs_to_basement"
 }
 convex_hulls {
   index: 504
@@ -2662,149 +2662,151 @@ convex_hulls {
 }
 convex_hulls {
   index: 2663
-  count: 7
+  count: 5
   collision_group: ""
 }
 convex_hulls {
-  index: 2670
+  index: 2668
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2674
+  index: 2672
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2678
+  index: 2676
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2682
+  index: 2680
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2686
+  index: 2684
   count: 4
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2690
+  index: 2688
   count: 4
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2694
+  index: 2692
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2698
+  index: 2696
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2702
+  index: 2700
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2706
+  index: 2704
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2710
+  index: 2708
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2714
+  index: 2712
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2718
+  index: 2716
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2722
+  index: 2720
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2726
+  index: 2724
   count: 9
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2735
+  index: 2733
   count: 14
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2749
+  index: 2747
   count: 14
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2763
+  index: 2761
   count: 14
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2777
+  index: 2775
   count: 6
   collision_group: ""
 }
 convex_hulls {
-  index: 2783
+  index: 2781
   count: 6
   collision_group: ""
 }
 convex_hulls {
-  index: 2789
+  index: 2787
   count: 8
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2797
+  index: 2795
   count: 8
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2805
+  index: 2803
   count: 8
   collision_group: "wall"
 }
 convex_hulls {
-  index: 2813
+  index: 2811
   count: 8
   collision_group: ""
 }
 convex_hulls {
-  index: 2821
+  index: 2819
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2825
+  index: 2823
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2829
+  index: 2827
   count: 4
   collision_group: ""
 }
 convex_hulls {
-  index: 2833
-  count: 0
-  collision_group: ""
+  index: 2831
+  count: 4
+  collision_group: "stairs_to_house"
 }
+collision_groups: "stairs_to_basement"
+collision_groups: "stairs_to_house"
 collision_groups: "wall"
 animations {
   id: "anim"

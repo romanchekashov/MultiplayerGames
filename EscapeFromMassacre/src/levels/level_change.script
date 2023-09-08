@@ -1,0 +1,30 @@
+local MainState = require "src.main_state"
+
+function init(self)
+	-- use the x and y component to track which screen is currently displayed.
+	self.screen_pos = vmath.vector3(0, 0, 0)
+	self.next_screen = nil
+	self.current_screen = nil
+	self.loading = false
+	self.is_basement = true
+	msg.post("#", "load_screen", {is_basement = false})
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("load_screen") and self.is_basement ~= message.is_basement then
+		if self.current_screen then
+			-- if there was a current screen, delete it
+			go.delete(self.current_screen)
+		end
+
+		if message.is_basement then
+			self.current_screen = collectionfactory.create("#collectionfactory-basement", self.screen_pos)
+			msg.post("@render:", "clear_color", {color = MainState.COLORS.RED_DARK})
+		else
+			self.current_screen = collectionfactory.create("#collectionfactory-house", self.screen_pos)
+			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
+		end
+
+		self.is_basement = message.is_basement
+	end
+end

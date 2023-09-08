@@ -41,7 +41,7 @@
             "selectedLayer": 4,
             "viewCenter": {
                 "x": 1859.6116665289599,
-                "y": 1539.7438651573991
+                "y": 1537.3114103941173
             }
         },
         "basement.tmx#topdown_tilesheet_complete2": {
@@ -70,11 +70,11 @@
             "scaleInDock": 1
         },
         "house.tmx": {
-            "scale": 0.25,
-            "selectedLayer": 0,
+            "scale": 0.4418,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1086,
-                "y": 1942
+                "x": 944.9977365323673,
+                "y": 1745.133544590312
             }
         },
         "house.tmx#topdown_tilesheet_complete2": {

@@ -1,5 +1,4 @@
 local debugUtils = require "src.utils.debug-utils"
-local MainState = require "src.main_state"
 
 local log = debugUtils.createLog("[BROADSOCK SERVER]").log
 
@@ -18,7 +17,6 @@ function init(self)
 	end
 
 	math.randomseed(os.time())
-	msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
 	msg.post(BROADSOCK, "connect", { ip = "127.0.0.1", port = 5001 })
 	msg.post(BROADSOCK, "register_factory", { url = "/spawner-player#factory-player", type = "player" })
 	msg.post(BROADSOCK, "register_factory", { url = "/spawner-zombie#factory-zombie", type = "zombie" })
