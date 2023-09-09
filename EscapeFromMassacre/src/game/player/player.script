@@ -19,6 +19,10 @@ local DOWN = hash("down")
 
 local RIGHT_STICK_RIGHT = hash("rs_right")
 local RIGHT_STICK_LEFT = hash("rs_left")
+local LEFT_STICK_LEFT = hash("ls_left")
+local LEFT_STICK_RIGHT = hash("ls_right")
+local LEFT_STICK_UP = hash("ls_up")
+local LEFT_STICK_DOWN = hash("ls_down")
 
 local COLLISION_RESPONSE = hash("collision_response")
 local CONTACT_POINT_RESPONSE = hash("contact_point_response")
@@ -46,10 +50,8 @@ local function input_controls(self)
 	end
 	if input.is_pressed(UP) then
 		self.velocity.y = PLAYER_SPEED
-		-- print(UP, self.velocity.y)
 	elseif input.is_pressed(DOWN) then
 		self.velocity.y = -PLAYER_SPEED
-		-- print(DOWN, self.velocity.y)
 	else
 		self.velocity.y = 0
 	end
@@ -157,9 +159,24 @@ function on_input(self, action_id, action)
         return
     end
 
-	input.update(action_id, action)
+	-- FIX: Move with gamepad left stick
+	if action_id == LEFT_STICK_DOWN or action_id == LEFT_STICK_LEFT or action_id == LEFT_STICK_RIGHT or action_id == LEFT_STICK_UP then
+		if action_id == LEFT_STICK_LEFT then
+			self.velocity.x = -PLAYER_SPEED
+		elseif action_id == LEFT_STICK_RIGHT then
+			self.velocity.x = PLAYER_SPEED
+		end
+		if action_id == LEFT_STICK_UP then
+			self.velocity.y = PLAYER_SPEED
+		elseif action_id == LEFT_STICK_DOWN then
+			self.velocity.y = -PLAYER_SPEED
+		end
+	else
+		input.update(action_id, action)
+	end
 
 	if action_id == LEFT or action_id == RIGHT or action_id == UP or action_id == DOWN then
+		-- print(action_id, action.value, action.pressed, action.released, action.x, action.y) -- a value between 0.0 an -1.0
 		if action.pressed and not self.sound_run_playing then
 			MainState.SOUND.loop_run.play()
 			self.sound_run_playing = true
