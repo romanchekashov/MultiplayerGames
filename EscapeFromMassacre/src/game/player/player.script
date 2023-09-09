@@ -271,7 +271,7 @@ function on_input(self, action_id, action)
 				if self.virtualGamepadLeftStickTouchNum ~= i then
 					trigger(self, touchdata)
 					if touchdata.pressed then
-						self.touch = action
+						go.set_rotation(getRotation(go.get_position() + vmath.vector3(touchdata.x, touchdata.y, 0)))
 					end
 				end
 				if self.virtualGamepadLeftStickTouchNum == i and touchdata.released then

@@ -62,5 +62,5 @@ max_component_count = 64
 
 [html5]
 htmlfile = /client/engine_template.html
-archive_location_suffix = ?v=0.1.7
+archive_location_suffix = ?v=0.1.8
 
