@@ -72,7 +72,7 @@ function init(self)
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
-	local obj = MainState.createGameObject(self.uid, self.username, go_id)
+	local obj = MainState.createGameObject(self.uid, self.username, go_id, MainState.LEVELS.HOUSE)
 	MainState.players:put(obj.uid, obj)
 	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
 		MainState.playerUidToScore[tostring(obj.uid)] = 0
@@ -184,6 +184,10 @@ function on_message(self, message_id, message, sender)
 	if message_id == COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
 			self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
+			local killer = MainState.players:get(self.killer_uid)
+			if killer ~= nil and killer.level ~= MainState.playerOnLevel then
+				 return
+			end
 			MainState.increasePlayerScore(self.killer_uid)
 			msg.post("spawner-player#script", "remove_player", {
 				uid = self.uid,
@@ -197,10 +201,10 @@ function on_message(self, message_id, message, sender)
 
 		if self.stairs_change_cooldown < 0 then
 			if message.group == STAIRS_TO_BASEMENT then
-				msg.post("/levels#change", "load_screen", {is_basement = true})
+				msg.post("/levels#change", "load_screen", {level = MainState.LEVELS.BASEMENT})
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			elseif message.group == STAIRS_TO_HOUSE then
-				msg.post("/levels#change", "load_screen", {is_basement = false})
+				msg.post("/levels#change", "load_screen", {level = MainState.LEVELS.HOUSE})
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			end
 		end

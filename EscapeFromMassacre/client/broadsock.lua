@@ -143,6 +143,17 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		return factories[type]
 	end
 
+	--- Send data to the broadsock server
+	-- Note: The data will actually not be sent until update() is called
+	-- @param data
+	function instance.send(data)
+		if connection.connected then
+			-- log("send", #data, "data:", data)
+			sendToUnreliableAndFastConnection(data)
+			-- server_nakama.send_player_move(stream.number_to_int32(#data) .. data)
+		end
+	end
+
 	function instance.on_data(data, data_length)
 		log("on_data: data:", data_length, data)
 		local sr = stream.reader(data, data_length)
@@ -186,6 +197,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				end
 			end
 
+			local player = MainState.players:get(from_uid)
+			if player ~= nil then
+				player.level = sr.number()
+			end
 			MainState.playerUidToWsLatency[from_uid] = sr.number()
 		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")
@@ -221,17 +236,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		end
 	end
 
-	--- Send data to the broadsock server
-	-- Note: The data will actually not be sent until update() is called
-	-- @param data
-	function instance.send(data)
-		if connection.connected then
-			-- log("send", #data, "data:", data)
-			sendToUnreliableAndFastConnection(data)
-			-- server_nakama.send_player_move(stream.number_to_int32(#data) .. data)
-		end
-	end
-
 	--- Update the broadsock client instance
 	-- Any registered game objects will send their transforms
 	-- This will also send any other queued data
@@ -259,6 +263,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				sw.vector3(scale)
 				-- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
 			end
+			sw.number(MainState.playerOnLevel)
 			instance.send(sw.tostring())
 
 			-- check if the socket is ready for reading and/or writing

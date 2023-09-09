@@ -15,8 +15,14 @@ local M = {
         GREEN = vmath.vector4(39 / 255, 174 / 255, 96 / 255, 0),
         RED_DARK = vmath.vector4(128 / 255, 36 / 255, 15 / 255, 0),
     },
+    LEVELS = {
+        HOUSE = 1,
+        BASEMENT = 0
+    },
     playerSlots = {}
 }
+
+M.playerOnLevel = M.LEVELS.HOUSE
 
 function M.increasePlayerScore(killer_uid)
 	if killer_uid ~= nil and killer_uid ~= "" then
@@ -73,12 +79,13 @@ function M.insidePauseBound(action)
         and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
 end
 
-function M.createGameObject(uid, username, go_id)
+function M.createGameObject(uid, username, go_id, level)
     local obj = {
         uid = uid or nil,
         username = username or nil,
         go_id = go_id or nil,
-        score = 0
+        score = 0,
+        level = level or M.LEVELS.HOUSE
     }
     return obj
 end
