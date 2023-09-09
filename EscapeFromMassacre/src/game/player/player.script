@@ -186,9 +186,10 @@ function on_message(self, message_id, message, sender)
 		if message.group == BULLET or message.group == ZOMBIE then
 			self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
 			local killer = MainState.players:get(self.killer_uid)
-			if killer ~= nil and killer.level ~= MainState.playerOnLevel then
+			if self.killer_uid == nil or (killer ~= nil and killer.level ~= MainState.playerOnLevel) then
 				 return
 			end
+
 			MainState.increasePlayerScore(self.killer_uid)
 			msg.post("spawner-player#script", "remove_player", {
 				uid = self.uid,
