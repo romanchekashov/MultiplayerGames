@@ -71,14 +71,6 @@ gamepad_trigger {
   action: "up"
 }
 gamepad_trigger {
-  input: GAMEPAD_RSTICK_LEFT
-  action: "rs_left"
-}
-gamepad_trigger {
-  input: GAMEPAD_RSTICK_RIGHT
-  action: "rs_right"
-}
-gamepad_trigger {
   input: GAMEPAD_RTRIGGER
   action: "trigger"
 }
@@ -101,4 +93,28 @@ gamepad_trigger {
 gamepad_trigger {
   input: GAMEPAD_START
   action: "join"
+}
+gamepad_trigger {
+  input: GAMEPAD_RSTICK_DOWN
+  action: "rs_down"
+}
+gamepad_trigger {
+  input: GAMEPAD_RSTICK_UP
+  action: "rs_up"
+}
+gamepad_trigger {
+  input: GAMEPAD_RSTICK_LEFT
+  action: "rs_left"
+}
+gamepad_trigger {
+  input: GAMEPAD_RSTICK_RIGHT
+  action: "rs_right"
+}
+gamepad_trigger {
+  input: GAMEPAD_CONNECTED
+  action: "gamepad_connected"
+}
+gamepad_trigger {
+  input: GAMEPAD_DISCONNECTED
+  action: "gamepad_dicconnected"
 }

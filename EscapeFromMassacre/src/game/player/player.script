@@ -2,8 +2,10 @@ local input = require "ludobits.m.input"
 
 local MainState = require "src.main_state"
 local debugUtils = require "src.utils.debug-utils"
+local defoldUtils = require "src.utils.defold-utils"
 
 local log = debugUtils.createLog("[PLAYER]").log
+local getRotation = defoldUtils.getRotation
 
 local insidePauseBound = MainState.insidePauseBound
 
@@ -19,6 +21,9 @@ local DOWN = hash("down")
 
 local RIGHT_STICK_RIGHT = hash("rs_right")
 local RIGHT_STICK_LEFT = hash("rs_left")
+local RIGHT_STICK_UP = hash("rs_up")
+local RIGHT_STICK_DOWN = hash("rs_down")
+
 local LEFT_STICK_LEFT = hash("ls_left")
 local LEFT_STICK_RIGHT = hash("ls_right")
 local LEFT_STICK_UP = hash("ls_up")
@@ -35,10 +40,14 @@ local KNIFE = hash("knife")
 local ZOMBIE = hash("zombie")
 local BULLET = hash("bullet")
 
+local STICK_MAX_DISTANCE = 30
 local PLAYER_SPEED = 275
 local STAIRS_CHANGE_COOLDOWN = 1
 
 local CROSSHAIR_OFFSET = vmath.vector3(10,200,0)
+
+
+
 
 local function input_controls(self)
 	if input.is_pressed(LEFT) then
@@ -66,6 +75,8 @@ function init(self)
 	self.username = "user-" .. tostring(self.uid)
 	self.velocity = vmath.vector3()
 	self.sound_run_playing = false
+	self.right_stick_value = vmath.vector3()
+	self.is_gamepad = false
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
@@ -118,21 +129,23 @@ function update(self, dt)
 	msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
 
 	local rotation = go.get_rotation()
-	-- handle rotation from key input left/right
-	if self.rotate ~= 0 then
-		rotation = rotation * vmath.quat_rotation_z(self.angular_velocity * self.rotate * dt)
-		go.set_rotation(rotation)
-	-- rotate towards the latest mouse/touch location
-	-- take into account camera position
-	elseif self.touch then
-		local to = go.get_position() - go.get_position("camera")
-		local from = vmath.vector3(self.touch.x, self.touch.y, 0)
-		local angle = math.atan2(to.x - from.x, from.y - to.y)
-		rotation = vmath.quat_rotation_z(angle)
-		go.set_rotation(rotation)
-		self.touch = nil
+	if not self.is_gamepad then
+		-- handle rotation from key input left/right
+		if self.rotate ~= 0 then
+			rotation = rotation * vmath.quat_rotation_z(self.angular_velocity * self.rotate * dt)
+			go.set_rotation(rotation)
+		-- rotate towards the latest mouse/touch location
+		-- take into account camera position
+		elseif self.touch then
+			local to = go.get_position() - go.get_position("camera")
+			local from = vmath.vector3(self.touch.x, self.touch.y, 0)
+			local angle = math.atan2(to.x - from.x, from.y - to.y)
+			rotation = vmath.quat_rotation_z(angle)
+			go.set_rotation(rotation)
+			self.touch = nil
+		end
 	end
-	
+
 	-- move in direction of rotation
 	local pos = go.get_position()
 	pos = pos + self.velocity * dt
@@ -159,8 +172,23 @@ function on_input(self, action_id, action)
         return
     end
 
+	if action_id == hash("gamepad_connected") then
+        if action.gamepad == 0 then
+          -- gamepad 0 was connected
+			log("gamepad_connected")
+			self.is_gamepad = true
+        end
+    elseif action_id == hash("gamepad_dicconnected") then
+        if action.gamepad == 0 then
+          -- gamepad 0 was dicconnected
+		    log("gamepad_dicconnected")
+		    self.is_gamepad = false
+        end
+    end
+
 	-- FIX: Move with gamepad left stick
 	if action_id == LEFT_STICK_DOWN or action_id == LEFT_STICK_LEFT or action_id == LEFT_STICK_RIGHT or action_id == LEFT_STICK_UP then
+		self.is_gamepad = true
 		if action_id == LEFT_STICK_LEFT then
 			self.velocity.x = -PLAYER_SPEED
 		elseif action_id == LEFT_STICK_RIGHT then
@@ -170,6 +198,22 @@ function on_input(self, action_id, action)
 			self.velocity.y = PLAYER_SPEED
 		elseif action_id == LEFT_STICK_DOWN then
 			self.velocity.y = -PLAYER_SPEED
+		end
+	elseif action_id == RIGHT_STICK_DOWN or action_id == RIGHT_STICK_LEFT or action_id == RIGHT_STICK_RIGHT or action_id == RIGHT_STICK_UP then
+		self.is_gamepad = true
+		if action_id == RIGHT_STICK_LEFT then
+			self.right_stick_value.x = -STICK_MAX_DISTANCE * action.value
+		elseif action_id == RIGHT_STICK_RIGHT then
+			self.right_stick_value.x = STICK_MAX_DISTANCE * action.value
+		elseif action_id == RIGHT_STICK_UP then
+			self.right_stick_value.y = STICK_MAX_DISTANCE * action.value
+		elseif action_id == RIGHT_STICK_DOWN then
+			self.right_stick_value.y = -STICK_MAX_DISTANCE * action.value
+		end
+
+		if action.value ~= 0 then
+			go.set_rotation(getRotation(go.get_position() + self.right_stick_value))
+			-- go.set_rotation(vmath.quat_rotation_z(math.atan2(new_pos.y, new_pos.x)))
 		end
 	else
 		input.update(action_id, action)
@@ -184,14 +228,6 @@ function on_input(self, action_id, action)
 			MainState.SOUND.loop_run.stop()
 			self.sound_run_playing = false
 		end
-	end
-
-	if action_id == RIGHT_STICK_LEFT then
-		self.rotate = action.value
-		-- print(action_id, action.value)
-	elseif action_id == RIGHT_STICK_RIGHT then
-		self.rotate = -action.value
-		-- print(action_id, action.value)
 	end
 
 	-- handle touch/mouse movement by holding down the finger/mouse button
