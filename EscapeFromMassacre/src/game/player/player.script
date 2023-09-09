@@ -147,6 +147,10 @@ function on_input(self, action_id, action)
 	-- print(action_id, action.value, action.pressed, action.released)
 
 	if MainState.pause or insidePauseBound(action) then
+		if self.sound_run_playing then
+			MainState.SOUND.loop_run.stop()
+			self.sound_run_playing = false
+		end
         return
     end
 
