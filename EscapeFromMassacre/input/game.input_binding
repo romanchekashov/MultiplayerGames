@@ -78,3 +78,7 @@ gamepad_trigger {
   input: GAMEPAD_RSTICK_RIGHT
   action: "rs_right"
 }
+gamepad_trigger {
+  input: GAMEPAD_RTRIGGER
+  action: "trigger"
+}
