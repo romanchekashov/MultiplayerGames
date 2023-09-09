@@ -104,17 +104,17 @@ end
 
 local function handle_touch(self, touch, touch_index)
 	if touch.pressed then
-		defoldUtils.virtualGamepadLeftStickPressed = true
 		local control = find_control_for_xy(self, touch.x, touch.y)
 		if control and not control.pressed then
+			defoldUtils.virtualGamepadLeftStickPressed = true
 			control.pressed = true
 			control.touch_index = touch_index
 			control.fn(self, touch, control)
 		end
 	elseif touch.released then
-		defoldUtils.virtualGamepadLeftStickPressed = false
 		local control = find_control_for_touch_index(self, touch_index)
 		if control then
+			defoldUtils.virtualGamepadLeftStickPressed = false
 			control.pressed = false
 			control.touch_index = nil
 			control.fn(self, touch, control)
@@ -122,6 +122,7 @@ local function handle_touch(self, touch, touch_index)
 	else
 		local control = find_control_for_touch_index(self, touch_index)
 		if control then
+			defoldUtils.virtualGamepadLeftStickPressed = false
 			control.fn(self, touch, control)
 		end
 	end
