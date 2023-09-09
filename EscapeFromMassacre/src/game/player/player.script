@@ -17,6 +17,9 @@ local RIGHT = hash("right")
 local UP = hash("up")
 local DOWN = hash("down")
 
+local RIGHT_STICK_RIGHT = hash("rs_right")
+local RIGHT_STICK_LEFT = hash("rs_left")
+
 local COLLISION_RESPONSE = hash("collision_response")
 local CONTACT_POINT_RESPONSE = hash("contact_point_response")
 local WALL = hash("wall")
@@ -31,6 +34,25 @@ local BULLET = hash("bullet")
 local PLAYER_SPEED = 275
 local STAIRS_CHANGE_COOLDOWN = 1
 
+local function input_controls(self)
+	if input.is_pressed(LEFT) then
+		self.velocity.x = -PLAYER_SPEED
+	elseif input.is_pressed(RIGHT) then
+		self.velocity.x = PLAYER_SPEED
+	else
+		self.velocity.x = 0
+	end
+	if input.is_pressed(UP) then
+		self.velocity.y = PLAYER_SPEED
+		-- print(UP, self.velocity.y)
+	elseif input.is_pressed(DOWN) then
+		self.velocity.y = -PLAYER_SPEED
+		-- print(DOWN, self.velocity.y)
+	else
+		self.velocity.y = 0
+	end
+end
+
 function init(self)
 	local go_id = go.get_id()
 
@@ -38,6 +60,7 @@ function init(self)
 		msg.post(".", "acquire_input_focus")
 		msg.post("camera", "acquire_camera_focus")
 		msg.post("/broadsock", "register_gameobject", { id = go_id, type = "player" })
+		input.acquire()
 	end
 
 
@@ -69,6 +92,7 @@ function final(self)
 		msg.post("camera", "release_camera_focus")
 		msg.post("/broadsock", "unregister_gameobject", { id = go_id, killer_uid = self.killer_uid })
 		msg.post("gui#menu", "non_remote_player_killed", {uid = self.uid})
+		input.release()
 	end
 
 	MainState.players:remove(self.uid)
@@ -79,6 +103,11 @@ function update(self, dt)
 	if self.remote then
 		return
 	end
+
+	if MainState.pause then
+		-- input_release_controls()
+        return
+    end
 	
 	msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
 
@@ -103,20 +132,7 @@ function update(self, dt)
 	pos = pos + self.velocity * dt
 	go.set_position(pos)
 
-	if input.is_pressed(LEFT) then
-		self.velocity.x = -PLAYER_SPEED
-	elseif input.is_pressed(RIGHT) then
-		self.velocity.x = PLAYER_SPEED
-	else
-		self.velocity.x = 0
-	end
-	if input.is_pressed(UP) then
-		self.velocity.y = PLAYER_SPEED
-	elseif input.is_pressed(DOWN) then
-		self.velocity.y = -PLAYER_SPEED
-	else
-		self.velocity.y = 0
-	end
+	input_controls(self)
 
 	-- update camera position
 	go.set_position(pos + vmath.vector3(-568, - 320, 0), "camera")
@@ -126,16 +142,20 @@ function update(self, dt)
 end
 
 function on_input(self, action_id, action)
+	-- print(action_id, action.value, action.pressed, action.released)
+
 	if MainState.pause or insidePauseBound(action) then
         return
     end
 
 	input.update(action_id, action)
 
-	if action_id == hash("rs_left") then
+	if action_id == RIGHT_STICK_LEFT then
 		self.rotate = action.value
-	elseif action_id == hash("rs_right") then
+		-- print(action_id, action.value)
+	elseif action_id == RIGHT_STICK_RIGHT then
 		self.rotate = -action.value
+		-- print(action_id, action.value)
 	end
 
 	-- handle touch/mouse movement by holding down the finger/mouse button
