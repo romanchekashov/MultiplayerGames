@@ -34,6 +34,8 @@ local BULLET = hash("bullet")
 local PLAYER_SPEED = 275
 local STAIRS_CHANGE_COOLDOWN = 1
 
+local CROSSHAIR_OFFSET = vmath.vector3(10,200,0)
+
 local function input_controls(self)
 	if input.is_pressed(LEFT) then
 		self.velocity.x = -PLAYER_SPEED
@@ -139,6 +141,7 @@ function update(self, dt)
 	-- update camera position
 	go.set_position(pos + vmath.vector3(-568, - 320, 0), "camera")
 
+	go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
 
 	self.stairs_change_cooldown = self.stairs_change_cooldown - dt
 end
