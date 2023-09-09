@@ -11,6 +11,20 @@ local M = {
     bulletBelongToPlayerUid = {},
     playerUidToScore = {},
     playerUidToWsLatency = {},
+    SOUND = {
+        laser = function ()
+            msg.post("default:/sound#laser", "play_sound")
+        end,
+        pistol_9mm_shoot_1 = function ()
+            msg.post("default:/sound#pistol_9mm_shoot_1", "play_sound")
+        end,
+        pistol_9mm_shoot_2 = function ()
+            msg.post("default:/sound#pistol_9mm_shoot_2", "play_sound")
+        end,
+        shotgun_fire_1 = function ()
+            msg.post("default:/sound#shotgun_fire_1", "play_sound")
+        end
+    },
     COLORS = {
         GREEN = vmath.vector4(39 / 255, 174 / 255, 96 / 255, 0),
         RED_DARK = vmath.vector4(128 / 255, 36 / 255, 15 / 255, 0),

@@ -11,6 +11,7 @@ function init(self)
 		MainState.bulletBelongToPlayerUid[id] = self.uid
 	end
 	-- print("bullet from", self.uid)
+	MainState.SOUND.pistol_9mm_shoot_1()
 end
 
 function final(self)
