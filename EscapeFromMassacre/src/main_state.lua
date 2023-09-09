@@ -23,7 +23,23 @@ local M = {
         end,
         shotgun_fire_1 = function ()
             msg.post("default:/sound#shotgun_fire_1", "play_sound")
-        end
+        end,
+        loop_step = {
+            play = function ()
+                msg.post("default:/sound#step", "play_sound")
+            end,
+            stop = function ()
+                msg.post("default:/sound#step", "stop_sound")
+            end
+        },
+        loop_run = {
+            play = function ()
+                msg.post("default:/sound#run", "play_sound")
+            end,
+            stop = function ()
+                msg.post("default:/sound#run", "stop_sound")
+            end
+        }
     },
     COLORS = {
         GREEN = vmath.vector4(39 / 255, 174 / 255, 96 / 255, 0),
