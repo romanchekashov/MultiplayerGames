@@ -167,6 +167,13 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				log("remote GO add_client", from_uid)
 			end
 
+			local player_lvl = sr.number()
+			local player = MainState.players:get(from_uid)
+			if player ~= nil then
+				player.level = player_lvl
+			end
+			local enable = player_lvl == MainState.playerOnLevel
+
 			local remote_gameobjects_for_user = remote_gameobjects[from_uid]
 			local count = sr.number()
 			log("remote GO", tostring(count))
@@ -185,22 +192,28 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							log("GO create obj", from_uid, tostring(type))
 							local id = factory.create(factory_url, pos, rot, {remote = true, uid = from_uid}, scale)
 							remote_gameobjects_for_user[gouid] = { id = id, type = type }
+							if enable then
+								msg.post(id, "enable")
+							else
+								msg.post(id, "disable")
+							end
 						end
 					else
 						local id = remote_gameobjects_for_user[gouid].id
-						local ok, err = pcall(function()
-							go.set_position(pos, id)
-							go.set_rotation(rot, id)
-							go.set_scale(scale, id)
-						end)
+						if enable then
+							msg.post(id, "enable")
+							local ok, err = pcall(function()
+								go.set_position(pos, id)
+								go.set_rotation(rot, id)
+								go.set_scale(scale, id)
+							end)
+						else
+							msg.post(id, "disable")
+						end
 					end
 				end
 			end
 
-			local player = MainState.players:get(from_uid)
-			if player ~= nil then
-				player.level = sr.number()
-			end
 			MainState.playerUidToWsLatency[from_uid] = sr.number()
 		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")
@@ -208,11 +221,13 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				local gouid = sr.string()
 				MainState.increasePlayerScore(sr.string())
 				local remote_gameobjects_for_user = remote_gameobjects[from_uid]
-				local id = remote_gameobjects_for_user[gouid].id
-				local ok, err = pcall(function()
-					go.delete(id)
-				end)
-				remote_gameobjects_for_user[gouid] = nil
+				if remote_gameobjects_for_user[gouid] ~= nil then
+					local id = remote_gameobjects_for_user[gouid].id
+					local ok, err = pcall(function()
+						go.delete(id)
+					end)
+					remote_gameobjects_for_user[gouid] = nil
+				end
 			end
 		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")
@@ -251,6 +266,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			log("update - sending game objects", instance.gameobject_count(), "gameobjects.length:", #gameobjects)
 			local sw = stream.writer()
 			sw.string("GO")
+			sw.number(MainState.playerOnLevel)
 			sw.number(gameobject_count)
 			for gouid,gameobject in pairs(gameobjects) do
 				local pos = go.get_position(gameobject.id)
@@ -263,7 +279,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				sw.vector3(scale)
 				-- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
 			end
-			sw.number(MainState.playerOnLevel)
 			instance.send(sw.tostring())
 
 			-- check if the socket is ready for reading and/or writing

@@ -56,14 +56,6 @@ end
 function init(self)
 	local go_id = go.get_id()
 
-	if not self.remote then
-		msg.post(".", "acquire_input_focus")
-		msg.post("camera", "acquire_camera_focus")
-		msg.post("/broadsock", "register_gameobject", { id = go_id, type = "player" })
-		input.acquire()
-	end
-
-
 	self.stairs_change_cooldown = -1
 	self.move = 0		-- direction of movement (0 = standing still, 1 = forward, -1 = backward)
 	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)	
@@ -72,7 +64,7 @@ function init(self)
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
-	local obj = MainState.createGameObject(self.uid, self.username, go_id, MainState.LEVELS.HOUSE)
+	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.level or MainState.LEVELS.HOUSE)
 	MainState.players:put(obj.uid, obj)
 	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
 		MainState.playerUidToScore[tostring(obj.uid)] = 0
@@ -82,6 +74,15 @@ function init(self)
 	end
 	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
 	log("player joined: " .. self.username)
+
+	if not self.remote then
+		msg.post(".", "acquire_input_focus")
+		msg.post("camera", "acquire_camera_focus")
+		msg.post("/broadsock", "register_gameobject", { id = go_id, type = "player" })
+		input.acquire()
+
+		msg.post("/levels#change", "load_screen", {level = obj.level})
+	end
 end
 
 function final(self)
