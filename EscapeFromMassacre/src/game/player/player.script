@@ -178,15 +178,16 @@ function on_input(self, action_id, action)
 end
 
 function on_message(self, message_id, message, sender)
+	if self.remote then
+		return
+	end
 	if message_id == COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
-			if not self.remote then
-				self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
-				MainState.increasePlayerScore(self.killer_uid)
-				msg.post("spawner-player#script", "remove_player", {
-					uid = self.uid,
-					player_id = go.get_id()})
-			end
+			self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
+			MainState.increasePlayerScore(self.killer_uid)
+			msg.post("spawner-player#script", "remove_player", {
+				uid = self.uid,
+				player_id = go.get_id()})
 			-- log("I collided with", go.get_id(), message.other_id, message.other_group)
 		end
 	elseif message_id == CONTACT_POINT_RESPONSE then
