@@ -118,3 +118,7 @@ gamepad_trigger {
   input: GAMEPAD_DISCONNECTED
   action: "gamepad_dicconnected"
 }
+touch_trigger {
+  input: TOUCH_MULTI
+  action: "touch_multi"
+}

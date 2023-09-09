@@ -11,6 +11,26 @@ local M = {
     bulletBelongToPlayerUid = {},
     playerUidToScore = {},
     playerUidToWsLatency = {},
+    ACTION_IDS = {
+        JOIN = hash("join"),
+        GAMEPAD = {
+            CONNECTED = hash("gamepad_connected"),
+            DISCONNECTED = hash("gamepad_dicconnected"),
+            RIGHT_STICK = {
+                RIGHT = hash("rs_right"),
+                LEFT = hash("rs_left"),
+                UP = hash("rs_up"),
+                DOWN = hash("rs_down")
+            },
+            LEFT_STICK = {
+                RIGHT = hash("ls_right"),
+                LEFT = hash("ls_left"),
+                UP = hash("ls_up"),
+                DOWN = hash("ls_down")
+            }
+        }
+    },
+    HAS_GAMEPAD = false,
     SOUND = {
         laser = function ()
             msg.post("default:/sound#laser", "play_sound")
@@ -53,6 +73,31 @@ local M = {
 }
 
 M.playerOnLevel = M.LEVELS.HOUSE
+M.isGamepadActionId = {
+    [M.ACTION_IDS.GAMEPAD.CONNECTED] = true,
+
+    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.DOWN] = true,
+    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.UP] = true,
+    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.RIGHT] = true,
+    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.LEFT] = true,
+
+    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.DOWN] = true,
+    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.UP] = true,
+    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.RIGHT] = true,
+    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.LEFT] = true,
+}
+M.isGamepadLeftStickActionId = {
+    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.DOWN] = true,
+    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.UP] = true,
+    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.RIGHT] = true,
+    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.LEFT] = true,
+}
+M.isGamepadRightStickActionId = {
+    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.DOWN] = true,
+    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.UP] = true,
+    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.RIGHT] = true,
+    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.LEFT] = true,
+}
 
 function M.increasePlayerScore(killer_uid)
 	if killer_uid ~= nil and killer_uid ~= "" then

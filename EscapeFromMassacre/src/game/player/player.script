@@ -3,11 +3,18 @@ local input = require "ludobits.m.input"
 local MainState = require "src.main_state"
 local debugUtils = require "src.utils.debug-utils"
 local defoldUtils = require "src.utils.defold-utils"
+local device = require "src.utils.device"
 
+local ACTION_IDS = MainState.ACTION_IDS
+local isGamepadActionId = MainState.isGamepadActionId
+local isGamepadLeftStickActionId = MainState.isGamepadLeftStickActionId
+local isGamepadRightStickActionId = MainState.isGamepadRightStickActionId
+local IS_MOBILE = device.type == "mobile" or device.type == "tablet"
 local log = debugUtils.createLog("[PLAYER]").log
 local getRotation = defoldUtils.getRotation
 
 local insidePauseBound = MainState.insidePauseBound
+local insideVirtualGamepadLeftStickBound = defoldUtils.insideVirtualGamepadLeftStickBound
 
 go.property("angular_velocity", 5)
 go.property("linear_velocity", 200)
@@ -76,7 +83,6 @@ function init(self)
 	self.velocity = vmath.vector3()
 	self.sound_run_playing = false
 	self.right_stick_value = vmath.vector3()
-	self.is_gamepad = false
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
@@ -96,6 +102,7 @@ function init(self)
 		msg.post("camera", "acquire_camera_focus")
 		msg.post("/broadsock", "register_gameobject", { id = go_id, type = "player" })
 		input.acquire()
+		msg.post("virtual_gamepad", "register")
 
 		msg.post("/levels#change", "load_screen", {level = obj.level})
 	end
@@ -110,6 +117,7 @@ function final(self)
 		msg.post("/broadsock", "unregister_gameobject", { id = go_id, killer_uid = self.killer_uid })
 		msg.post("gui#menu", "non_remote_player_killed", {uid = self.uid})
 		input.release()
+		msg.post("virtual_gamepad", "unregister")
 	end
 
 	MainState.players:remove(self.uid)
@@ -129,7 +137,7 @@ function update(self, dt)
 	msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
 
 	local rotation = go.get_rotation()
-	if not self.is_gamepad then
+	if not MainState.HAS_GAMEPAD then
 		-- handle rotation from key input left/right
 		if self.rotate ~= 0 then
 			rotation = rotation * vmath.quat_rotation_z(self.angular_velocity * self.rotate * dt)
@@ -162,7 +170,23 @@ function update(self, dt)
 end
 
 function on_input(self, action_id, action)
-	-- print(action_id, action.value, action.pressed, action.released)
+	log(action_id, action.value, action.pressed, action.released)
+
+	if action_id == ACTION_IDS.GAMEPAD.CONNECTED then
+        if action.gamepad == 0 then
+          -- gamepad 0 was connected
+			log("gamepad_connected")
+			MainState.HAS_GAMEPAD = true
+			msg.post("default:/virtual_gamepad", "disable")
+        end
+    elseif action_id == ACTION_IDS.GAMEPAD.DISCONNECTED then
+        if action.gamepad == 0 then
+          -- gamepad 0 was dicconnected
+		    log("gamepad_dicconnected")
+			MainState.HAS_GAMEPAD = false
+			msg.post("default:/virtual_gamepad", "enable")
+        end
+    end
 
 	if MainState.pause or insidePauseBound(action) then
 		if self.sound_run_playing then
@@ -172,48 +196,40 @@ function on_input(self, action_id, action)
         return
     end
 
-	if action_id == hash("gamepad_connected") then
-        if action.gamepad == 0 then
-          -- gamepad 0 was connected
-			log("gamepad_connected")
-			self.is_gamepad = true
-        end
-    elseif action_id == hash("gamepad_dicconnected") then
-        if action.gamepad == 0 then
-          -- gamepad 0 was dicconnected
-		    log("gamepad_dicconnected")
-		    self.is_gamepad = false
-        end
-    end
+	-- if insideVirtualGamepadLeftStickBound(action) or defoldUtils.virtualGamepadLeftStickPressed then
+    --     return
+    -- end
 
-	-- FIX: Move with gamepad left stick
-	if action_id == LEFT_STICK_DOWN or action_id == LEFT_STICK_LEFT or action_id == LEFT_STICK_RIGHT or action_id == LEFT_STICK_UP then
-		self.is_gamepad = true
-		if action_id == LEFT_STICK_LEFT then
-			self.velocity.x = -PLAYER_SPEED
-		elseif action_id == LEFT_STICK_RIGHT then
-			self.velocity.x = PLAYER_SPEED
-		end
-		if action_id == LEFT_STICK_UP then
-			self.velocity.y = PLAYER_SPEED
-		elseif action_id == LEFT_STICK_DOWN then
-			self.velocity.y = -PLAYER_SPEED
-		end
-	elseif action_id == RIGHT_STICK_DOWN or action_id == RIGHT_STICK_LEFT or action_id == RIGHT_STICK_RIGHT or action_id == RIGHT_STICK_UP then
-		self.is_gamepad = true
-		if action_id == RIGHT_STICK_LEFT then
-			self.right_stick_value.x = -STICK_MAX_DISTANCE * action.value
-		elseif action_id == RIGHT_STICK_RIGHT then
-			self.right_stick_value.x = STICK_MAX_DISTANCE * action.value
-		elseif action_id == RIGHT_STICK_UP then
-			self.right_stick_value.y = STICK_MAX_DISTANCE * action.value
-		elseif action_id == RIGHT_STICK_DOWN then
-			self.right_stick_value.y = -STICK_MAX_DISTANCE * action.value
-		end
-
-		if action.value ~= 0 then
-			go.set_rotation(getRotation(go.get_position() + self.right_stick_value))
-			-- go.set_rotation(vmath.quat_rotation_z(math.atan2(new_pos.y, new_pos.x)))
+	if MainState.HAS_GAMEPAD then
+		-- FIX: Move with gamepad left stick
+		if isGamepadLeftStickActionId[action_id] then
+			if action_id == LEFT_STICK_LEFT then
+				self.velocity.x = -PLAYER_SPEED
+			elseif action_id == LEFT_STICK_RIGHT then
+				self.velocity.x = PLAYER_SPEED
+			end
+			if action_id == LEFT_STICK_UP then
+				self.velocity.y = PLAYER_SPEED
+			elseif action_id == LEFT_STICK_DOWN then
+				self.velocity.y = -PLAYER_SPEED
+			end
+		elseif isGamepadRightStickActionId[action_id] then
+			if action_id == RIGHT_STICK_LEFT then
+				self.right_stick_value.x = -STICK_MAX_DISTANCE * action.value
+			elseif action_id == RIGHT_STICK_RIGHT then
+				self.right_stick_value.x = STICK_MAX_DISTANCE * action.value
+			elseif action_id == RIGHT_STICK_UP then
+				self.right_stick_value.y = STICK_MAX_DISTANCE * action.value
+			elseif action_id == RIGHT_STICK_DOWN then
+				self.right_stick_value.y = -STICK_MAX_DISTANCE * action.value
+			end
+	
+			if action.value ~= 0 then
+				go.set_rotation(getRotation(go.get_position() + self.right_stick_value))
+				-- go.set_rotation(vmath.quat_rotation_z(math.atan2(new_pos.y, new_pos.x)))
+			end
+		else
+			input.update(action_id, action)
 		end
 	else
 		input.update(action_id, action)
@@ -232,6 +248,7 @@ function on_input(self, action_id, action)
 
 	-- handle touch/mouse movement by holding down the finger/mouse button
 	if (action_id == hash("trigger") or action_id == hash("touch")) then
+		log(defoldUtils.virtualGamepadLeftStickPressed, action_id, action.value, action.pressed, action.released)
 		if action.pressed then
 			self.pressed_time = socket.gettime()
 		elseif action.released then
@@ -243,6 +260,15 @@ function on_input(self, action_id, action)
 			end
 		end
 	end
+
+	if IS_MOBILE and action_id == hash("touch_multi") then
+        -- Spawn at each touch point
+        for i, touchdata in ipairs(action.touch) do
+			log(i, "touchdata", touchdata.x, touchdata.y)
+            -- local pos = vmath.vector3(touchdata.x, touchdata.y, 0)
+            -- factory.create("#factory", pos)
+        end
+    end
 	
 	if not action_id then
 		self.touch = action
@@ -253,6 +279,27 @@ function on_message(self, message_id, message, sender)
 	if self.remote then
 		return
 	end
+
+	if message_id == hash("analog") then
+		-- print("x", message.x, " - y", message.y, message.pressed, message.released)
+		-- self.speed.x = message.x * 200
+		-- self.speed.y = message.y * 200
+		if message.x < 0 then
+			self.velocity.x = -PLAYER_SPEED
+		elseif message.x > 0 then
+			self.velocity.x = PLAYER_SPEED
+		else
+			self.velocity.x = 0
+		end
+		if message.y > 0 then
+			self.velocity.y = PLAYER_SPEED
+		elseif message.y < 0 then
+			self.velocity.y = -PLAYER_SPEED
+		else
+			self.velocity.y = 0
+		end
+	end
+
 	if message_id == COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
 			self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]

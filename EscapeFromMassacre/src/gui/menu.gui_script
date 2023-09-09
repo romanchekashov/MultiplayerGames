@@ -4,7 +4,9 @@ local btnAction = Buttons.action
 local server_nakama = require "client.server_nakama"
 local debugUtils = require "src.utils.debug-utils"
 
-local BTN_JOIN = hash("join")
+
+local ACTION_IDS = MainState.ACTION_IDS
+
 
 local function set_is_joined(self, is_joined)
 	self.is_joined = is_joined
@@ -127,7 +129,7 @@ function on_input(self, action_id, action)
 	-- Learn more: https://defold.com/manuals/input/
 	-- Remove this function if not needed
 
-	if action_id == BTN_JOIN and action.released then
+	if action_id == ACTION_IDS.JOIN and action.released then
 		if self.is_joined then
 			onBtnExit(self)
 		else
