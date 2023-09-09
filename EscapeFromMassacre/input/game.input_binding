@@ -98,3 +98,7 @@ gamepad_trigger {
   input: GAMEPAD_LSTICK_UP
   action: "ls_up"
 }
+gamepad_trigger {
+  input: GAMEPAD_START
+  action: "join"
+}
