@@ -51,6 +51,7 @@ local STICK_MAX_DISTANCE = 30
 local PLAYER_SPEED = 275
 local STAIRS_CHANGE_COOLDOWN = 1
 local HIT_COOLDOWN = 0.2
+local FIRE_COOLDOWN = 0.2
 
 local CROSSHAIR_OFFSET = vmath.vector3(10,200,0)
 
@@ -83,10 +84,11 @@ local function trigger(self, action)
 		self.pressed_time = socket.gettime()
 	elseif action.released then
 		-- fire a bullet if the time between press and release is sufficiently short
-		if socket.gettime() - self.pressed_time < 0.2 then
+		if socket.gettime() - self.pressed_time < 0.2 and self.fire_cooldown < 0 then
 			local rotation = go.get_rotation()
 			local position = go.get_position() + vmath.rotate(rotation, vmath.vector3(10, 30, 0))
 			msg.post("spawner-bullet#script", "add_bullet", {pos = position, rot = rotation})
+			self.fire_cooldown = FIRE_COOLDOWN
 		end
 	end
 end
@@ -105,6 +107,7 @@ function init(self)
 	self.health_width = go.get("#scale-health", "size.x")
 	self.health_one_cut = self.health_width / 5
 	self.hit_cooldown = HIT_COOLDOWN
+	self.fire_cooldown = 0
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
@@ -197,6 +200,7 @@ function update(self, dt)
 	go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
 
 	self.stairs_change_cooldown = self.stairs_change_cooldown - dt
+	self.fire_cooldown = self.fire_cooldown - dt
 
 	if self.hit_cooldown < 0 then
 		self.bullet_id = nil
