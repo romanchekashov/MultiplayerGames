@@ -115,6 +115,8 @@ function init(self)
 		MainState.playerUidToScore[tostring(obj.uid)] = 0
 	end
 
+	label.set_text("#scale-level", string.format("%d", MainState.playerUidToScore[tostring(obj.uid)] + 1))
+
 	if MainState.playerUidToWsLatency[obj.uid] == nil then
 		MainState.playerUidToWsLatency[obj.uid] = -1
 	end
@@ -334,9 +336,14 @@ function on_input(self, action_id, action)
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == hash("update_player") then
+	if message_id == hash("update_health") then
 		if self.uid == message.uid then
 			go.set("#scale-health", "size.x", self.health_width * (message.health / 100))
+		end
+	elseif message_id == hash("update_score") then
+		if self.uid == message.uid then
+			label.set_text("#scale-level", string.format("%d", message.score + 1))
+			-- go.set("#scale-health", "size.x", self.health_width * (message.health / 100))
 		end
 	end
 

@@ -109,10 +109,12 @@ function M.increasePlayerScore(killer_uid)
         end
 
         M.playerUidToScore[killer_uid] = M.playerUidToScore[killer_uid] + 1
-        -- local player = M.players:get(tonumber(killer_uid))
-        -- if player ~= nil then
-        --     player.score = player.score + 1
-        -- end
+
+        local player = M.players:get(tonumber(killer_uid))
+        if player ~= nil then
+            player.score = player.score + 1
+			msg.post(player.go_id, "update_score", {uid = player.uid, score = player.score})
+        end
     end
 end
 

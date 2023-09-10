@@ -242,7 +242,7 @@ embedded_components {
   }
 }
 embedded_components {
-  id: "level"
+  id: "scale-level"
   type: "label"
   data: "size {\n"
   "  x: 128.0\n"

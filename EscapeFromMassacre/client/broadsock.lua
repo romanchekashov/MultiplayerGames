@@ -214,21 +214,26 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				end
 			end
 
-			if from_uid ~= uid then
-				local new_health = sr.number()
-				if player ~= nil and player.health ~= new_health then
-					msg.post(player.go_id, "update_player", {uid = player.uid, health = new_health})
+			local new_health = sr.number()
+			local new_score = sr.number()
+			if from_uid ~= uid and player ~= nil then
+				if player.health ~= new_health then
+					msg.post(player.go_id, "update_health", {uid = player.uid, health = new_health})
 					player.health = new_health
 				end
-			else
-				sr.number()
+				if player.score ~= new_score then
+					msg.post(player.go_id, "update_score", {uid = player.uid, score = new_score})
+					player.score = new_score
+				end
 			end
 			MainState.playerUidToWsLatency[from_uid] = sr.number()
 		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")
 			if clients[from_uid] and from_uid ~= uid then
 				local gouid = sr.string()
-				MainState.increasePlayerScore(sr.string())
+				local killer_uid = sr.number()
+				MainState.increasePlayerScore(killer_uid)
+
 				local remote_gameobjects_for_user = remote_gameobjects[from_uid]
 				if remote_gameobjects_for_user[gouid] ~= nil then
 					local id = remote_gameobjects_for_user[gouid].id
@@ -290,6 +295,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				-- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
 			end
 			sw.number(player and player.health or 100)
+			sw.number(player and player.score or 0)
 			instance.send(sw.tostring())
 
 			-- check if the socket is ready for reading and/or writing

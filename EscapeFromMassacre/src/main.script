@@ -6,15 +6,15 @@ local BROADSOCK = msg.url("default:/broadsock#script")
 -- local BROADSOCK = msg.url("default:/server#broadsock")
 
 function init(self)
-	local enableLogs = false
+	local enableLogs = true
 	debugUtils.debug(enableLogs)
-	if html5 then
-		if enableLogs then
-			html5.run("enableLogs(true)")
-		else
-			html5.run("enableLogs(false)")
-		end
-	end
+	-- if html5 then
+	-- 	if enableLogs then
+	-- 		html5.run("enableLogs(true)")
+	-- 	else
+	-- 		html5.run("enableLogs(false)")
+	-- 	end
+	-- end
 
 	math.randomseed(os.time())
 	msg.post(BROADSOCK, "connect", { ip = "127.0.0.1", port = 5001 })
