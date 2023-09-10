@@ -343,6 +343,12 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("update_score") then
 		if self.uid == message.uid then
 			label.set_text("#scale-level", string.format("%d", message.score + 1))
+
+			particlefx.play("#level_up")
+			MainState.SOUND.level_up()
+			timer.delay(2, true, function ()
+				particlefx.stop("#level_up")
+			end)
 			-- go.set("#scale-health", "size.x", self.health_width * (message.health / 100))
 		end
 	end

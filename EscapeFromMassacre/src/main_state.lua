@@ -33,6 +33,9 @@ local M = {
     },
     HAS_GAMEPAD = false,
     SOUND = {
+        level_up = function ()
+            msg.post("default:/sound#level_up", "play_sound")
+        end,
         laser = function ()
             msg.post("default:/sound#laser", "play_sound")
         end,
