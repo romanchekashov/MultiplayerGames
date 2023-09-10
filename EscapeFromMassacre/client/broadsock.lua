@@ -214,6 +214,15 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				end
 			end
 
+			if from_uid ~= uid then
+				local new_health = sr.number()
+				if player ~= nil and player.health ~= new_health then
+					msg.post(player.go_id, "update_player", {uid = player.uid, health = new_health})
+					player.health = new_health
+				end
+			else
+				sr.number()
+			end
 			MainState.playerUidToWsLatency[from_uid] = sr.number()
 		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")
@@ -264,6 +273,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				return
 			end
 			log("update - sending game objects", instance.gameobject_count(), "gameobjects.length:", #gameobjects)
+			local player = MainState.players:get(uid)
 			local sw = stream.writer()
 			sw.string("GO")
 			sw.number(MainState.playerOnMapLevel)
@@ -279,6 +289,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				sw.vector3(scale)
 				-- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
 			end
+			sw.number(player and player.health or 100)
 			instance.send(sw.tostring())
 
 			-- check if the socket is ready for reading and/or writing

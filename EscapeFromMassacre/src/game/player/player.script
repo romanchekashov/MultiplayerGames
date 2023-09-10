@@ -50,6 +50,7 @@ local BULLET = hash("bullet")
 local STICK_MAX_DISTANCE = 30
 local PLAYER_SPEED = 275
 local STAIRS_CHANGE_COOLDOWN = 1
+local HIT_COOLDOWN = 0.2
 
 local CROSSHAIR_OFFSET = vmath.vector3(10,200,0)
 
@@ -101,17 +102,23 @@ function init(self)
 	self.sound_run_playing = false
 	self.right_stick_value = vmath.vector3()
 	self.virtualGamepadLeftStickTouchNum = 0
+	self.health_width = go.get("#scale-health", "size.x")
+	self.health_one_cut = self.health_width / 5
+	self.hit_cooldown = HIT_COOLDOWN
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
 	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.map_level or MainState.MAP_LEVELS.HOUSE)
 	MainState.players:put(obj.uid, obj)
+	
 	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
 		MainState.playerUidToScore[tostring(obj.uid)] = 0
 	end
+
 	if MainState.playerUidToWsLatency[obj.uid] == nil then
 		MainState.playerUidToWsLatency[obj.uid] = -1
 	end
+
 	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
 	log("player joined: " .. self.username)
 
@@ -188,6 +195,11 @@ function update(self, dt)
 	go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
 
 	self.stairs_change_cooldown = self.stairs_change_cooldown - dt
+
+	if self.hit_cooldown < 0 then
+		self.bullet_id = nil
+	end
+	self.hit_cooldown = self.hit_cooldown - dt
 end
 
 function on_input(self, action_id, action)
@@ -322,6 +334,12 @@ function on_input(self, action_id, action)
 end
 
 function on_message(self, message_id, message, sender)
+	if message_id == hash("update_player") then
+		if self.uid == message.uid then
+			go.set("#scale-health", "size.x", self.health_width * (message.health / 100))
+		end
+	end
+
 	if self.remote then
 		return
 	end
@@ -348,17 +366,30 @@ function on_message(self, message_id, message, sender)
 
 	if message_id == COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
-			self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
-			local killer = MainState.players:get(self.killer_uid)
-			if self.killer_uid == nil or (killer ~= nil and killer.map_level ~= MainState.playerOnMapLevel) then
-				 return
-			end
+			-- print("I collided with", go.get_id(), message.other_id, message.other_group)
+			if self.bullet_id ~= message.other_id then
+				self.bullet_id = message.other_id
+				self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
 
-			MainState.increasePlayerScore(self.killer_uid)
-			msg.post("spawner-player#script", "remove_player", {
-				uid = self.uid,
-				player_id = go.get_id()})
-			-- log("I collided with", go.get_id(), message.other_id, message.other_group)
+				local killer = MainState.players:get(self.killer_uid)
+				if self.killer_uid == nil or (killer ~= nil and killer.map_level ~= MainState.playerOnMapLevel) then
+					 return
+				end
+	
+				local player = MainState.players:get(self.uid)
+				player.health = player.health - 20
+				
+				go.set("#scale-health", "size.x", self.health_width * (player.health / 100))
+	
+				if player.health <= 0 then
+					MainState.increasePlayerScore(self.killer_uid)
+					msg.post("spawner-player#script", "remove_player", {
+						uid = self.uid,
+						player_id = go.get_id()})
+				end
+
+				self.hit_cooldown = HIT_COOLDOWN
+			end
 		end
 	elseif message_id == CONTACT_POINT_RESPONSE then
 		if message.group == WALL then
