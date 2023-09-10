@@ -16,6 +16,7 @@ local M = {
         GAMEPAD = {
             CONNECTED = hash("gamepad_connected"),
             DISCONNECTED = hash("gamepad_dicconnected"),
+            START = hash("gamepad_start"),
             RIGHT_STICK = {
                 RIGHT = hash("rs_right"),
                 LEFT = hash("rs_left"),
@@ -75,6 +76,7 @@ local M = {
 M.playerOnLevel = M.LEVELS.HOUSE
 M.isGamepadActionId = {
     [M.ACTION_IDS.GAMEPAD.CONNECTED] = true,
+    [M.ACTION_IDS.GAMEPAD.START] = true,
 
     [M.ACTION_IDS.GAMEPAD.LEFT_STICK.DOWN] = true,
     [M.ACTION_IDS.GAMEPAD.LEFT_STICK.UP] = true,

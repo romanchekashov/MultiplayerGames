@@ -4,8 +4,6 @@ local debugUtils = require "src.utils.debug-utils"
 
 
 local log = debugUtils.createLog("[VIRTUAL_GAMEPAD]").log
-local ACTION_IDS = MainState.ACTION_IDS
-local isGamepadActionId = MainState.isGamepadActionId
 
 local function post_to_listener(self, message_id, message)
 	if self.listener then
@@ -137,13 +135,5 @@ function on_input(self, action_id, action)
 		end
 	else
 		handle_touch(self, action, 0)
-	end
-
-	if action_id == ACTION_IDS.JOIN then
-		MainState.HAS_GAMEPAD = true
-	end
-
-	if isGamepadActionId[action_id] then
-		MainState.HAS_GAMEPAD = true
 	end
 end
