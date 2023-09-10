@@ -104,7 +104,7 @@ function init(self)
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
-	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.level or MainState.LEVELS.HOUSE)
+	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.map_level or MainState.MAP_LEVELS.HOUSE)
 	MainState.players:put(obj.uid, obj)
 	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
 		MainState.playerUidToScore[tostring(obj.uid)] = 0
@@ -122,7 +122,7 @@ function init(self)
 		input.acquire()
 		msg.post("virtual_gamepad", "register")
 
-		msg.post("/levels#change", "load_screen", {level = obj.level})
+		msg.post("/levels#change", "load_screen", {map_level = obj.map_level})
 
 		if IS_MOBILE then
 			msg.post("default:/virtual_gamepad", "enable")
@@ -350,7 +350,7 @@ function on_message(self, message_id, message, sender)
 		if message.group == BULLET or message.group == ZOMBIE then
 			self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
 			local killer = MainState.players:get(self.killer_uid)
-			if self.killer_uid == nil or (killer ~= nil and killer.level ~= MainState.playerOnLevel) then
+			if self.killer_uid == nil or (killer ~= nil and killer.map_level ~= MainState.playerOnMapLevel) then
 				 return
 			end
 
@@ -367,10 +367,10 @@ function on_message(self, message_id, message, sender)
 
 		if self.stairs_change_cooldown < 0 then
 			if message.group == STAIRS_TO_BASEMENT then
-				msg.post("/levels#change", "load_screen", {level = MainState.LEVELS.BASEMENT})
+				msg.post("/levels#change", "load_screen", {map_level = MainState.MAP_LEVELS.BASEMENT})
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			elseif message.group == STAIRS_TO_HOUSE then
-				msg.post("/levels#change", "load_screen", {level = MainState.LEVELS.HOUSE})
+				msg.post("/levels#change", "load_screen", {map_level = MainState.MAP_LEVELS.HOUSE})
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			end
 		end

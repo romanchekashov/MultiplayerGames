@@ -167,12 +167,12 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				log("remote GO add_client", from_uid)
 			end
 
-			local player_lvl = sr.number()
+			local player_map_level = sr.number()
 			local player = MainState.players:get(from_uid)
 			if player ~= nil then
-				player.level = player_lvl
+				player.map_level = player_map_level
 			end
-			local enable = player_lvl == MainState.playerOnLevel
+			local enable = player_map_level == MainState.playerOnMapLevel
 
 			local remote_gameobjects_for_user = remote_gameobjects[from_uid]
 			local count = sr.number()
@@ -266,7 +266,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			log("update - sending game objects", instance.gameobject_count(), "gameobjects.length:", #gameobjects)
 			local sw = stream.writer()
 			sw.string("GO")
-			sw.number(MainState.playerOnLevel)
+			sw.number(MainState.playerOnMapLevel)
 			sw.number(gameobject_count)
 			for gouid,gameobject in pairs(gameobjects) do
 				local pos = go.get_position(gameobject.id)

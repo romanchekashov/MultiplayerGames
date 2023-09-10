@@ -6,27 +6,27 @@ function init(self)
 	self.next_screen = nil
 	self.current_screen = nil
 	self.loading = false
-	self.level = MainState.LEVELS.BASEMENT
-	msg.post("#", "load_screen", {level = MainState.LEVELS.HOUSE})
+	self.map_level = MainState.MAP_LEVELS.BASEMENT
+	msg.post("#", "load_screen", {map_level = MainState.MAP_LEVELS.HOUSE})
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == hash("load_screen") and self.level ~= message.level then
+	if message_id == hash("load_screen") and self.map_level ~= message.level then
 		if self.current_screen then
 			-- if there was a current screen, delete it
 			go.delete(self.current_screen)
 		end
 
-		if message.level == MainState.LEVELS.BASEMENT then
-			MainState.playerOnLevel = MainState.LEVELS.BASEMENT
+		if message.map_level == MainState.MAP_LEVELS.BASEMENT then
+			MainState.playerOnMapLevel = MainState.MAP_LEVELS.BASEMENT
 			self.current_screen = collectionfactory.create("#collectionfactory-basement", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = MainState.COLORS.RED_DARK})
-		elseif message.level == MainState.LEVELS.HOUSE then
-			MainState.playerOnLevel = MainState.LEVELS.HOUSE
+		elseif message.map_level == MainState.MAP_LEVELS.HOUSE then
+			MainState.playerOnMapLevel = MainState.MAP_LEVELS.HOUSE
 			self.current_screen = collectionfactory.create("#collectionfactory-house", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
 		end
 
-		self.level = message.level
+		self.map_level = message.map_level
 	end
 end

@@ -50,7 +50,7 @@ function on_message(self, message_id, message, sender)
 	-- Remove this function if not needed
 	if message_id == hash("add_player") then
 		-- start position outside screen edge
-		local player_id = factory.create("#factory-player", random_position(), nil, {remote = false, uid = message.uid, level = MainState.LEVELS.HOUSE})
+		local player_id = factory.create("#factory-player", random_position(), nil, {remote = false, uid = message.uid, map_level = MainState.MAP_LEVELS.HOUSE})
 	elseif message_id == hash("remove_player") then
 		if self.players:has(message.uid) then
 			local player = self.players:get(message.uid)
