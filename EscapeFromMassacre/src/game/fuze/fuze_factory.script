@@ -3,12 +3,43 @@ local Utils = require "src.utils.utils"
 
 local random_position = Utils.random_position
 
+local function create_fuze(color)
+	return factory.create("#factory-fuze", random_position(), nil, {remote = false, color = color})
+end
+
+local function use_map_level_visibility(self, map_level)
+	for lvl, fuze_tabel in pairs(self.fuzeOnMapLevel) do
+		if lvl == map_level then
+			for _, fuze in ipairs(fuze_tabel) do
+				-- print("enable", lvl, fuze, MainState.fuzesIdToColor[fuze])
+				if go.exists(fuze) then
+					msg.post(fuze, "enable")
+				end
+			end
+		else
+			for _, fuze in ipairs(fuze_tabel) do
+				-- print("disable", lvl, fuze, MainState.fuzesIdToColor[fuze])
+				if go.exists(fuze) then
+					msg.post(fuze, "disable")
+				end
+			end
+		end
+	end
+end
+
 function init(self)
 	math.randomseed(os.time())
-	factory.create("#factory-fuze", random_position(), nil, {remote = false, color = MainState.FUZE.RED})
-	factory.create("#factory-fuze", random_position(), nil, {remote = false, color = MainState.FUZE.GREEN})
-	factory.create("#factory-fuze", random_position(), nil, {remote = false, color = MainState.FUZE.BLUE})
-	factory.create("#factory-fuze", random_position(), nil, {remote = false, color = MainState.FUZE.YELLOW})
+	self.fuzeOnMapLevel = {}
+	self.fuzeOnMapLevel[MainState.MAP_LEVELS.BASEMENT] = {}
+	self.fuzeOnMapLevel[MainState.MAP_LEVELS.HOUSE] = {}
+
+	table.insert(self.fuzeOnMapLevel[MainState.MAP_LEVELS.HOUSE], create_fuze(MainState.FUZE.RED))
+	table.insert(self.fuzeOnMapLevel[MainState.MAP_LEVELS.HOUSE], create_fuze(MainState.FUZE.GREEN))
+
+	table.insert(self.fuzeOnMapLevel[MainState.MAP_LEVELS.BASEMENT], create_fuze(MainState.FUZE.BLUE))
+	table.insert(self.fuzeOnMapLevel[MainState.MAP_LEVELS.BASEMENT], create_fuze(MainState.FUZE.YELLOW))
+
+	use_map_level_visibility(self, MainState.playerOnMapLevel)
 	-- self.zombies = MainState.zombies
 	-- for i = 1, 10 do
 	-- 	local obj = MainState.createGameObject(spawn_zombie())
@@ -17,27 +48,7 @@ function init(self)
 end
 
 function on_message(self, message_id, message, sender)
-	-- Add message-handling code here
-	-- Learn more: https://defold.com/manuals/message-passing/
-	-- Remove this function if not needed
-	if message_id == hash("remove_zombie") then
-		local zombie_id = message.zombie_id
-
-		if self.zombies:has(zombie_id) then
-			print("Zombie killed with bullet", zombie_id)
-			go.delete(zombie_id)
-			
-			self.zombies:remove(zombie_id)
-			-- msg.post("gui#menu", "set_online_players", {online_players = self.zombies.length})
-		end
+	if message_id == hash("map_level_change") then
+		use_map_level_visibility(self, message.map_level)
 	end
-end
-
-function on_input(self, action_id, action)
-	
-end
-
-function on_reload(self)
-    -- Add reload-handling code here
-    -- Remove this function if not needed
 end

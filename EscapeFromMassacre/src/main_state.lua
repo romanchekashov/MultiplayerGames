@@ -33,6 +33,8 @@ local M = {
     },
     MSG_GROUPS = {
         COLLISION_RESPONSE = hash("collision_response"),
+        ENABLE = hash("enable"),
+        DISABLE = hash("disable"),
         BOX = hash("box"),
         FUZE = hash("fuze"),
         PLAYER = hash("player")

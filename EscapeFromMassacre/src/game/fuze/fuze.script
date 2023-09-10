@@ -4,7 +4,7 @@ local MSG_GROUPS = MainState.MSG_GROUPS
 
 go.property("color", 1)
 
-function init(self)
+local function enable(self)
 	msg.post("#fuze_red", "disable")
 	msg.post("#fuze_green", "disable")
 	msg.post("#fuze_blue", "disable")
@@ -19,7 +19,10 @@ function init(self)
 	elseif self.color == MainState.FUZE.YELLOW then
 		msg.post("#fuze_yellow", "enable")
 	end
+end
 
+function init(self)
+	enable(self)
 	MainState.fuzesIdToColor[go.get_id()] = self.color
 end
 
@@ -50,6 +53,8 @@ function on_message(self, message_id, message, sender)
 			print("I collided with", go.get_id(), message.other_id, message.other_group)
 			go.delete(message.other_id)
 		end
+	elseif message_id == MSG_GROUPS.ENABLE then
+		enable(self)
 	end
 end
 
