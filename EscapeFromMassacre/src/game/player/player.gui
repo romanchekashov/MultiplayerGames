@@ -11,8 +11,8 @@ background_color {
 }
 nodes {
   position {
-    x: 0.0
-    y: 0.0
+    x: 1100.0
+    y: 50.0
     z: 0.0
     w: 1.0
   }
@@ -42,8 +42,8 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "topdown2/zombie"
-  id: "box"
+  texture: "topdown2/fuze_red"
+  id: "box-fuze-red"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
@@ -63,7 +63,7 @@ nodes {
   template_node_child: false
   size_mode: SIZE_MODE_AUTO
   custom_type: 0
-  enabled: true
+  enabled: false
   visible: true
   material: ""
 }

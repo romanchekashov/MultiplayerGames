@@ -21,6 +21,9 @@ go.property("linear_velocity", 200)
 go.property("remote", true)
 go.property("uid", 0)
 
+
+local MSG_GROUPS = MainState.MSG_GROUPS
+
 local LEFT = hash("left")
 local RIGHT = hash("right")
 local UP = hash("up")
@@ -41,6 +44,7 @@ local CONTACT_POINT_RESPONSE = hash("contact_point_response")
 local WALL = hash("wall")
 local STAIRS_TO_BASEMENT = hash("stairs_to_basement")
 local STAIRS_TO_HOUSE = hash("stairs_to_house")
+local FUSE = hash("fuse")
 local FUSE_BOX = hash("fuse_box")
 local KNIFE = hash("knife")
 
@@ -407,6 +411,11 @@ function on_message(self, message_id, message, sender)
 
 				self.hit_cooldown = HIT_COOLDOWN
 			end
+		elseif message.group == MSG_GROUPS.FUZE then
+			local fuze_color = MainState.fuzesIdToColor[message.other_id]
+			MainState.fuzeToPlayerUid[fuze_color] = self.uid
+			go.delete(message.other_id)
+			msg.post("gui#player", "found_fuze", {fuze_color = fuze_color})
 		end
 	elseif message_id == CONTACT_POINT_RESPONSE then
 		if message.group == WALL then

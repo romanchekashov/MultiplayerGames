@@ -45,6 +45,8 @@ embedded_components {
   "mask: \"stairs_to_house\"\n"
   "mask: \"knife\"\n"
   "mask: \"fuse_box\"\n"
+  "mask: \"fuze\"\n"
+  "mask: \"box\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_SPHERE\n"

@@ -1,7 +1,25 @@
+local MainState = require "src.main_state"
+
+local fuze_color_to_texture = {
+	[MainState.FUZE.RED] = "fuze_red",
+	[MainState.FUZE.GREEN] = "fuze_green",
+	[MainState.FUZE.BLUE] = "fuze_blue",
+	[MainState.FUZE.YELLOW] = "fuze_yellow",
+}
+
+local function show_fuze(fuze_color, pos)
+	local template_node = gui.get_node("box-fuze-red")
+	local node = gui.clone(template_node)
+
+	gui.play_flipbook(node, fuze_color_to_texture[fuze_color])
+	gui.set_enabled(node, true)
+	gui.set_position(node, pos)
+	
+	return node
+end
+
 function init(self)
-	-- Add initialization code here
-	-- Learn more: https://defold.com/manuals/script/
-	-- Remove this function if not needed
+	self.fuze_nodes = {}
 end
 
 function final(self)
@@ -17,9 +35,20 @@ function update(self, dt)
 end
 
 function on_message(self, message_id, message, sender)
-	-- Add message-handling code here
-	-- Learn more: https://defold.com/manuals/message-passing/
-	-- Remove this function if not needed
+	if message_id == hash("found_fuze") then
+		for _,node in ipairs(self.fuze_nodes) do
+			gui.delete_node(node)
+		end
+		self.fuze_nodes = {}
+
+		local template_node = gui.get_node("box-fuze-red")
+		local pos = gui.get_position(template_node)
+
+		for fuze_color,v in pairs(MainState.fuzeToPlayerUid) do
+			table.insert(self.fuze_nodes, show_fuze(fuze_color, pos))
+			pos.y = pos.y + 20
+		end
+	end
 end
 
 function on_input(self, action_id, action)

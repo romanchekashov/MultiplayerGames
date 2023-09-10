@@ -1,0 +1,43 @@
+local MainState = require "src.main_state"
+local Utils = require "src.utils.utils"
+
+local random_position = Utils.random_position
+
+function init(self)
+	math.randomseed(os.time())
+	factory.create("#factory-fuze", random_position(), nil, {remote = false, color = MainState.FUZE.RED})
+	factory.create("#factory-fuze", random_position(), nil, {remote = false, color = MainState.FUZE.GREEN})
+	factory.create("#factory-fuze", random_position(), nil, {remote = false, color = MainState.FUZE.BLUE})
+	factory.create("#factory-fuze", random_position(), nil, {remote = false, color = MainState.FUZE.YELLOW})
+	-- self.zombies = MainState.zombies
+	-- for i = 1, 10 do
+	-- 	local obj = MainState.createGameObject(spawn_zombie())
+	-- 	self.zombies:put(obj.id, obj)
+	-- end
+end
+
+function on_message(self, message_id, message, sender)
+	-- Add message-handling code here
+	-- Learn more: https://defold.com/manuals/message-passing/
+	-- Remove this function if not needed
+	if message_id == hash("remove_zombie") then
+		local zombie_id = message.zombie_id
+
+		if self.zombies:has(zombie_id) then
+			print("Zombie killed with bullet", zombie_id)
+			go.delete(zombie_id)
+			
+			self.zombies:remove(zombie_id)
+			-- msg.post("gui#menu", "set_online_players", {online_players = self.zombies.length})
+		end
+	end
+end
+
+function on_input(self, action_id, action)
+	
+end
+
+function on_reload(self)
+    -- Add reload-handling code here
+    -- Remove this function if not needed
+end

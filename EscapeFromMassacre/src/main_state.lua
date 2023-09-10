@@ -31,6 +31,12 @@ local M = {
             }
         }
     },
+    MSG_GROUPS = {
+        COLLISION_RESPONSE = hash("collision_response"),
+        BOX = hash("box"),
+        FUZE = hash("fuze"),
+        PLAYER = hash("player")
+    },
     HAS_GAMEPAD = false,
     SOUND = {
         level_up = function ()
@@ -73,7 +79,15 @@ local M = {
         HOUSE = 1,
         BASEMENT = 0
     },
-    playerSlots = {}
+    FUZE = {
+        RED = 1,
+        GREEN = 2,
+        BLUE = 3,
+        YELLOW = 4,
+    },
+    playerSlots = {},
+    fuzesIdToColor = {},
+    fuzeToPlayerUid = {}
 }
 
 M.playerOnMapLevel = M.MAP_LEVELS.HOUSE
