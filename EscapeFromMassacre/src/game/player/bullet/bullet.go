@@ -1,6 +1,6 @@
 components {
   id: "script"
-  component: "/src/game/player/bullet.script"
+  component: "/src/game/player/bullet/bullet.script"
   position {
     x: 0.0
     y: 0.0
