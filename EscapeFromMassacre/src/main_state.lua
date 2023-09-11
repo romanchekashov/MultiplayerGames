@@ -13,6 +13,7 @@ local M = {
     playerUidToWsLatency = {},
     ACTION_IDS = {
         JOIN = hash("join"),
+        USE = hash("use"),
         GAMEPAD = {
             CONNECTED = hash("gamepad_connected"),
             DISCONNECTED = hash("gamepad_dicconnected"),
@@ -37,6 +38,7 @@ local M = {
         DISABLE = hash("disable"),
         BOX = hash("box"),
         FUZE = hash("fuze"),
+        FUZE_BOX = hash("fuze-box"),
         PLAYER = hash("player")
     },
     HAS_GAMEPAD = false,
@@ -89,6 +91,7 @@ local M = {
     },
     playerSlots = {},
     fuzesIdToColor = {},
+    fuzeBoxIdsToColor = {},
     fuzeToPlayerUid = {}
 }
 

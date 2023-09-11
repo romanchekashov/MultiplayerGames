@@ -1,5 +1,6 @@
 local MainState = require "src.main_state"
 local Utils = require "src.utils.utils"
+
 local random_position = Utils.random_position
 
 local function spawn_zombie()
@@ -7,7 +8,6 @@ local function spawn_zombie()
 end
 
 function init(self)
-	math.randomseed(os.time())
 	self.zombies = MainState.zombies
 	-- for i = 1, 10 do
 	-- 	local obj = MainState.createGameObject(spawn_zombie())

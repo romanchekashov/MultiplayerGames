@@ -36,6 +36,7 @@ end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("found_fuze") then
+		print(message_id)
 		for _,node in ipairs(self.fuze_nodes) do
 			gui.delete_node(node)
 		end

@@ -1,0 +1,53 @@
+local MainState = require "src.main_state"
+local Utils = require "src.utils.utils"
+
+local random_position = Utils.random_position
+
+local function create_fuze(color, pos, rot)
+	return factory.create("#factory-fuze-box", pos or random_position(), rot, {remote = false, color = color})
+end
+
+local function use_map_level_visibility(self, map_level)
+	for lvl, fuze_tabel in pairs(self.fuzeBoxOnMapLevel) do
+		if lvl == map_level then
+			for _, fuze in ipairs(fuze_tabel) do
+				if go.exists(fuze) then
+					-- print("enable", lvl, fuze)
+					msg.post(fuze, "enable")
+				end
+			end
+		else
+			for _, fuze in ipairs(fuze_tabel) do
+				if go.exists(fuze) then
+					-- print("disable", lvl, fuze)
+					msg.post(fuze, "disable")
+				end
+			end
+		end
+	end
+end
+
+function init(self)
+	self.fuzeBoxOnMapLevel = {}
+	self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT] = {}
+	self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE] = {}
+
+	table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE], create_fuze(MainState.FUZE.GREEN, vmath.vector3(2206, 2400, 0), vmath.quat_rotation_z(math.rad(-90))))
+	table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE], create_fuze(MainState.FUZE.YELLOW, vmath.vector3(224, 286, 0), nil))
+
+	table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT], create_fuze(MainState.FUZE.BLUE, vmath.vector3(1952, 608, 0), nil))
+	table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT], create_fuze(MainState.FUZE.RED, vmath.vector3(480, 2654, 0), nil))
+
+	use_map_level_visibility(self, MainState.playerOnMapLevel)
+	-- self.zombies = MainState.zombies
+	-- for i = 1, 10 do
+	-- 	local obj = MainState.createGameObject(spawn_zombie())
+	-- 	self.zombies:put(obj.id, obj)
+	-- end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("map_level_change") then
+		use_map_level_visibility(self, message.map_level)
+	end
+end

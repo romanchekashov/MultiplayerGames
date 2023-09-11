@@ -28,7 +28,6 @@ local function use_map_level_visibility(self, map_level)
 end
 
 function init(self)
-	math.randomseed(os.time())
 	self.fuzeOnMapLevel = {}
 	self.fuzeOnMapLevel[MainState.MAP_LEVELS.BASEMENT] = {}
 	self.fuzeOnMapLevel[MainState.MAP_LEVELS.HOUSE] = {}

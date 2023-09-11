@@ -1,5 +1,12 @@
 local collections = require "src.utils.collections"
 
+-- print decorator
+old_print = print
+print = function(...)
+    local calling_script = debug.getinfo(2).short_src
+    old_print(calling_script, ...)
+end
+
 local M = {}
 local isDebug = false
 local isTest = false

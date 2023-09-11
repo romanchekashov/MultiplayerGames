@@ -1,0 +1,73 @@
+local MainState = require "src.main_state"
+
+local MSG_GROUPS = MainState.MSG_GROUPS
+
+local fuze_color_to_texture = {
+	[MainState.FUZE.RED] = {open = "fuze_box_red_open", close = "fuze_box_red_close"},
+	[MainState.FUZE.GREEN] = {open = "fuze_box_green_open", close = "fuze_box_green_close"},
+	[MainState.FUZE.BLUE] = {open = "fuze_box_blue_open", close = "fuze_box_blue_close"},
+	[MainState.FUZE.YELLOW] = {open = "fuze_box_yellow_open", close = "fuze_box_yellow_close"},
+}
+
+go.property("color", 1)
+
+local function enable(self)
+	sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].open )
+	-- msg.post("#sprite", "play_animation", {id = hash(fuze_color_to_texture[self.color].open)})
+end
+
+function init(self)
+	-- print(go.get("#fuze_box_sprite", "image"))
+	enable(self)
+	MainState.fuzeBoxIdsToColor[go.get_id()] = self.color
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function fixed_update(self, dt)
+	-- This function is called if 'Fixed Update Frequency' is enabled in the Engine section of game.project
+	-- Can be coupled with fixed updates of the physics simulation if 'Use Fixed Timestep' is enabled in
+	-- Physics section of game.project
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == MSG_GROUPS.COLLISION_RESPONSE then
+		if message.group == MSG_GROUPS.BOX then
+			print("I collided with", go.get_id(), message.other_id, message.other_group)
+			go.delete(message.other_id)
+		end
+	elseif message_id == MSG_GROUPS.ENABLE then
+		enable(self)
+	end
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here. The game object this script is attached to
+	-- must have acquired input focus:
+	--
+	--    msg.post(".", "acquire_input_focus")
+	--
+	-- All mapped input bindings will be received. Mouse and touch input will
+	-- be received regardless of where on the screen it happened.
+	-- Learn more: https://defold.com/manuals/input/
+	-- Remove this function if not needed
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end

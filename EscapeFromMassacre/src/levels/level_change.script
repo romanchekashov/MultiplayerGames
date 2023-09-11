@@ -29,5 +29,6 @@ function on_message(self, message_id, message, sender)
 
 		self.map_level = message.map_level
 		msg.post("/factory#fuze", "map_level_change", {map_level = self.map_level})
+		msg.post("/factory#fuze-box", "map_level_change", {map_level = self.map_level})
 	end
 end
