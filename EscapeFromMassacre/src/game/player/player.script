@@ -503,6 +503,8 @@ function on_message(self, message_id, message, sender)
 				end
 			end
 			-- print(message_id, message.group, fuze_box_color)
+		elseif message.group == MSG_GROUPS.EXIT then
+			msg.post("gui#menu", "player_exit", {})
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
 		if message.group == MSG_GROUPS.WALL then

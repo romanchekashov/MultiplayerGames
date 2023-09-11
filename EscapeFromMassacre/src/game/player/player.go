@@ -47,6 +47,7 @@ embedded_components {
   "mask: \"fuze\"\n"
   "mask: \"box\"\n"
   "mask: \"fuze-box\"\n"
+  "mask: \"exit\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_SPHERE\n"

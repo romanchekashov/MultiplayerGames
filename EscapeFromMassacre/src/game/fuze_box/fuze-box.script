@@ -52,6 +52,11 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("fuze_box_fixed") then
 		sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].close)
 		msg.post("#collisionobject", "disable")
+		MainState.fixedFuzeBoxCount = MainState.fixedFuzeBoxCount + 1
+
+		if MainState.fixedFuzeBoxCount == 4 then
+			msg.post("/levels#change", "gate_open", {})
+		end
 	elseif message_id == MSG_GROUPS.ENABLE then
 		enable(self)
 	end

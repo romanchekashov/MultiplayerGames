@@ -41,6 +41,7 @@ local M = {
         CONTACT_POINT_RESPONSE = hash("contact_point_response"),
         ENABLE = hash("enable"),
         DISABLE = hash("disable"),
+        EXIT = hash("exit"),
         WALL = hash("wall"),
         BOX = hash("box"),
         FUZE = hash("fuze"),
@@ -98,7 +99,8 @@ local M = {
     playerSlots = {},
     fuzesIdToColor = {},
     fuzeBoxIdsToColor = {},
-    fuzeToPlayerUid = {}
+    fuzeToPlayerUid = {},
+    fixedFuzeBoxCount = 0
 }
 
 M.playerOnMapLevel = M.MAP_LEVELS.HOUSE

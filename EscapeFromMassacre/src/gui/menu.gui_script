@@ -111,6 +111,8 @@ function on_message(self, message_id, message, sender)
 		update_stats(self)
 	elseif message_id == hash("non_remote_player_killed") then
 		onBtnExit(self)
+	elseif message_id == hash("player_exit") then
+		onBtnExit(self)
 	elseif message_id == hash("set_username") then
 		local nodeId = gui.get_node("username")
         -- format max 30 characters

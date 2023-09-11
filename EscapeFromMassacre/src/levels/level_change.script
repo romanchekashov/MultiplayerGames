@@ -21,14 +21,26 @@ function on_message(self, message_id, message, sender)
 			MainState.playerOnMapLevel = MainState.MAP_LEVELS.BASEMENT
 			self.current_screen = collectionfactory.create("#collectionfactory-basement", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = MainState.COLORS.RED_DARK})
+
+			msg.post("/gate", "disable")
 		elseif message.map_level == MainState.MAP_LEVELS.HOUSE then
 			MainState.playerOnMapLevel = MainState.MAP_LEVELS.HOUSE
 			self.current_screen = collectionfactory.create("#collectionfactory-house", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
+
+			if MainState.fixedFuzeBoxCount == 4 then
+				msg.post("/gate", "disable")
+			else
+				msg.post("/gate", "enable")
+			end
 		end
 
 		self.map_level = message.map_level
 		msg.post("/factory#fuze", "map_level_change", {map_level = self.map_level})
 		msg.post("/factory#fuze-box", "map_level_change", {map_level = self.map_level})
+	elseif message_id == hash("gate_open") then
+		if self.map_level == MainState.MAP_LEVELS.HOUSE and MainState.fixedFuzeBoxCount == 4 then
+			msg.post("/gate", "disable")
+		end
 	end
 end
