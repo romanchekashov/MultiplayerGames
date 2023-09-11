@@ -126,6 +126,25 @@ local function update_fuzes(player_uid)
 	end
 end
 
+local function hit(self, killer_uid)
+	local player = MainState.players:get(self.uid)
+	player.health = player.health - 20
+
+	go.set("#scale-health", "size.x", self.health_width * (player.health / 100))
+
+
+	if player.health <= 0 then
+		if killer_uid ~= nil then
+			MainState.increasePlayerScore(killer_uid)
+		end
+		msg.post("spawner-player#script", "remove_player", {
+			uid = self.uid,
+			player_id = go.get_id()})
+	end
+
+	self.hit_cooldown = HIT_COOLDOWN
+end
+
 function init(self)
 	local go_id = go.get_id()
 
@@ -445,19 +464,7 @@ function on_message(self, message_id, message, sender)
 					 return
 				end
 	
-				local player = MainState.players:get(self.uid)
-				player.health = player.health - 20
-				
-				go.set("#scale-health", "size.x", self.health_width * (player.health / 100))
-	
-				if player.health <= 0 then
-					MainState.increasePlayerScore(self.killer_uid)
-					msg.post("spawner-player#script", "remove_player", {
-						uid = self.uid,
-						player_id = go.get_id()})
-				end
-
-				self.hit_cooldown = HIT_COOLDOWN
+				hit(self, self.killer_uid)
 			end
 		elseif message.group == MSG_GROUPS.FUZE then
 			local fuze_color = MainState.fuzesIdToColor[message.other_id]
@@ -468,10 +475,17 @@ function on_message(self, message_id, message, sender)
 			msg.post("gui#player", "found_fuze", {fuze_color = fuze_color})
 		elseif message.group == MSG_GROUPS.FUZE_BOX then
 			local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
-			if self.btn_use_pressed and MainState.fuzeToPlayerUid[fuze_box_color] ~= nil then
-				msg.post(message.other_id, "fuze_box_fixed", {fuze_box_color = fuze_box_color})
-				MainState.fuzeToPlayerUid[fuze_box_color] = nil
-				update_fuzes(self.uid)
+			if self.btn_use_pressed then
+				if MainState.fuzeToPlayerUid[fuze_box_color] ~= nil then
+					msg.post(message.other_id, "fuze_box_fixed", {fuze_box_color = fuze_box_color})
+					MainState.fuzeToPlayerUid[fuze_box_color] = nil
+					update_fuzes(self.uid)
+				else
+					local pos = go.get_position()
+					pos.x = pos.x + 50
+					go.set_position(pos)
+					hit(self, nil)
+				end
 			end
 			print(message_id, message.group, fuze_box_color)
 		end
