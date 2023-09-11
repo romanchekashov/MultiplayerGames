@@ -12,7 +12,7 @@ local fuze_color_to_texture = {
 go.property("color", 1)
 
 local function enable(self)
-	sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].open )
+	sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].open)
 	-- msg.post("#sprite", "play_animation", {id = hash(fuze_color_to_texture[self.color].open)})
 end
 
@@ -49,6 +49,9 @@ function on_message(self, message_id, message, sender)
 			print("I collided with", go.get_id(), message.other_id, message.other_group)
 			go.delete(message.other_id)
 		end
+	elseif message_id == hash("fuze_box_fixed") then
+		sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].close)
+		msg.post("#collisionobject", "disable")
 	elseif message_id == MSG_GROUPS.ENABLE then
 		enable(self)
 	end
