@@ -143,7 +143,10 @@ function on_input(self, action_id, action)
 				onBtnExit(self)
 			end)
 		else
-			btnAction(action, "btn-join", nil, nil, function ()
+			btnAction(action, "btn-join-survivor", nil, nil, function ()
+				onBtnJoin(self)
+			end)
+			btnAction(action, "btn-join-family", nil, nil, function ()
 				onBtnJoin(self)
 			end)
 		end
