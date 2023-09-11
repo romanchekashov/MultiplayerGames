@@ -44,7 +44,7 @@ function on_message(self, message_id, message, sender)
 	if message_id == MSG_GROUPS.COLLISION_RESPONSE then
 		if message.group == MSG_GROUPS.BOX then
 			print("I collided with", go.get_id(), message.other_id, message.other_group)
-			go.delete(message.other_id)
+			-- go.delete(message.other_id)
 		end
 	end
 end

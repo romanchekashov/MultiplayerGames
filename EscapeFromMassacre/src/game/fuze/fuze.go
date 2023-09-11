@@ -94,14 +94,15 @@ embedded_components {
   }
 }
 embedded_components {
-  id: "fuze"
+  id: "collisionobject"
   type: "collisionobject"
   data: "collision_shape: \"\"\n"
-  "type: COLLISION_OBJECT_TYPE_STATIC\n"
+  "type: COLLISION_OBJECT_TYPE_KINEMATIC\n"
   "mass: 0.0\n"
   "friction: 0.1\n"
   "restitution: 0.5\n"
   "group: \"fuze\"\n"
+  "mask: \"wall\"\n"
   "mask: \"player\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"

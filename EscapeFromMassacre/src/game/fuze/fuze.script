@@ -53,6 +53,19 @@ function on_message(self, message_id, message, sender)
 			print("I collided with", go.get_id(), message.other_id, message.other_group)
 			go.delete(message.other_id)
 		end
+	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
+		if message.group == MSG_GROUPS.WALL then
+			-- print(go.get_position(), message_id, message.group, message.other_id, message.normal, message.distance, message.normal * message.distance)
+			-- go.set_position(go.get_position() + message.normal * message.distance)
+			local pos = go.get_position() + vmath.vector3(50, 50, 0)
+			if pos.x > 3600 then
+				pos.x = 3550
+			end
+			if pos.y > 2900 then
+				pos.y = 2850
+			end
+			go.set_position(pos)
+		end
 	elseif message_id == MSG_GROUPS.ENABLE then
 		enable(self)
 	end

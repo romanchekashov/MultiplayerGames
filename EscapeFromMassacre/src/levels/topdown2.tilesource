@@ -668,12 +668,12 @@ convex_hulls {
 convex_hulls {
   index: 584
   count: 4
-  collision_group: "box"
+  collision_group: "wall"
 }
 convex_hulls {
   index: 588
   count: 4
-  collision_group: "box"
+  collision_group: "wall"
 }
 convex_hulls {
   index: 592
@@ -808,12 +808,12 @@ convex_hulls {
 convex_hulls {
   index: 726
   count: 9
-  collision_group: "box"
+  collision_group: "wall"
 }
 convex_hulls {
   index: 735
   count: 10
-  collision_group: "box"
+  collision_group: "wall"
 }
 convex_hulls {
   index: 745
@@ -1248,7 +1248,7 @@ convex_hulls {
 convex_hulls {
   index: 1350
   count: 11
-  collision_group: "knife"
+  collision_group: ""
 }
 convex_hulls {
   index: 1361
@@ -2805,8 +2805,6 @@ convex_hulls {
   count: 4
   collision_group: "stairs_to_house"
 }
-collision_groups: "box"
-collision_groups: "knife"
 collision_groups: "stairs_to_basement"
 collision_groups: "stairs_to_house"
 collision_groups: "wall"
