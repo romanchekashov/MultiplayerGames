@@ -37,9 +37,9 @@ local function onBtnExit(self)
 	MainState.pause = true
 end
 
-local function onBtnJoin(self)
+local function onBtnJoin(self, player_type)
 	if not MainState.players:has(MainState.player.uid) then
-		msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid})
+		msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = player_type})
 	end
 
 	local nodeBtnExit = gui.get_node("btn-exit")
@@ -144,10 +144,10 @@ function on_input(self, action_id, action)
 			end)
 		else
 			btnAction(action, "btn-join-survivor", nil, nil, function ()
-				onBtnJoin(self)
+				onBtnJoin(self, MainState.PLAYER_TYPE.SURVIVOR)
 			end)
 			btnAction(action, "btn-join-family", nil, nil, function ()
-				onBtnJoin(self)
+				onBtnJoin(self, MainState.PLAYER_TYPE.FAMILY)
 			end)
 		end
 	end

@@ -8,6 +8,10 @@ local M = {
         uid = 0,
         username = "N/A"
     },
+    PLAYER_TYPE = {
+        SURVIVOR = 0,
+        FAMILY = 1
+    },
     bulletBelongToPlayerUid = {},
     playerUidToScore = {},
     playerUidToWsLatency = {},
@@ -180,7 +184,7 @@ function M.insidePauseBound(action)
         and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
 end
 
-function M.createGameObject(uid, username, go_id, map_level)
+function M.createGameObject(uid, username, go_id, player_type, map_level)
     local obj = {
         uid = uid or nil,
         username = username or nil,
@@ -190,7 +194,8 @@ function M.createGameObject(uid, username, go_id, map_level)
         health = 100,
         manna = 100,
         level = 1,
-        xp = 0
+        xp = 0,
+        type = player_type or M.PLAYER_TYPE.SURVIVOR
     }
     return obj
 end

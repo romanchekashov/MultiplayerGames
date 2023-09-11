@@ -20,6 +20,8 @@ go.property("angular_velocity", 5)
 go.property("linear_velocity", 200)
 go.property("remote", true)
 go.property("uid", 0)
+go.property("map_level", 0)
+go.property("player_type", 0)
 
 
 local MSG_GROUPS = MainState.MSG_GROUPS
@@ -58,6 +60,11 @@ local HIT_COOLDOWN = 0.2
 local FIRE_COOLDOWN = 0.2
 
 local CROSSHAIR_OFFSET = vmath.vector3(10,200,0)
+
+local SURVIVOR_IMGS = {
+	MAN_1 = "surv-man-1",
+	WOMAN_1 = "surv-woman-1"
+}
 
 local function get_rotation(touch)
 	local to = go.get_position() - go.get_position("camera")
@@ -115,7 +122,13 @@ function init(self)
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
-	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.map_level or MainState.MAP_LEVELS.HOUSE)
+	print(self.map_level, self.player_type, MainState.PLAYER_TYPE.SURVIVOR)
+	if self.player_type == MainState.PLAYER_TYPE.SURVIVOR then
+		sprite.play_flipbook("#sprite", SURVIVOR_IMGS.WOMAN_1)
+		-- go.set_rotation(vmath.quat_rotation_z(math.rad(-90)))
+	end
+
+	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.player_type, self.map_level)
 	MainState.players:put(obj.uid, obj)
 	
 	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
