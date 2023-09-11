@@ -66,6 +66,13 @@ local SURVIVOR_IMGS = {
 	WOMAN_1 = "surv-woman-1"
 }
 
+local FUZE_COLOR_IMGS = {
+	[MainState.FUZE.RED] = "fuze_red",
+	[MainState.FUZE.GREEN] = "fuze_green",
+	[MainState.FUZE.BLUE] = "fuze_blue",
+	[MainState.FUZE.YELLOW] = "fuze_yellow",
+}
+
 local function get_rotation(touch)
 	local to = go.get_position() - go.get_position("camera")
 	local from = vmath.vector3(touch.x, touch.y, 0)
@@ -122,7 +129,9 @@ function init(self)
 
 	label.set_text("#name", string.format("%.30s", self.username))
 
-	print(self.map_level, self.player_type, MainState.PLAYER_TYPE.SURVIVOR)
+	for i=1,#FUZE_COLOR_IMGS do msg.post(string.format("#sprite-fuze-%d", i), "disable") end
+
+	-- print(self.map_level, self.player_type, MainState.PLAYER_TYPE.SURVIVOR)
 	if self.player_type == MainState.PLAYER_TYPE.SURVIVOR then
 		sprite.play_flipbook("#sprite", SURVIVOR_IMGS.WOMAN_1)
 		-- go.set_rotation(vmath.quat_rotation_z(math.rad(-90)))
@@ -430,6 +439,21 @@ function on_message(self, message_id, message, sender)
 			print(message.group, fuze_color, go.get_position(), go.get_position(message.other_id))
 			MainState.fuzeToPlayerUid[fuze_color] = self.uid
 			go.delete(message.other_id)
+
+
+			for i=1,#FUZE_COLOR_IMGS do msg.post(string.format("#sprite-fuze-%d", i), "disable") end
+			
+			local i = 1
+			local sprite_url
+			for key_fuze_color, player_uid in pairs(MainState.fuzeToPlayerUid) do
+				if player_uid == self.uid then
+					sprite_url = string.format("#sprite-fuze-%d", i)
+					msg.post(sprite_url, "enable")
+					sprite.play_flipbook(sprite_url, FUZE_COLOR_IMGS[key_fuze_color])
+					i = i + 1
+				end
+			end
+			
 			msg.post("gui#player", "found_fuze", {fuze_color = fuze_color})
 		elseif message.group == MSG_GROUPS.FUZE_BOX then
 			local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]

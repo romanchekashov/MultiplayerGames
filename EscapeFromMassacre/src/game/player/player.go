@@ -311,3 +311,103 @@ embedded_components {
     z: 1.0
   }
 }
+embedded_components {
+  id: "sprite-fuze-1"
+  type: "sprite"
+  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
+  "default_animation: \"fuze_red\"\n"
+  "material: \"/builtins/materials/sprite.material\"\n"
+  "blend_mode: BLEND_MODE_ALPHA\n"
+  ""
+  position {
+    x: 30.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale {
+    x: 0.4
+    y: 0.4
+    z: 1.0
+  }
+}
+embedded_components {
+  id: "sprite-fuze-2"
+  type: "sprite"
+  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
+  "default_animation: \"fuze_green\"\n"
+  "material: \"/builtins/materials/sprite.material\"\n"
+  "blend_mode: BLEND_MODE_ALPHA\n"
+  ""
+  position {
+    x: 30.0
+    y: 10.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale {
+    x: 0.4
+    y: 0.4
+    z: 1.0
+  }
+}
+embedded_components {
+  id: "sprite-fuze-3"
+  type: "sprite"
+  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
+  "default_animation: \"fuze_blue\"\n"
+  "material: \"/builtins/materials/sprite.material\"\n"
+  "blend_mode: BLEND_MODE_ALPHA\n"
+  ""
+  position {
+    x: 40.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale {
+    x: 0.4
+    y: 0.4
+    z: 1.0
+  }
+}
+embedded_components {
+  id: "sprite-fuze-4"
+  type: "sprite"
+  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
+  "default_animation: \"fuze_yellow\"\n"
+  "material: \"/builtins/materials/sprite.material\"\n"
+  "blend_mode: BLEND_MODE_ALPHA\n"
+  ""
+  position {
+    x: 40.0
+    y: 10.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale {
+    x: 0.4
+    y: 0.4
+    z: 1.0
+  }
+}
