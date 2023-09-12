@@ -89,7 +89,7 @@ end
 function on_input(self, action_id, action)
 	if action_id == hash("touch") then
 		btnAction(action, "btn-game-exit", nil, nil, function ()
-			gui.set_enabled(gui.get_node("panel-game-over"), false)
+			msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.LOBBY})
 		end)
 	end
 

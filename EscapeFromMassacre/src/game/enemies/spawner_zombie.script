@@ -27,7 +27,7 @@ function on_message(self, message_id, message, sender)
 			go.delete(zombie_id)
 			
 			self.zombies:remove(zombie_id)
-			-- msg.post("gui#menu", "set_online_players", {online_players = self.zombies.length})
+			-- msg.post("/gui#menu", "set_online_players", {online_players = self.zombies.length})
 		end
 	end
 end

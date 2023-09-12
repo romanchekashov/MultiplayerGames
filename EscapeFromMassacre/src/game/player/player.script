@@ -102,7 +102,7 @@ local function trigger(self, action)
 		if socket.gettime() - self.pressed_time < 0.2 and self.fire_cooldown < 0 then
 			local rotation = go.get_rotation()
 			local position = go.get_position() + vmath.rotate(rotation, vmath.vector3(10, 30, 0))
-			msg.post("spawner-bullet#script", "add_bullet", {pos = position, rot = rotation})
+			msg.post("/spawner-bullet#script", "add_bullet", {pos = position, rot = rotation})
 			self.fire_cooldown = FIRE_COOLDOWN
 		end
 	end
@@ -133,7 +133,7 @@ local function throw_fuzes(player_uid)
 			pos.y = pos.y + 30
 			MainState.fuzeToPlayerUid[key_fuze_color] = nil
 			msg.post("/factory#fuze", "throw_fuze", {map_level = MainState.playerOnMapLevel, color = key_fuze_color, pos = pos})
-			msg.post("gui#player", "update_fuzes", {fuze_color = key_fuze_color})
+			msg.post("/gui#player", "update_fuzes", {fuze_color = key_fuze_color})
 		end
 	end
 end
@@ -197,7 +197,7 @@ function init(self)
 		MainState.playerUidToWsLatency[obj.uid] = -1
 	end
 
-	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
+	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
 	log("player joined: " .. self.username)
 
 	if not self.remote then
@@ -205,14 +205,14 @@ function init(self)
 		msg.post("camera", "acquire_camera_focus")
 		msg.post("/broadsock", "register_gameobject", { id = go_id, type = "player" })
 		input.acquire()
-		msg.post("virtual_gamepad", "register")
+		msg.post("/virtual_gamepad", "register")
 
-		msg.post("/levels#change", "load_screen", {map_level = obj.map_level})
+		msg.post("/levels#change", "load_level", {map_level = obj.map_level})
 
 		if IS_MOBILE then
-			msg.post("default:/virtual_gamepad", "enable")
+			msg.post("/virtual_gamepad", "enable")
 		else
-			msg.post("default:/virtual_gamepad", "disable")
+			msg.post("/virtual_gamepad", "disable")
 		end
 	end
 end
@@ -224,13 +224,13 @@ function final(self)
 		msg.post(".", "release_input_focus")
 		msg.post("camera", "release_camera_focus")
 		msg.post("/broadsock", "unregister_gameobject", { id = go_id, killer_uid = self.killer_uid })
-		msg.post("gui#menu", "non_remote_player_killed", {uid = self.uid})
+		msg.post("/gui#menu", "non_remote_player_killed", {uid = self.uid})
 		input.release()
-		msg.post("virtual_gamepad", "unregister")
+		msg.post("/virtual_gamepad", "unregister")
 	end
-
+	
 	MainState.players:remove(self.uid)
-	msg.post("gui#menu", "set_online_players", {online_players = MainState.players.length})
+	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
 end
 
 function update(self, dt)
@@ -289,7 +289,7 @@ function on_input(self, action_id, action)
           -- gamepad 0 was connected
 			log("gamepad_connected")
 			MainState.HAS_GAMEPAD = true
-			msg.post("default:/virtual_gamepad", "disable")
+			msg.post("/virtual_gamepad", "disable")
         end
     elseif action_id == ACTION_IDS.GAMEPAD.DISCONNECTED then
         if action.gamepad == 0 then
@@ -297,7 +297,7 @@ function on_input(self, action_id, action)
 		    log("gamepad_dicconnected")
 			MainState.HAS_GAMEPAD = false
 			if IS_MOBILE then
-				msg.post("default:/virtual_gamepad", "enable")
+				msg.post("/virtual_gamepad", "enable")
 			end
         end
     end
@@ -305,7 +305,7 @@ function on_input(self, action_id, action)
 	-- if isGamepadActionId[action_id] then
 	-- 	if not MainState.HAS_GAMEPAD  then
 	-- 		MainState.HAS_GAMEPAD = true
-	-- 		msg.post("default:/virtual_gamepad", "disable")
+	-- 		msg.post("/virtual_gamepad", "disable")
 	-- 	end
 	-- end
 
@@ -486,7 +486,7 @@ function on_message(self, message_id, message, sender)
 				MainState.fuzeToPlayerUid[fuze_color] = self.uid
 				update_fuzes(self.uid)
 				msg.post("/factory#fuze", "pick_fuze", {color = fuze_color})
-				msg.post("gui#player", "update_fuzes", {fuze_color = fuze_color})
+				msg.post("/gui#player", "update_fuzes", {fuze_color = fuze_color})
 			end
 		elseif message.group == MSG_GROUPS.FUZE_BOX then
 			local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
@@ -504,7 +504,7 @@ function on_message(self, message_id, message, sender)
 			end
 			-- print(message_id, message.group, fuze_box_color)
 		elseif message.group == MSG_GROUPS.EXIT then
-			msg.post("gui#menu", "player_exit", {})
+			msg.post("/gui#menu", "player_exit", {})
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
 		if message.group == MSG_GROUPS.WALL then
@@ -513,10 +513,10 @@ function on_message(self, message_id, message, sender)
 
 		if self.stairs_change_cooldown < 0 then
 			if message.group == STAIRS_TO_BASEMENT then
-				msg.post("/levels#change", "load_screen", {map_level = MainState.MAP_LEVELS.BASEMENT})
+				msg.post("/levels#change", "load_level", {map_level = MainState.MAP_LEVELS.BASEMENT})
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			elseif message.group == STAIRS_TO_HOUSE then
-				msg.post("/levels#change", "load_screen", {map_level = MainState.MAP_LEVELS.HOUSE})
+				msg.post("/levels#change", "load_level", {map_level = MainState.MAP_LEVELS.HOUSE})
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			end
 		end

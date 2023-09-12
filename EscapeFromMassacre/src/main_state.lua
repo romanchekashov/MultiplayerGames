@@ -11,7 +11,7 @@ local M = {
         LOBBY = 4,
     },
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
-    GAME_TIMEOUT_IN_SEC = 10,
+    GAME_TIMEOUT_IN_SEC = 30,
     player = {
         uid = 0,
         username = "N/A"
@@ -97,8 +97,11 @@ local M = {
         GREEN = vmath.vector4(39 / 255, 174 / 255, 96 / 255, 0),
         RED_DARK = vmath.vector4(128 / 255, 36 / 255, 15 / 255, 0),
     },
+    GAME_SCREENS = {
+        LOBBY = 0,
+        GAME = 1
+    },
     MAP_LEVELS = {
-        LOBBY = 2,
         HOUSE = 1,
         BASEMENT = 0
     },

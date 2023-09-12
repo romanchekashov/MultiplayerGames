@@ -1,10 +1,44 @@
+local utils = require "src.utils.utils"
+
 local M = {
 	getAngle = function (action)
 		local to = go.get_world_position()
 		local from = vmath.vector3(action.x, action.y, 0)
 		return math.atan2(to.x - from.x, from.y - to.y)
-	end
+	end,
+    CURRENT_COLLECTION_IDS = {},
+    COLLECTION_URLS = {}
 }
+
+-- https://forum.defold.com/t/collection-factory/73020/6
+-- https://forum.defold.com/t/get-address-of-component-from-collection-factory-instance-solved/66441/3
+-- https://defold.com/manuals/factory/#addressing-of-factory-created-objects
+local EXCLUDE = {["#"]=true,["."]=true,["@"]=true,}
+old_msg_post = msg.post
+msg.post = function(url, ...)
+    if type(url) ~= "string" or EXCLUDE[url:sub(1, 1)] ~= nil or url:sub(1, 8) == "/screens" then
+        old_msg_post(url, ...)
+        return
+    end
+
+    if M.COLLECTION_URLS[url] == nil then
+        local res = utils.split(url, "#")
+        -- print(url, res[1], #res > 1 and res[2] or nil, M.CURRENT_COLLECTION_IDS[res[1]])
+        if M.CURRENT_COLLECTION_IDS[res[1]] ~= nil then
+            M.COLLECTION_URLS[url] = msg.url("default", M.CURRENT_COLLECTION_IDS[res[1]], #res > 1 and res[2] or nil)
+        end
+    end
+
+    old_msg_post(M.COLLECTION_URLS[url] or url, ...)
+end
+
+function M.SET_CURRENT_COLLECTION_IDS(ids)
+    M.CURRENT_COLLECTION_IDS = ids
+    M.COLLECTION_URLS = {}
+    for key, value in pairs(ids) do
+        print(key, value)
+    end
+end
 
 local getAngle = M.getAngle
 

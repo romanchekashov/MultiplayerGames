@@ -46,6 +46,17 @@ function init(self)
 	-- end
 end
 
+function final(self)
+	print("clear fuze boxses")
+	for lvl, fuze_tabel in pairs(self.fuzeBoxOnMapLevel) do
+		for _, fuze in ipairs(fuze_tabel) do
+			if fuze ~= nil and go.exists(fuze) then
+				go.delete(fuze)
+			end
+		end
+	end
+end
+
 function on_message(self, message_id, message, sender)
 	if message_id == hash("map_level_change") then
 		use_map_level_visibility(self, message.map_level)

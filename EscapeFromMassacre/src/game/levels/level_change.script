@@ -7,44 +7,47 @@ function init(self)
 	self.current_screen = nil
 	self.loading = false
 	self.map_level = MainState.MAP_LEVELS.HOUSE
-	msg.post("#", "load_screen", {map_level = MainState.MAP_LEVELS.HOUSE})
+	msg.post("#", "load_level", {map_level = MainState.MAP_LEVELS.HOUSE})
+end
+
+function final(self)
+	print("final")
+	if self.current_screen ~= nil then
+		-- if there was a current screen, delete it
+		go.delete(self.current_screen)
+	end
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == hash("load_screen") and self.map_level ~= message.level then
-		if self.current_screen then
+	if message_id == hash("load_level") and self.map_level ~= message.level then
+		if self.current_screen ~= nil then
 			-- if there was a current screen, delete it
 			go.delete(self.current_screen)
 		end
 
-		self.map_level = message.map_level
+		if message.map_level == MainState.MAP_LEVELS.BASEMENT then
+			MainState.playerOnMapLevel = MainState.MAP_LEVELS.BASEMENT
+			self.current_screen = collectionfactory.create("#collectionfactory-basement", self.screen_pos)
+			msg.post("@render:", "clear_color", {color = MainState.COLORS.RED_DARK})
 
-		if message.map_level == MainState.MAP_LEVELS.LOBBY then
-			MainState.playerOnMapLevel = MainState.MAP_LEVELS.LOBBY
-			self.current_screen = collectionfactory.create("#collectionfactory-lobby", self.screen_pos)
+			msg.post("/gate", "disable")
+			print("BASEMENT", #self.current_screen)
+		elseif message.map_level == MainState.MAP_LEVELS.HOUSE then
+			MainState.playerOnMapLevel = MainState.MAP_LEVELS.HOUSE
+			self.current_screen = collectionfactory.create("#collectionfactory-house", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
-		else
-			if message.map_level == MainState.MAP_LEVELS.BASEMENT then
-				MainState.playerOnMapLevel = MainState.MAP_LEVELS.BASEMENT
-				self.current_screen = collectionfactory.create("#collectionfactory-basement", self.screen_pos)
-				msg.post("@render:", "clear_color", {color = MainState.COLORS.RED_DARK})
-	
+
+			if MainState.fixedFuzeBoxCount == 4 then
 				msg.post("/gate", "disable")
-			elseif message.map_level == MainState.MAP_LEVELS.HOUSE then
-				MainState.playerOnMapLevel = MainState.MAP_LEVELS.HOUSE
-				self.current_screen = collectionfactory.create("#collectionfactory-house", self.screen_pos)
-				msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
-	
-				if MainState.fixedFuzeBoxCount == 4 then
-					msg.post("/gate", "disable")
-				else
-					msg.post("/gate", "enable")
-				end
+			else
+				msg.post("/gate", "enable")
 			end
-	
-			msg.post("/factory#fuze", "map_level_change", {map_level = self.map_level})
-			msg.post("/factory#fuze-box", "map_level_change", {map_level = self.map_level})
+			print("HOUSE", #self.current_screen)
 		end
+
+		self.map_level = message.map_level
+		msg.post("/factory#fuze", "map_level_change", {map_level = self.map_level})
+		msg.post("/factory#fuze-box", "map_level_change", {map_level = self.map_level})
 	elseif message_id == hash("gate_open") then
 		if self.map_level == MainState.MAP_LEVELS.HOUSE and MainState.fixedFuzeBoxCount == 4 then
 			msg.post("/gate", "disable")

@@ -1,4 +1,6 @@
 local debugUtils = require "src.utils.debug-utils"
+local defold_utils = require "src.utils.defold-utils"
+local MainState = require "src.main_state"
 
 local log = debugUtils.createLog("[BROADSOCK SERVER]").log
 
@@ -21,6 +23,15 @@ function init(self)
 	msg.post(BROADSOCK, "register_factory", { url = "/spawner-player#factory-player", type = "player" })
 	msg.post(BROADSOCK, "register_factory", { url = "/spawner-zombie#factory-zombie", type = "zombie" })
 	msg.post(BROADSOCK, "register_factory", { url = "/spawner-bullet#factory-bullet", type = "bullet" })
+
+
+	self.screen_pos = vmath.vector3(0, 0, 0)
+	self.next_screen = nil
+	self.current_screen = nil
+	self.loading = false
+	self.map_level = MainState.GAME_SCREENS.LOBBY
+	msg.post("#", "load_screen", {map_level = MainState.GAME_SCREENS.LOBBY})
+	print("main init")
 end
 
 function on_message(self, message_id, message, sender)
@@ -34,5 +45,27 @@ function on_message(self, message_id, message, sender)
 		if sender == BROADSOCK then
 			log("disconnected")
 		end
+	end
+
+	if message_id == hash("load_screen") and self.map_level ~= message.level then
+		if self.current_screen ~= nil then
+			print("delete", #self.current_screen)
+			-- if there was a current screen, delete it
+			go.delete(self.current_screen)
+		end
+
+
+		if message.map_level == MainState.GAME_SCREENS.LOBBY then
+			self.current_screen = collectionfactory.create("#collectionfactory-lobby", self.screen_pos)
+			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
+			print("LOBBY", #self.current_screen)
+		elseif message.map_level == MainState.GAME_SCREENS.GAME then
+			self.current_screen = collectionfactory.create("#collectionfactory-game", self.screen_pos)
+			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
+			print("GAME", #self.current_screen)
+		end
+
+		self.map_level = message.map_level
+		defold_utils.SET_CURRENT_COLLECTION_IDS(self.current_screen)
 	end
 end
