@@ -4,6 +4,8 @@ local btnAction = Buttons.action
 local server_nakama = require "client.server_nakama"
 local debugUtils = require "src.utils.debug-utils"
 
+local druid = require("druid.druid")
+local timer_component = require("druid.extended.timer")
 
 local ACTION_IDS = MainState.ACTION_IDS
 
@@ -75,9 +77,25 @@ end
 
 local UPDATE_STATS_INTERVAL = 2
 
+
+local function empty_callback(self, param)
+	print("GAME OVER: Empty callback. Param", param)
+	onBtnExit(self)
+end
+local function setup_timer(self)
+	self.timer = self.druid:new_timer("timer", MainState.GAME_TIMEOUT_IN_SEC, 0, empty_callback)
+end
+
+local function register_druid_extended_components(self)
+	druid.register("timer", timer_component)
+end
+
 function init(self)
 	msg.post(".", "acquire_input_focus")
 
+	self.druid = druid.new(self)
+	register_druid_extended_components(self)
+	setup_timer(self)
 	self.playersTextNodes = {}
 	MainState.pause = true
 	set_is_joined(self, false)
@@ -85,16 +103,14 @@ function init(self)
 end
 
 function final(self)
-	-- Add finalization code here
-	-- Learn more: https://defold.com/manuals/script/
-	-- Remove this function if not needed
+	self.druid:final()
+	
 	msg.post(".", "release_input_focus")
 end
 
 function update(self, dt)
-	-- Add update code here
-	-- Learn more: https://defold.com/manuals/script/
-	-- Remove this function if not needed
+	self.druid:update(dt)
+	
 	if self.update_stats_timeframe < 0 then
 		update_stats(self)
 		self.update_stats_timeframe = UPDATE_STATS_INTERVAL
@@ -104,9 +120,8 @@ function update(self, dt)
 end
 
 function on_message(self, message_id, message, sender)
-	-- Add message-handling code here
-	-- Learn more: https://defold.com/manuals/message-passing/
-	-- Remove this function if not needed
+	self.druid:on_message(message_id, message, sender)
+
 	if message_id == hash("set_online_players") then
 		update_stats(self)
 	elseif message_id == hash("non_remote_player_killed") then
@@ -121,16 +136,6 @@ function on_message(self, message_id, message, sender)
 end
 
 function on_input(self, action_id, action)
-	-- Add input-handling code here. The game object this script is attached to
-	-- must have acquired input focus:
-	--
-	--    msg.post(".", "acquire_input_focus")
-	--
-	-- All mapped input bindings will be received. Mouse and touch input will
-	-- be received regardless of where on the screen it happened.
-	-- Learn more: https://defold.com/manuals/input/
-	-- Remove this function if not needed
-
 	if action_id == ACTION_IDS.JOIN and action.released then
 		if self.is_joined then
 			onBtnExit(self)
@@ -153,6 +158,8 @@ function on_input(self, action_id, action)
 			end)
 		end
 	end
+
+	return self.druid:on_input(action_id, action)
 end
 
 function on_reload(self)

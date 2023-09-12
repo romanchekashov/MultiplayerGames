@@ -4,6 +4,7 @@ local M = {
     pause = true,
     players = Collections.createMap(),
     zombies = Collections.createMap(),
+    GAME_TIMEOUT_IN_SEC = 60 * 1,
     player = {
         uid = 0,
         username = "N/A"
