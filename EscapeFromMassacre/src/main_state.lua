@@ -5,8 +5,10 @@ local M = {
     players = Collections.createMap(),
     zombies = Collections.createMap(),
     GAME_STATES = {
-        RUNNING = 1,
-        END = 2,
+        START = 1,
+        RUNNING = 2,
+        END = 3,
+        LOBBY = 4,
     },
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
     GAME_TIMEOUT_IN_SEC = 10,
@@ -41,6 +43,9 @@ local M = {
                 DOWN = hash("ls_down")
             }
         }
+    },
+    MSG_IDS = {
+        GAME_START = hash("game_start")
     },
     MSG_GROUPS = {
         COLLISION_RESPONSE = hash("collision_response"),
@@ -93,6 +98,7 @@ local M = {
         RED_DARK = vmath.vector4(128 / 255, 36 / 255, 15 / 255, 0),
     },
     MAP_LEVELS = {
+        LOBBY = 2,
         HOUSE = 1,
         BASEMENT = 0
     },
