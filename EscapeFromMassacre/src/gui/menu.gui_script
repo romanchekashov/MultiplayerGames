@@ -33,24 +33,6 @@ local function add_player_stat(player, pos, scale, parent, scorePosX)
 	return new_textnode
 end
 
-local function onBtnExit(self)
-	-- msg.post("spawner-player#script", "remove_player")
-	set_is_joined(self, false)
-	MainState.pause = true
-end
-
-local function onBtnJoin(self, player_type)
-	if not MainState.players:has(MainState.player.uid) then
-		msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = player_type})
-	end
-
-	local nodeBtnExit = gui.get_node("btn-exit")
-	MainState.setPauseBound(gui.get_screen_position(nodeBtnExit), gui.get_size(nodeBtnExit))
-	MainState.pause = false
-
-	set_is_joined(self, true)
-end
-
 local function update_stats(self)
 	local nodeId = gui.get_node("stats-playing")
         -- format score like: 006 with leading zeros
@@ -77,10 +59,47 @@ end
 
 local UPDATE_STATS_INTERVAL = 2
 
+local function update_gui()
+	if MainState.currentGameState == MainState.GAME_STATES.RUNNING then
+		gui.set_enabled(gui.get_node("panel-join"), true)
+	else
+		gui.set_enabled(gui.get_node("panel-join"), false)
+	end
+end
+
+
+local function onGameOver(self)
+	-- msg.post("spawner-player#script", "remove_player")
+	set_is_joined(self, false)
+	MainState.pause = true
+	gui.set_enabled(gui.get_node("panel-join"), false)
+
+	MainState.currentGameState = MainState.GAME_STATES.END
+	msg.post("gui#game-over", "show")
+end
+
+local function onBtnExit(self)
+	-- msg.post("spawner-player#script", "remove_player")
+	set_is_joined(self, false)
+	MainState.pause = true
+end
+
+local function onBtnJoin(self, player_type)
+	if not MainState.players:has(MainState.player.uid) then
+		msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = player_type})
+	end
+
+	local nodeBtnExit = gui.get_node("btn-exit")
+	MainState.setPauseBound(gui.get_screen_position(nodeBtnExit), gui.get_size(nodeBtnExit))
+	MainState.pause = false
+
+	set_is_joined(self, true)
+end
+
 
 local function empty_callback(self, param)
 	print("GAME OVER: Empty callback. Param", param)
-	onBtnExit(self)
+	onGameOver(self)
 end
 local function setup_timer(self)
 	self.timer = self.druid:new_timer("timer", MainState.GAME_TIMEOUT_IN_SEC, 0, empty_callback)
@@ -96,10 +115,12 @@ function init(self)
 	self.druid = druid.new(self)
 	register_druid_extended_components(self)
 	setup_timer(self)
+
 	self.playersTextNodes = {}
 	MainState.pause = true
 	set_is_joined(self, false)
 	self.update_stats_timeframe = UPDATE_STATS_INTERVAL
+	msg.post("gui#game-over", "hide")
 end
 
 function final(self)

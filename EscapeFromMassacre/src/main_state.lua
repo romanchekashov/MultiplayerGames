@@ -4,7 +4,12 @@ local M = {
     pause = true,
     players = Collections.createMap(),
     zombies = Collections.createMap(),
-    GAME_TIMEOUT_IN_SEC = 60 * 1,
+    GAME_STATES = {
+        RUNNING = 1,
+        END = 2,
+    },
+    -- GAME_TIMEOUT_IN_SEC = 60 * 15,
+    GAME_TIMEOUT_IN_SEC = 10,
     player = {
         uid = 0,
         username = "N/A"
@@ -104,6 +109,8 @@ local M = {
     fixedFuzeBoxCount = 0
 }
 
+M.currentGameState = M.GAME_STATES.RUNNING
+
 M.playerOnMapLevel = M.MAP_LEVELS.HOUSE
 M.isGamepadActionId = {
     [M.ACTION_IDS.GAMEPAD.CONNECTED] = true,
@@ -200,7 +207,11 @@ function M.createGameObject(uid, username, go_id, player_type, map_level)
         manna = 100,
         level = 1,
         xp = 0,
-        type = player_type or M.PLAYER_TYPE.SURVIVOR
+        type = player_type or M.PLAYER_TYPE.SURVIVOR,
+
+        is_family = function (self)
+            return self.type == M.PLAYER_TYPE.FAMILY
+        end
     }
     return obj
 end
