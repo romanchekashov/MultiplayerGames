@@ -70,11 +70,11 @@
             "scaleInDock": 1
         },
         "house.tmx": {
-            "scale": 0.4703,
-            "selectedLayer": 5,
+            "scale": 0.1864,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 1331.0652774824582,
-                "y": 1563.8953859238786
+                "x": 616.9527896995705,
+                "y": 2239.8068669527893
             }
         },
         "house.tmx#topdown_tilesheet_complete2": {
