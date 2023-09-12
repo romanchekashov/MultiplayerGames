@@ -231,6 +231,7 @@ function final(self)
 	
 	MainState.players:remove(self.uid)
 	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
+	print("clear player", self.uid)
 end
 
 function update(self, dt)

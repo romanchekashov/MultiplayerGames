@@ -1281,7 +1281,67 @@ nodes {
 nodes {
   position {
     x: 0.0
-    y: -180.0
+    y: -160.0
+    z: 0.0
+    w: 1.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+    w: 1.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+    z: 0.0
+    w: 1.0
+  }
+  color {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+    w: 1.0
+  }
+  type: TYPE_BOX
+  blend_mode: BLEND_MODE_ALPHA
+  texture: ""
+  id: "survivors/btn"
+  xanchor: XANCHOR_NONE
+  yanchor: YANCHOR_NONE
+  pivot: PIVOT_CENTER
+  adjust_mode: ADJUST_MODE_FIT
+  parent: "survivors/list"
+  layer: ""
+  inherit_alpha: true
+  slice9 {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0
+  }
+  clipping_mode: CLIPPING_MODE_NONE
+  clipping_visible: true
+  clipping_inverted: false
+  alpha: 0.0
+  overridden_fields: 1
+  template_node_child: true
+  size_mode: SIZE_MODE_AUTO
+  custom_type: 0
+  enabled: true
+  visible: true
+  material: ""
+}
+nodes {
+  position {
+    x: 0.0
+    y: 0.0
     z: 0.0
     w: 1.0
   }
@@ -1310,12 +1370,11 @@ nodes {
     w: 1.0
   }
   type: TYPE_TEMPLATE
-  id: "survivors/btn"
-  parent: "survivors/list"
+  id: "survivors/btn-t"
+  parent: "survivors/btn"
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  overridden_fields: 1
   template: "/assets/button.gui"
   template_node_child: true
   custom_type: 0
@@ -1355,12 +1414,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: "tictactoe/btn"
-  id: "survivors/btn/bg"
+  id: "survivors/btn-t/bg"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "survivors/btn"
+  parent: "survivors/btn-t"
   layer: "below"
   inherit_alpha: true
   slice9 {
@@ -1415,7 +1474,7 @@ nodes {
   blend_mode: BLEND_MODE_ALPHA
   text: "Join Survivors"
   font: "tictactoe"
-  id: "survivors/btn/text"
+  id: "survivors/btn-t/text"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
@@ -1433,7 +1492,7 @@ nodes {
   }
   adjust_mode: ADJUST_MODE_FIT
   line_break: false
-  parent: "survivors/btn/bg"
+  parent: "survivors/btn-t/bg"
   layer: "text"
   inherit_alpha: true
   alpha: 1.0
@@ -1932,7 +1991,67 @@ nodes {
 nodes {
   position {
     x: 0.0
-    y: -180.0
+    y: -160.0
+    z: 0.0
+    w: 1.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+    w: 1.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+    z: 0.0
+    w: 1.0
+  }
+  color {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+    w: 1.0
+  }
+  type: TYPE_BOX
+  blend_mode: BLEND_MODE_ALPHA
+  texture: ""
+  id: "family/btn"
+  xanchor: XANCHOR_NONE
+  yanchor: YANCHOR_NONE
+  pivot: PIVOT_CENTER
+  adjust_mode: ADJUST_MODE_FIT
+  parent: "family/list"
+  layer: ""
+  inherit_alpha: true
+  slice9 {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0
+  }
+  clipping_mode: CLIPPING_MODE_NONE
+  clipping_visible: true
+  clipping_inverted: false
+  alpha: 0.0
+  overridden_fields: 1
+  template_node_child: true
+  size_mode: SIZE_MODE_AUTO
+  custom_type: 0
+  enabled: true
+  visible: true
+  material: ""
+}
+nodes {
+  position {
+    x: 0.0
+    y: 0.0
     z: 0.0
     w: 1.0
   }
@@ -1961,12 +2080,11 @@ nodes {
     w: 1.0
   }
   type: TYPE_TEMPLATE
-  id: "family/btn"
-  parent: "family/list"
+  id: "family/btn-t"
+  parent: "family/btn"
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  overridden_fields: 1
   template: "/assets/button.gui"
   template_node_child: true
   custom_type: 0
@@ -2006,12 +2124,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: "tictactoe/btn"
-  id: "family/btn/bg"
+  id: "family/btn-t/bg"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "family/btn"
+  parent: "family/btn-t"
   layer: "below"
   inherit_alpha: true
   slice9 {
@@ -2066,7 +2184,7 @@ nodes {
   blend_mode: BLEND_MODE_ALPHA
   text: "Join Family"
   font: "tictactoe"
-  id: "family/btn/text"
+  id: "family/btn-t/text"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
@@ -2084,7 +2202,7 @@ nodes {
   }
   adjust_mode: ADJUST_MODE_FIT
   line_break: false
-  parent: "family/btn/bg"
+  parent: "family/btn-t/bg"
   layer: "text"
   inherit_alpha: true
   alpha: 1.0

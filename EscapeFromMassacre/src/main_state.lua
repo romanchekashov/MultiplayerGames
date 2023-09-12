@@ -4,6 +4,7 @@ local M = {
     pause = true,
     players = Collections.createMap(),
     zombies = Collections.createMap(),
+    rooms = Collections.createList(),
     GAME_STATES = {
         START = 1,
         RUNNING = 2,
@@ -223,6 +224,41 @@ function M.createGameObject(uid, username, go_id, player_type, map_level)
         end
     }
     return obj
+end
+
+function M.createRoom(name)
+    return {
+        name = name or "n/a",
+        survivors = Collections.createSet(),
+        family = Collections.createSet(),
+        startPressPlayers = Collections.createMap(),
+        pressStart = function (self, playerUid)
+            self.startPressCount:put(playerUid, true)
+        end,
+        joinFamily = function (self, playerUid)
+            if self.survivors:has(playerUid) then
+                self.survivors:remove(playerUid)
+                self.startPressCount:remove(playerUid)
+            end
+            self.family:add(playerUid)
+        end,
+        joinSurvivors = function (self, playerUid)
+            if self.family:has(playerUid) then
+                self.family:remove(playerUid)
+                self.startPressCount:remove(playerUid)
+            end
+            self.survivors:add(playerUid)
+        end,
+        leave = function (self, playerUid)
+            if self.family:has(playerUid) then
+                self.family:remove(playerUid)
+            end
+            if self.survivors:has(playerUid) then
+                self.survivors:remove(playerUid)
+            end
+            self.startPressCount:remove(playerUid)
+        end
+    }
 end
 
 return M

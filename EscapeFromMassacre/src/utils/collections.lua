@@ -1,5 +1,26 @@
 local M = {}
 
+function M.createList()
+	return {
+		items = {},
+		length = 0,
+		add = function (self, o)
+			table.insert(self.items, o)
+			self.length = self.length + 1
+		end,
+		remove = function (self, index)
+			table.remove(self.items, index)
+			self.length = self.length - 1
+		end,
+		for_each = function (self, fn)
+			for k, v in pairs(self.items) do
+				fn(v)
+			end
+		end
+	}
+end
+
+-- Set
 Set = {items = {}, length = 0}
 
 function Set:new()
@@ -28,6 +49,12 @@ function Set:has(o)
 	end
 
 	return false
+end
+
+function Set:for_each(fn)
+	for k, v in pairs(self.items) do
+		fn(v)
+    end
 end
 
 function M.createSet()
