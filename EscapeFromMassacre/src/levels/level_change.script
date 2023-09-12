@@ -6,8 +6,8 @@ function init(self)
 	self.next_screen = nil
 	self.current_screen = nil
 	self.loading = false
-	self.map_level = MainState.MAP_LEVELS.LOBBY
-	msg.post("#", "load_screen", {map_level = MainState.MAP_LEVELS.LOBBY})
+	self.map_level = MainState.MAP_LEVELS.HOUSE
+	msg.post("#", "load_screen", {map_level = MainState.MAP_LEVELS.HOUSE})
 end
 
 function on_message(self, message_id, message, sender)
