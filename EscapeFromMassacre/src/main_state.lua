@@ -15,10 +15,6 @@ local M = {
     },
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
     GAME_TIMEOUT_IN_SEC = 30,
-    player = {
-        uid = 0,
-        username = "N/A"
-    },
     PLAYER_TYPE = {
         SURVIVOR = 0,
         FAMILY = 1
@@ -119,6 +115,12 @@ local M = {
     fuzeBoxIdsToColor = {},
     fuzeToPlayerUid = {},
     fixedFuzeBoxCount = 0
+}
+
+M.player = {
+    uid = 0,
+    username = "N/A",
+    type = M.PLAYER_TYPE.SURVIVOR,
 }
 
 M.currentGameState = M.GAME_STATES.RUNNING

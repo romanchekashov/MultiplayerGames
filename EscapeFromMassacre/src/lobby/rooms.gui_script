@@ -194,6 +194,7 @@ function on_input(self, action_id, action)
 			print("survivors/btn")
 			if self.selectedRoom ~= nil and self.selectedRoom.survivors.length - self.selectedRoom.family.length < 1 then
 				MSG.BROADSOCK:join_room({room_name = self.selectedRoom.name, type = "survivors"})
+				MainState.player.type = MainState.PLAYER_TYPE.SURVIVOR
 			end
 			-- self.selectedRoom:joinSurvivors(MainState.player.uid)
 			-- room_updateDataList(self)
@@ -202,6 +203,7 @@ function on_input(self, action_id, action)
 			print("family/btn")
 			if self.selectedRoom ~= nil and self.selectedRoom.family.length - self.selectedRoom.survivors.length < 1 then
 				MSG.BROADSOCK:join_room({room_name = self.selectedRoom.name, type = "family"})
+				MainState.player.type = MainState.PLAYER_TYPE.FAMILY
 			end
 			-- self.selectedRoom:joinFamily(MainState.player.uid)
 			-- room_updateDataList(self)

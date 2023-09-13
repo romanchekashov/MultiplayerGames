@@ -121,6 +121,8 @@ function init(self)
 	set_is_joined(self, false)
 	self.update_stats_timeframe = UPDATE_STATS_INTERVAL
 	msg.post("gui#game-over", "hide")
+
+	onBtnJoin(self, MainState.player.type)
 end
 
 function final(self)
