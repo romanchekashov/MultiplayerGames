@@ -1,10 +1,11 @@
 local debugUtils = require "src.utils.debug-utils"
 local defold_utils = require "src.utils.defold-utils"
 local MainState = require "src.main_state"
+local MSG = require "src.utils.messages"
 
-local log = debugUtils.createLog("[BROADSOCK SERVER]").log
+local log = debugUtils.createLog("[MAIN]").log
 
-local BROADSOCK = msg.url("default:/broadsock#script")
+-- local BROADSOCK = msg.url("default:/broadsock#script")
 -- local BROADSOCK = msg.url("default:/server#broadsock")
 
 function init(self)
@@ -19,11 +20,11 @@ function init(self)
 	end
 
 	math.randomseed(os.time())
-	msg.post(BROADSOCK, "connect", { ip = "127.0.0.1", port = 5001 })
-	msg.post(BROADSOCK, "register_factory", { url = "/spawner-player#factory-player", type = "player" })
-	msg.post(BROADSOCK, "register_factory", { url = "/spawner-zombie#factory-zombie", type = "zombie" })
-	msg.post(BROADSOCK, "register_factory", { url = "/spawner-bullet#factory-bullet", type = "bullet" })
 
+	MSG.BROADSOCK:connect({ ip = "127.0.0.1", port = 5001 })
+	MSG.BROADSOCK:register_factory({ url = "/spawner-player#factory-player", type = "player" })
+	MSG.BROADSOCK:register_factory({ url = "/spawner-zombie#factory-zombie", type = "zombie" })
+	MSG.BROADSOCK:register_factory({ url = "/spawner-bullet#factory-bullet", type = "bullet" })
 
 	self.screen_pos = vmath.vector3(0, 0, 0)
 	self.next_screen = nil
@@ -37,12 +38,12 @@ end
 function on_message(self, message_id, message, sender)
 	log("game", message_id)
 	if message_id == hash("connected") then
-		if sender == BROADSOCK then
+		if sender == MSG.BROADSOCK.URL then
 			log("connected: create player")
 			-- factory.create("/factories#player", random_position(), nil, { remote = false })	
 		end
 	elseif message_id == hash("disconnected") then
-		if sender == BROADSOCK then
+		if sender == MSG.BROADSOCK.URL then
 			log("disconnected")
 		end
 	end

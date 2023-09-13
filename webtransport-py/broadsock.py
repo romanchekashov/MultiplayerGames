@@ -9,6 +9,97 @@ from comm.game_server.gs_manager import start_game_server, stop_game_server, Gam
 
 Log = getLogger(__name__)
 
+class Room:
+    def __init__(self, name, creator_uid):
+        self.name = name
+        self.creator_uid = creator_uid
+        self.survivor_uids = {}
+        self.family_uids = {}
+
+    def players_len(self):
+        return len(self.family_uids) + len(self.survivor_uids)
+    
+    def has_player(self, c_uid) -> bool:
+        if c_uid == self.creator_uid:
+            return True
+        if c_uid in self.family_uids.keys():
+            return True
+        if c_uid in self.survivor_uids.keys():
+            return True
+        return False
+    
+    def remove_player(self, c_uid):
+        if c_uid in self.family_uids.keys():
+            del self.family_uids[c_uid]
+        if c_uid in self.survivor_uids.keys():
+            del self.survivor_uids[c_uid]
+
+    def add_player(self, type, c_uid):
+        self.remove_player(c_uid)
+        if type == 'family':
+            self.family_uids[c_uid] = {'ready' : False}
+        else:
+            self.survivor_uids[c_uid] = {'ready' : False}
+    
+    def player_ready(self, c_uid):
+        if c_uid in self.family_uids.keys():
+            if not self.family_uids[c_uid]['ready']:
+                self.family_uids[c_uid] = {'ready' : True}
+        if c_uid in self.survivor_uids.keys():
+            if not self.survivor_uids[c_uid]['ready']:
+                self.survivor_uids[c_uid] = {'ready' : True}
+
+    def __str__(self):
+        ready_players = 0
+        res = f'{self.name}.family'
+        for key, value in self.family_uids.items():
+            res += f'.{key}'
+            if value['ready']:
+                ready_players += 1
+        
+        res += '.survivors'
+        for key, value in self.survivor_uids.items():
+            res += f'.{key}'
+            if value['ready']:
+                ready_players += 1
+
+        return res + f'.ready.{ready_players}'
+    
+class Rooms:
+    def __init__(self):
+        self.list: List[Room] = []
+
+    def add(self, room):
+        self.list.append(room)
+
+    def add_player(self, room_name, type, c_uid):
+        for item in self.list:
+            if item.name == room_name:
+                item.add_player(type, c_uid)
+            else:
+                item.remove_player(c_uid)
+
+    def player_ready(self, room_name, c_uid):
+        for item in self.list:
+            if item.name == room_name:
+                item.player_ready(c_uid)
+                break
+    
+    def remove_room_by_player(self, c_uid):
+        for room in self.list:
+            players_len = room.players_len()
+            if room.has_player(c_uid) and (players_len == 0 or players_len == 1):
+                self.list.remove(room)
+
+    def size(self):
+        return len(self.list)
+
+    def __str__(self):
+        res = f'NOT_GS_ROOMS'
+        for item in self.list:
+            res += f'.{item}'
+        return res
+
 class Client:
     def __init__(self, uid, web_transport, websocket, data):
         self.uid = uid
@@ -24,6 +115,7 @@ class Client:
 cache_client_msg_while_server_not_ready_queue = queue.Queue()
 uid_sequence = 0
 clients: List[Client] = []
+rooms = Rooms()
 game_server = None
 game_client_websocket = None
 
@@ -143,7 +235,9 @@ async def handle_client_disconnected(websocket):
     
     client = get_client_by_ws(websocket)
     clients.remove(client)
-    
+    rooms.remove_room_by_player(client.uid)
+    await reliable_connection.send_message_all(f'{rooms}')
+
     Log.info(f'client disconected: {client}, clients = {len(clients)}')
 
     if len(clients) == 0:
@@ -164,10 +258,12 @@ def set_game_server_communication(reader, writer):
         # Log.debug(item)
         to_game_server(item.get("msg"), item.get("client"))
 
-def set_game_client_communication_websocket(websocket) -> Client:
+async def set_game_client_communication_websocket(websocket) -> Client:
     global game_client_websocket
     game_client_websocket = websocket
-    return handle_client_connected(websocket)
+    client = handle_client_connected(websocket)
+    await reliable_connection.send_message_all(f'{rooms}')
+    return client
 
 def set_game_client_communication_web_transport(c_uid: int, web_transport) -> Client:
     for client in clients:
@@ -178,6 +274,29 @@ def set_game_client_communication_web_transport(c_uid: int, web_transport) -> Cl
 """
 Send messages to server and client
 """
+async def to_server(msg, client: Client):
+    global game_server, rooms
+    send_to_server = True
+
+    if 'NOT_GS_ROOMS_GET' in msg:
+        send_to_server = False
+    elif 'NOT_GS_CREATE_ROOM' in msg:
+        rooms.add(Room(f'Room {rooms.size()}', client.uid))
+        send_to_server = False
+    elif 'NOT_GS_JOIN_ROOM' in msg:
+        parts = msg.split('.')
+        rooms.add_player(parts[1], parts[2], client.uid)
+        send_to_server = False
+    elif 'NOT_GS_PLAYER_READY' in msg:
+        parts = msg.split('.')
+        rooms.player_ready(parts[1], client.uid)
+        send_to_server = False
+    
+    if send_to_server:
+        to_game_server(msg, client)
+    else:
+        await reliable_connection.send_message_all(f'{rooms}')
+
 def to_game_server(msg, client: Client):
     global game_server
     if client.uid is not None:

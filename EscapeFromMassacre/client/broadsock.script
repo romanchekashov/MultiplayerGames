@@ -1,5 +1,7 @@
 local broadsock = require "client.broadsock"
 local stream = require "client.stream"
+local MSG = require "src.utils.messages"
+local MainState = require "src.main_state"
 
 local debugUtils = require "src.utils.debug-utils"
 
@@ -32,7 +34,11 @@ end
 local function js_listener(self, message_id, message)
 	log(message_id, message)
 	if message_id == "ServerMsg" then
-		self.client.on_data(message, #message)
+		if message:sub(1, 12) == MSG.BASE_MSG_IDS.ROOMS then
+			MainState.setRooms(message)
+		else
+			self.client.on_data(message, #message)
+		end
 	elseif message_id == CONNECTOR_MSG_IDS.RELIABLE_CONNECTION_READY then
 		hasReliableConnection = true
 		sendToReliableConnection("CONNECT_ME")
@@ -100,18 +106,27 @@ function update(self, dt)
 end
 
 function on_message(self, message_id, message, sender)
+	print(message_id)
 	if not self.client then
-		if message_id == hash("connect") then
+		if message_id == MSG.BROADSOCK.msg_ids.connect then
 			self.creator = sender
 			connect(self, message.ip, message.port)
 		end
 	else
-		if message_id == hash("register_gameobject") then
+		if message_id == MSG.BROADSOCK.msg_ids.register_gameobject then
 			self.client.register_gameobject(message.id, message.type)
-		elseif message_id == hash("unregister_gameobject") then
+		elseif message_id == MSG.BROADSOCK.msg_ids.unregister_gameobject then
 			self.client.unregister_gameobject(message)
-		elseif message_id == hash("register_factory") then
+		elseif message_id == MSG.BROADSOCK.msg_ids.register_factory then
 			self.client.register_factory(message.url, message.type)
+		elseif message_id == MSG.BROADSOCK.msg_ids.get_rooms then
+			sendToReliableConnection(MSG.BASE_MSG_IDS.ROOMS_GET)
+		elseif message_id == MSG.BROADSOCK.msg_ids.create_room then
+			sendToReliableConnection(MSG.BASE_MSG_IDS.CREATE_ROOM)
+		elseif message_id == MSG.BROADSOCK.msg_ids.join_room then
+			sendToReliableConnection(message.data)
+		elseif message_id == MSG.BROADSOCK.msg_ids.player_ready then
+			sendToReliableConnection(message.data)
 		elseif message_id == hash("send_message") then
 			local sw = stream.writer()
 			for _,value in ipairs(message) do

@@ -1,5 +1,6 @@
 local MainState = require "src.main_state"
 local Buttons = require "src.utils.buttons"
+local MSG = require "src.utils.messages"
 local btnAction = Buttons.action
 
 local druid = require("druid.druid")
@@ -11,13 +12,14 @@ local function room_create_function(self, data, index, data_list)
 	local nodes = gui.clone_tree(self.prefab)
 	local root = nodes["prefab"]
 	gui.set_enabled(root, true)
-	gui.set_text(nodes["text"], data.name)
+	gui.set_text(nodes["text"], string.format("%s: survs %d / family %d", data.name, data.survivors.length, data.family.length))
 
 	local button = self.druid:new_button(root, function()
 		print(data.name)
 		gui.set_text(gui.get_node("room"), data.name)
 		self.selectedRoom = data
 		gui.set_enabled(gui.get_node("description"), true)
+		MSG.BROADSOCK:get_rooms()
 	end)
 	button:set_click_zone(data_list.scroll.view_node)
 	-- We should return in this function root node and optionally - Druid component
@@ -26,12 +28,33 @@ end
 
 local function room_updateDataList(self)
 	local data = {}
-
 	MainState.rooms:for_each(function (room)
 		table.insert(data, room)
 	end)
-
 	self.data_list:set_data(data)
+
+	if self.selectedRoom == nil then
+		return
+	end
+
+	self.selectedRoom = MainState.rooms:find("name", self.selectedRoom.name)
+	-- survivors
+	local survivors = {}
+	self.selectedRoom.survivors:for_each(function (c_uid)
+		print("survivors", c_uid)
+		table.insert(survivors, {uid = c_uid, username = string.format("user - %d", c_uid)})
+	end)
+
+	self.survivors_data_list.data_list:set_data(survivors)
+	
+	-- family
+	local family = {}
+	self.selectedRoom.family:for_each(function (c_uid)
+		print("family", c_uid)
+		table.insert(family, {uid = c_uid, username = string.format("user - %d", c_uid)})
+	end)
+
+	self.family_data_list.data_list:set_data(family)
 end
 
 local function room_show_results(self)
@@ -52,7 +75,6 @@ end
 local function player_show_results(self, prefix)
 	local M = {}
 	function M.player_create_function(self, data, index, data_list)
-		print(index, data.uid, data.username)
 		-- In data list create funtion we made all init stuff for this node
 		local nodes = gui.clone_tree(self.prefab)
 		local root = nodes["prefab"]
@@ -82,6 +104,11 @@ local function player_show_results(self, prefix)
 	return M
 end
 
+local function canStartGame(room)
+	local half_players_count = (room.family.length + room.survivors.length) / 2
+	return room.ready_players > half_players_count
+end
+
 local function register_druid_extended_components(self)
 	druid.register("data_list", data_list)
 end
@@ -94,6 +121,9 @@ function init(self)
 	register_druid_extended_components(self)
 	room_show_results(self)
 	self.survivors_data_list = player_show_results(self, "survivors/")
+	self.family_data_list = player_show_results(self, "family/")
+
+	MSG.BROADSOCK:get_rooms()
 end
 
 
@@ -116,6 +146,15 @@ function on_message(self, message_id, message, sender)
 		room_show_results(self)
     elseif message_id == hash("hide") then
         gui.set_enabled(gui.get_node("panel-game-over"), false)
+    elseif message_id == MSG.ROOMS.RECIEVE_ROOMS.hash then
+        room_updateDataList(self)
+		if self.selectedRoom ~= nil then
+			if canStartGame(self.selectedRoom) then
+				gui.set_text(gui.get_node("btn-join-/text"), "Start Game")
+			else
+				gui.set_text(gui.get_node("btn-join-/text"), "Ready")
+			end
+		end
 	elseif message_id == hash("set_username") then
 		local nodeId = gui.get_node("choose-room")
         -- format max 30 characters
@@ -127,27 +166,33 @@ end
 function on_input(self, action_id, action)
 	if action_id == hash("touch") then
 		btnAction(action, "btn-start-game", nil, nil, function ()
-			msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.GAME})
+			if canStartGame(self.selectedRoom) then
+				msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.GAME})
+			else
+				MSG.BROADSOCK:player_ready({room_name = self.selectedRoom.name})
+			end
 		end)
 		btnAction(action, "btn-new-room", nil, nil, function ()
-			MainState.rooms:add(MainState.createRoom("Room " .. tostring(MainState.rooms.length)))
-			room_updateDataList(self)
+			MSG.BROADSOCK:create_room()
+			-- MainState.rooms:add(MainState.createRoom("Room " .. tostring(MainState.rooms.length)))
+			-- room_updateDataList(self)
 			-- msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.GAME})
 		end)
 		btnAction(action, "survivors/btn", nil, nil, function ()
 			print("survivors/btn")
-			self.selectedRoom:joinSurvivors(MainState.player.uid)
+			if self.selectedRoom ~= nil and self.selectedRoom.survivors.length - self.selectedRoom.family.length < 1 then
+				MSG.BROADSOCK:join_room({room_name = self.selectedRoom.name, type = "survivors"})
+			end
+			-- self.selectedRoom:joinSurvivors(MainState.player.uid)
 			-- room_updateDataList(self)
-			local data = {}
-			table.insert(data, {uid = MainState.player.uid, username = MainState.player.username})
-
-			print(data[1].uid, data[1].username)
-			self.survivors_data_list.data_list:set_data(data)
 		end)
 		btnAction(action, "family/btn", nil, nil, function ()
 			print("family/btn")
-			self.selectedRoom:joinFamily(MainState.player.uid)
-			room_updateDataList(self)
+			if self.selectedRoom ~= nil and self.selectedRoom.family.length - self.selectedRoom.survivors.length < 1 then
+				MSG.BROADSOCK:join_room({room_name = self.selectedRoom.name, type = "family"})
+			end
+			-- self.selectedRoom:joinFamily(MainState.player.uid)
+			-- room_updateDataList(self)
 		end)
 	end
 

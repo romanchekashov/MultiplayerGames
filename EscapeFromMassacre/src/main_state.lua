@@ -1,4 +1,6 @@
 local Collections = require "src.utils.collections"
+local MSG = require "src.utils.messages"
+local utils = require "src.utils.utils"
 
 local M = {
     pause = true,
@@ -231,23 +233,26 @@ function M.createRoom(name)
         name = name or "n/a",
         survivors = Collections.createSet(),
         family = Collections.createSet(),
+        ready_players = 0,
         startPressPlayers = Collections.createMap(),
         pressStart = function (self, playerUid)
-            self.startPressCount:put(playerUid, true)
+            -- self.startPressCount:put(playerUid, true)
         end,
         joinFamily = function (self, playerUid)
             if self.survivors:has(playerUid) then
                 self.survivors:remove(playerUid)
-                self.startPressCount:remove(playerUid)
+                -- self.startPressCount:remove(playerUid)
             end
             self.family:add(playerUid)
+            -- print("joinFamily", self.family.length, self.survivors.length)
         end,
         joinSurvivors = function (self, playerUid)
             if self.family:has(playerUid) then
                 self.family:remove(playerUid)
-                self.startPressCount:remove(playerUid)
+                -- self.startPressCount:remove(playerUid)
             end
             self.survivors:add(playerUid)
+            -- print("joinSurvivors", self.family.length, self.survivors.length)
         end,
         leave = function (self, playerUid)
             if self.family:has(playerUid) then
@@ -256,9 +261,53 @@ function M.createRoom(name)
             if self.survivors:has(playerUid) then
                 self.survivors:remove(playerUid)
             end
-            self.startPressCount:remove(playerUid)
+            -- self.startPressCount:remove(playerUid)
         end
     }
+end
+
+function M.setRooms(str)
+    print(str)
+    local res = utils.split(str, ".")
+    local rooms = Collections.createList()
+    local room = nil
+    local is_family = false
+    local is_ready = false
+    local client_uid = nil
+
+    for index, value in ipairs(res) do
+        if index ~= 1 then
+            if value == "family" then
+                is_family = true
+            end
+            if value == "survivors" then
+                is_family = false
+            end
+            if value == "ready" then
+                is_ready = true
+            end
+            if value ~= "survivors" and value ~= "family" and value ~= "ready" then
+                num = tonumber(value)
+                if num == nil then
+                    room = M.createRoom(value)
+                    rooms:add(room)
+                else
+                    if is_ready then
+                        room.ready_players = num
+                        is_ready = false
+                    else
+                        if is_family then
+                            room:joinFamily(num)
+                        else
+                            room:joinSurvivors(num)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    M.rooms = rooms
+	msg.post("/gui#rooms", MSG.ROOMS.RECIEVE_ROOMS.name)
 end
 
 return M

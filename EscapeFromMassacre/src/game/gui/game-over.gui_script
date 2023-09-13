@@ -61,6 +61,8 @@ end
 function init(self)
 	self.druid = druid.new(self)
 	register_druid_extended_components(self)
+	gui.set_enabled(gui.get_node("panel-game-over"), false)
+	gui.set_enabled(gui.get_node("btn-game-exit"), false)
 end
 
 
@@ -79,9 +81,11 @@ function on_message(self, message_id, message, sender)
 
 	if message_id == hash("show") then
         gui.set_enabled(gui.get_node("panel-game-over"), true)
+		gui.set_enabled(gui.get_node("btn-game-exit"), true)
 		show_results(self)
     elseif message_id == hash("hide") then
         gui.set_enabled(gui.get_node("panel-game-over"), false)
+		gui.set_enabled(gui.get_node("btn-game-exit"), false)
     end
 end
 

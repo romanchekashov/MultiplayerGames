@@ -4,14 +4,14 @@ import websockets
 import json
 import ssl
 
-from broadsock import set_game_client_communication_websocket, handle_client_disconnected, to_game_server
+from broadsock import set_game_client_communication_websocket, handle_client_disconnected, to_server
 from utils import getLogger
 
 Log = getLogger(__name__)
 
 async def handler(websocket):
 
-    client = set_game_client_communication_websocket(websocket)
+    client = await set_game_client_communication_websocket(websocket)
     Log.info(f'handler: websocket = {id(websocket)}: client = {client}')
     # create periodic task:
     # asyncio.create_task(send(websocket))
@@ -20,7 +20,7 @@ async def handler(websocket):
         try:
             message = await websocket.recv()
             Log.debug(f'websocket = {id(websocket)}, latency = {websocket.latency}: client = {client}')
-            to_game_server(message, client)
+            await to_server(message, client)
         # client disconnected?
         except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
             Log.debug(f'DISCONECT: websocket {id(websocket)}, client {client}')
