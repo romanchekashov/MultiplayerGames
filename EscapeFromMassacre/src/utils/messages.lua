@@ -5,6 +5,7 @@ local M = {
         CREATE_ROOM = "NOT_GS_CREATE_ROOM",
         JOIN_ROOM = "NOT_GS_JOIN_ROOM",
         PLAYER_READY = "NOT_GS_PLAYER_READY",
+        SET_PLAYER_USERNAME = "NOT_GS_SET_PLAYER_USERNAME",
     },
     BROADSOCK = {
         connect = {
@@ -38,6 +39,7 @@ M.BROADSOCK = {
         join_room = hash("join_room"),
         get_rooms = hash("get_rooms"),
         player_ready = hash("player_ready"),
+        set_player_username = hash("set_player_username"),
     },
     connect = function (self, data)
         msg.post(self.URL, "connect", data)
@@ -56,6 +58,9 @@ M.BROADSOCK = {
     end,
     player_ready = function (self, data)
         msg.post(self.URL, "player_ready", {data = string.format("%s.%s", M.BASE_MSG_IDS.PLAYER_READY, data.room_name)})
+    end,
+    set_player_username = function (self, data)
+        msg.post(self.URL, "set_player_username", {data = string.format("%s.%s", M.BASE_MSG_IDS.SET_PLAYER_USERNAME, data.username)})
     end,
 }
 return M

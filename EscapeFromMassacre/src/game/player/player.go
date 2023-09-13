@@ -108,7 +108,7 @@ embedded_components {
   id: "name"
   type: "label"
   data: "size {\n"
-  "  x: 128.0\n"
+  "  x: 138.0\n"
   "  y: 32.0\n"
   "  z: 0.0\n"
   "  w: 0.0\n"
@@ -136,13 +136,13 @@ embedded_components {
   "pivot: PIVOT_CENTER\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   "line_break: true\n"
-  "text: \"Label\"\n"
+  "text: \"user-32!kjhas nqwe qweokk adsa\"\n"
   "font: \"/builtins/fonts/system_font.font\"\n"
   "material: \"/builtins/fonts/label.material\"\n"
   ""
   position {
     x: 0.0
-    y: -36.0
+    y: -44.0
     z: 0.0
   }
   rotation {

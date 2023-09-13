@@ -5,6 +5,7 @@ local btnAction = Buttons.action
 
 local druid = require("druid.druid")
 local data_list = require("druid.extended.data_list")
+local input = require("druid.extended.input")
 
 -- rooms data list
 local function room_create_function(self, data, index, data_list)
@@ -111,6 +112,7 @@ end
 
 local function register_druid_extended_components(self)
 	druid.register("data_list", data_list)
+	druid.register("input", input)
 end
 
 function init(self)
@@ -122,6 +124,17 @@ function init(self)
 	room_show_results(self)
 	self.survivors_data_list = player_show_results(self, "survivors/")
 	self.family_data_list = player_show_results(self, "family/")
+
+	self.input_username = self.druid:new_input("input_box_usual", "input_text_usual")
+	self.input_username.on_input_text:subscribe(function (self, text)
+		local text_width = self.input_username.total_width
+		print(text_width, text, #text)
+		if #text > 30 then
+			self.input_username:set_text(text:sub(1, 30))
+		else
+			MSG.BROADSOCK:set_player_username({username = text})
+		end
+	end)
 
 	MSG.BROADSOCK:get_rooms()
 end
@@ -156,9 +169,8 @@ function on_message(self, message_id, message, sender)
 			end
 		end
 	elseif message_id == hash("set_username") then
-		local nodeId = gui.get_node("choose-room")
         -- format max 30 characters
-        gui.set_text(nodeId, string.format("Choose room %.30s!", message.username))
+		self.input_username:set_text(string.format("%.30s!", message.username))
     end
 end
 

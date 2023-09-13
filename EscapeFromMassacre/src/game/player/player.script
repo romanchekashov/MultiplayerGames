@@ -174,7 +174,7 @@ function init(self)
 	self.fire_cooldown = 0
 	self.btn_use_pressed = false
 
-	label.set_text("#name", string.format("%.30s", self.username))
+	label.set_text("#name", string.format("%.30s", MainState.player.username))
 
 	for i=1,#FUZE_COLOR_IMGS do msg.post(string.format("#sprite-fuze-%d", i), "disable") end
 

@@ -103,10 +103,18 @@ class Rooms:
 class Client:
     def __init__(self, uid, web_transport, websocket, data):
         self.uid = uid
+        self.username = f'user-{uid}'
         self.reliableWS = websocket
         self.unreliableFastWT = web_transport
         self.wt_latency = -1
         self.data = data
+
+    def set_uid(self, uid):
+        self.uid = uid
+        self.username = f'user-{uid}'
+
+    def set_username(self, username):
+        self.username = username
 
     def __str__(self):
         return f'Client(uid = {self.uid}, WS = {id(self.reliableWS)}, WT = {id(self.unreliableFastWT)})'
@@ -291,6 +299,10 @@ async def to_server(msg, client: Client):
         parts = msg.split('.')
         rooms.player_ready(parts[1], client.uid)
         send_to_server = False
+    elif 'NOT_GS_SET_PLAYER_USERNAME' in msg:
+        parts = msg.split('.')
+        client.set_username(parts[1])
+        send_to_server = False
     
     if send_to_server:
         to_game_server(msg, client)
@@ -319,7 +331,7 @@ async def to_game_client(msg):
         client = get_client_by_ws(game_client_websocket)
         uid = get_uid_from_msg(msg)
         if client is not None and client.uid != uid:
-            client.uid = uid
+            client.set_uid(uid)
             Log.info(f'client get game server uid: {client}')
             await reliable_connection.send_msg_to(client, msg)
     elif GameServerMessages.CONNECT_OTHER in msg:

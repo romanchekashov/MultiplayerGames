@@ -127,6 +127,8 @@ function on_message(self, message_id, message, sender)
 			sendToReliableConnection(message.data)
 		elseif message_id == MSG.BROADSOCK.msg_ids.player_ready then
 			sendToReliableConnection(message.data)
+		elseif message_id == MSG.BROADSOCK.msg_ids.set_player_username then
+			sendToReliableConnection(message.data)
 		elseif message_id == hash("send_message") then
 			local sw = stream.writer()
 			for _,value in ipairs(message) do
