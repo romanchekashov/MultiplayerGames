@@ -6,6 +6,7 @@ local btnAction = Buttons.action
 local druid = require("druid.druid")
 local data_list = require("druid.extended.data_list")
 local input = require("druid.extended.input")
+local timer_component = require("druid.extended.timer")
 
 -- rooms data list
 local function room_create_function(self, data, index, data_list)
@@ -16,9 +17,8 @@ local function room_create_function(self, data, index, data_list)
 	gui.set_text(nodes["text"], string.format("%s: survs %d / family %d", data.name, data.survivors.length, data.family.length))
 
 	local button = self.druid:new_button(root, function()
-		print(data.name)
 		gui.set_text(gui.get_node("room"), data.name)
-		self.selectedRoom = data
+		MainState.selectedRoom = data
 		gui.set_enabled(gui.get_node("description"), true)
 		MSG.BROADSOCK:get_rooms()
 	end)
@@ -34,14 +34,16 @@ local function room_updateDataList(self)
 	end)
 	self.data_list:set_data(data)
 
-	if self.selectedRoom == nil then
+	if MainState.selectedRoom == nil then
 		return
 	end
 
-	self.selectedRoom = MainState.rooms:find("name", self.selectedRoom.name)
+	print(MainState.selectedRoom.name)
+	MainState.selectedRoom = MainState.rooms:find("name", MainState.selectedRoom.name)
+	print(MainState.selectedRoom.name)
 	-- survivors
 	local survivors = {}
-	self.selectedRoom.survivors:for_each(function (c_uid)
+	MainState.selectedRoom.survivors:for_each(function (c_uid)
 		print("survivors", c_uid)
 		table.insert(survivors, {uid = c_uid, username = string.format("user - %d", c_uid)})
 	end)
@@ -50,7 +52,7 @@ local function room_updateDataList(self)
 
 	-- family
 	local family = {}
-	self.selectedRoom.family:for_each(function (c_uid)
+	MainState.selectedRoom.family:for_each(function (c_uid)
 		print("family", c_uid)
 		table.insert(family, {uid = c_uid, username = string.format("user - %d", c_uid)})
 	end)
@@ -117,8 +119,12 @@ end
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
-	self.selectedRoom = nil
-	gui.set_enabled(gui.get_node("description"), false)
+	if MainState.selectedRoom ~= nil then
+		gui.set_text(gui.get_node("room"), MainState.selectedRoom.name)
+		gui.set_enabled(gui.get_node("description"), true)
+	else
+		gui.set_enabled(gui.get_node("description"), false)
+	end
 	self.druid = druid.new(self)
 	register_druid_extended_components(self)
 	room_show_results(self)
@@ -161,8 +167,8 @@ function on_message(self, message_id, message, sender)
         gui.set_enabled(gui.get_node("panel-game-over"), false)
     elseif message_id == MSG.ROOMS.RECIEVE_ROOMS.hash then
         room_updateDataList(self)
-		if self.selectedRoom ~= nil then
-			if canStartGame(self.selectedRoom) then
+		if MainState.selectedRoom ~= nil then
+			if canStartGame(MainState.selectedRoom) then
 				gui.set_text(gui.get_node("btn-join-/text"), "Start Game")
 			else
 				gui.set_text(gui.get_node("btn-join-/text"), "Ready")
@@ -180,26 +186,26 @@ end
 function on_input(self, action_id, action)
 	if action_id == hash("touch") then
 		btnAction(action, "btn-start-game", nil, nil, function ()
-			if not canStartGame(self.selectedRoom) then
-				MSG.BROADSOCK:player_ready({room_name = self.selectedRoom.name})
+			if not canStartGame(MainState.selectedRoom) then
+				MSG.BROADSOCK:player_ready({room_name = MainState.selectedRoom.name})
 			end
 		end)
 		btnAction(action, "survivors/btn", nil, nil, function ()
 			print("survivors/btn")
-			if self.selectedRoom ~= nil and self.selectedRoom.survivors.length - self.selectedRoom.family.length < 1 then
-				MSG.BROADSOCK:join_room({room_name = self.selectedRoom.name, type = "survivors"})
+			if MainState.selectedRoom ~= nil and MainState.selectedRoom.survivors.length - MainState.selectedRoom.family.length < 1 then
+				MSG.BROADSOCK:join_room({room_name = MainState.selectedRoom.name, type = "survivors"})
 				MainState.player.type = MainState.PLAYER_TYPE.SURVIVOR
 			end
-			-- self.selectedRoom:joinSurvivors(MainState.player.uid)
+			-- MainState.selectedRoom:joinSurvivors(MainState.player.uid)
 			-- room_updateDataList(self)
 		end)
 		btnAction(action, "family/btn", nil, nil, function ()
 			print("family/btn")
-			if self.selectedRoom ~= nil and self.selectedRoom.family.length - self.selectedRoom.survivors.length < 1 then
-				MSG.BROADSOCK:join_room({room_name = self.selectedRoom.name, type = "family"})
+			if MainState.selectedRoom ~= nil and MainState.selectedRoom.family.length - MainState.selectedRoom.survivors.length < 1 then
+				MSG.BROADSOCK:join_room({room_name = MainState.selectedRoom.name, type = "family"})
 				MainState.player.type = MainState.PLAYER_TYPE.FAMILY
 			end
-			-- self.selectedRoom:joinFamily(MainState.player.uid)
+			-- MainState.selectedRoom:joinFamily(MainState.player.uid)
 			-- room_updateDataList(self)
 		end)
 	end

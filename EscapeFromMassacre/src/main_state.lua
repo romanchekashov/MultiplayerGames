@@ -7,6 +7,7 @@ local M = {
     players = Collections.createMap(),
     zombies = Collections.createMap(),
     rooms = Collections.createList(),
+    selectedRoom = nil,
     GAME_STATES = {
         START = 1,
         RUNNING = 2,
