@@ -18,6 +18,8 @@ class GameServerMessages:
     CONNECT_SELF = 'CONNECT_SELF'
     CONNECT_OTHER = 'CONNECT_OTHER'
     DISCONNECT = 'DISCONNECT'
+    GAME_START = 'GAME_START'
+    GAME_OVER = 'GAME_OVER'
 
 class GameServer:
     def __init__(self, reader, writer, pid):
@@ -69,29 +71,42 @@ def findGameProcess() -> List[Any]:
         # children = process.children()
         # for p in children:
         #     Log.info(f'child: [pid: {p.pid}] {p.name()}')
-    Log.debug(f'Found {len(arr)} GS processes')
+    Log.info(f'Found {len(arr)} GS processes')
     return arr
 
-def _terminate_process(process):
-    Log.info(f'{process.name()}[PID:{process.pid}] - Process found. Terminating it.')
+async def terminate_process_by_pid(pid):
+    process = game_server_pid_to_process[pid]
+    print(f'{process} {process is not None}')
+    if process is not None:
+        Log.info(f'[PID:{process.pid}] - Process found. Terminating it.')
+        process.terminate()
+        await process.wait()
+        del game_server_pid_to_process[pid]
+    else:
+        Log.info(f'[PID:{pid}] - Process NOT found')
+
+def terminate_process(process):
+    Log.info(f'{process}[PID:{process.pid}] - Process found. Terminating it.')
     process.terminate()
     process.wait()
 
 def _terminate_game_server(pid = None):
     global gameServerStopCallbackFn
+    Log.info(f'_terminate_game_server {pid}')
     processList = findGameProcess()
-    if pid == None:
+    if pid is None:
         Log.info(f'Found {len(processList)} game servers to terminate.')
         for process in processList:
-            _terminate_process(process)
+            terminate_process(process)
     else:
         for process in processList:
-            if process.pid == pid and game_server_pid_to_process[pid] != None:
+            Log.info(process)
+            if (process.pid == (pid + 1)) and (game_server_pid_to_process[pid] is not None):
+                terminate_process(process)
                 del game_server_pid_to_process[pid]
-                _terminate_process(process)
 
-    if gameServerStopCallbackFn is not None:
-        gameServerStopCallbackFn()
+    # if gameServerStopCallbackFn is not None:
+    #     gameServerStopCallbackFn()
 
 async def _stop_game_server(pid):
     Log.info('stop started...')

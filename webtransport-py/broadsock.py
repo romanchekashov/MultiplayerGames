@@ -6,7 +6,7 @@ from typing import List, Dict
 from utils import getLogger
 from models import Client, ReliableConnection, FastUnreliableConnection
 
-from comm.game_server.gs_manager import start_game_server, stop_game_server, GameServer, GameServerMessages
+from comm.game_server.gs_manager import start_game_server, stop_game_server, GameServer, GameServerMessages, _terminate_game_server
 
 Log = getLogger(__name__)
 
@@ -59,6 +59,9 @@ class Room:
             await self.reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
         elif GameServerMessages.DISCONNECT in msg:
             await self.reliable_connection.send_message_all(msg)
+        elif GameServerMessages.GAME_OVER in msg:
+            await self.reliable_connection.send_message_all(msg)
+            self.end_game()
         else:
             await self.fast_unreliable_connection.send_message_all(msg)
 
@@ -71,7 +74,8 @@ class Room:
         await start_game_server()
 
     def end_game(self):
-        stop_game_server(self.game_server.pid, game_server_stopped_clear_communication)
+        _terminate_game_server(self.game_server.pid)
+        # stop_game_server(self.game_server.pid, game_server_stopped_clear_communication)
 
     def players_len(self):
         return len(self.family_uids) + len(self.survivor_uids)
@@ -305,7 +309,7 @@ def set_game_client_communication_web_transport(c_uid: int, web_transport) -> Cl
 Send messages to server and client
 """
 async def to_server(msg, client: Client):
-    Log.info(f'TO-SERVER: {msg}, client: {client}')
+    Log.debug(f'TO-SERVER: {msg}, client: {client}')
 
     global game_server, rooms
     send_to_server = True
