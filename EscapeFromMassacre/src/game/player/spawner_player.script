@@ -25,7 +25,7 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("remove_player") then
 		if self.players:has(message.uid) then
 			local player = self.players:get(message.uid)
-			log("Bullet killed player", player.username)
+			--log("Bullet killed player", player.username)
 			go.delete(player.go_id)
 		end
 		-- for m, _ in pairs(self.players) do

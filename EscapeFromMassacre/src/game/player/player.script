@@ -149,7 +149,7 @@ local function hit(self, killer_uid)
 		if killer_uid ~= nil then
 			MainState.increasePlayerScore(killer_uid)
 		end
-		msg.post("spawner-player#script", "remove_player", {
+		msg.post("/spawner-player#script", "remove_player", {
 			uid = self.uid,
 			player_id = go.get_id()})
 	end
@@ -162,7 +162,7 @@ function init(self)
 
 	self.stairs_change_cooldown = -1
 	self.move = 0		-- direction of movement (0 = standing still, 1 = forward, -1 = backward)
-	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)	
+	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)
 	self.username = "user-" .. tostring(self.uid)
 	self.velocity = vmath.vector3()
 	self.sound_run_playing = false
@@ -186,7 +186,7 @@ function init(self)
 
 	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.player_type, self.map_level)
 	MainState.players:put(obj.uid, obj)
-	
+
 	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
 		MainState.playerUidToScore[tostring(obj.uid)] = 0
 	end
@@ -228,7 +228,7 @@ function final(self)
 		input.release()
 		msg.post("/virtual_gamepad", "unregister")
 	end
-	
+
 	MainState.players:remove(self.uid)
 	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
 	print("clear player", self.uid)
@@ -243,7 +243,7 @@ function update(self, dt)
 		-- input_release_controls()
         return
     end
-	
+
 	msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
 
 	local rotation = go.get_rotation()
@@ -341,7 +341,7 @@ function on_input(self, action_id, action)
 			elseif action_id == RIGHT_STICK_DOWN then
 				self.right_stick_value.y = -STICK_MAX_DISTANCE * action.value
 			end
-	
+
 			if action.value ~= 0 then
 				go.set_rotation(getRotation(go.get_position() + self.right_stick_value))
 				-- go.set_rotation(vmath.quat_rotation_z(math.atan2(new_pos.y, new_pos.x)))
@@ -477,7 +477,7 @@ function on_message(self, message_id, message, sender)
 				if self.killer_uid == nil or (killer ~= nil and killer.map_level ~= MainState.playerOnMapLevel) then
 					 return
 				end
-	
+
 				hit(self, self.killer_uid)
 			end
 		elseif message.group == MSG_GROUPS.FUZE then
