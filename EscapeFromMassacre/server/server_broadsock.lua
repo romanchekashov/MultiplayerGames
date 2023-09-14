@@ -221,6 +221,7 @@ function M.start(port)
 	log("created client")
 	connection.connected = true
 
+	M.send(MSG_IDS.GAME_PRE_START)
 	timer.delay(MainState.GAME_START_TIMEOUT_IN_SEC, false, function ()
 		M.send(MSG_IDS.GAME_START)
 		msg.post("/gui#gui", "game_start")

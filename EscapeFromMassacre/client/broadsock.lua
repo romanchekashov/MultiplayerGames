@@ -262,6 +262,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		elseif msg_id == MSG_IDS.GAME_OVER then
 			log("SERVER TIMER GAME_OVER")
 			msg.post("/gui#menu", "game_over")
+		elseif msg_id == MSG_IDS.GAME_PRE_START then
+			log("SERVER GAME_PRE_START")
+			msg.post("/gui#rooms", "game_pre_start")
 		elseif msg_id == MSG_IDS.GAME_START then
 			log("SERVER TIMER GAME_START")
 			msg.post("/gui#rooms", "game_start")

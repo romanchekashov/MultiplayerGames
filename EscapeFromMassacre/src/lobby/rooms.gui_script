@@ -168,15 +168,16 @@ function on_message(self, message_id, message, sender)
     elseif message_id == MSG.ROOMS.RECIEVE_ROOMS.hash then
         room_updateDataList(self)
 		if MainState.selectedRoom ~= nil then
-			if canStartGame(MainState.selectedRoom) then
-				gui.set_text(gui.get_node("btn-join-/text"), "Start Game")
-			else
+			if not canStartGame(MainState.selectedRoom) then
 				gui.set_text(gui.get_node("btn-join-/text"), "Ready")
 			end
 		end
 	elseif message_id == hash("set_username") then
         -- format max 30 characters
 		self.input_username:set_text(string.format("%.30s!", message.username))
+	elseif message_id == hash("game_pre_start") then
+		--gui.set_enabled(gui.get_node("btn-start-game"), false)
+		gui.set_text(gui.get_node("btn-join-/text"), "Starting...")
 	elseif message_id == hash("game_start") then
 		msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.GAME})
     end
