@@ -1,0 +1,37 @@
+local druid = require("druid.druid")
+local timer_component = require("druid.extended.timer")
+local broadsock = require "server.server_broadsock"
+local MainState = require "src.main_state"
+local multiplayer = require "server.multiplayer"
+
+local MSG_IDS = multiplayer.MSG_IDS
+
+local function empty_callback(self, param)
+    print("SERVER TIMER GAME OVER: Empty callback. Param", param)
+    broadsock.send(MSG_IDS.GAME_OVER)
+end
+local function setup_timer(self)
+    self.timer = self.druid:new_timer("timer", MainState.GAME_TIMEOUT_IN_SEC, 0, empty_callback)
+end
+
+local function register_druid_extended_components(self)
+    druid.register("timer", timer_component)
+end
+
+function init(self)
+    self.druid = druid.new(self)
+    register_druid_extended_components(self)
+    setup_timer(self)
+end
+
+function final(self)
+    self.druid:final()
+end
+
+function update(self, dt)
+    self.druid:update(dt)
+end
+
+function on_message(self, message_id, message, sender)
+    self.druid:on_message(message_id, message, sender)
+end

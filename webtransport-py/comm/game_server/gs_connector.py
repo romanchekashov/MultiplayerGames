@@ -2,7 +2,7 @@ import socket
 import struct
 import asyncio
 
-from comm.game_server.gs_manager import game_server_start_pid_queue
+from comm.game_server.gs_manager import get_gspid
 from broadsock import set_game_server_communication
 
 from stream import stream_encode
@@ -11,8 +11,7 @@ from utils import getLogger
 Log = getLogger(__name__)
 
 async def handle_client(reader, writer):
-    pid = game_server_start_pid_queue.get()
-    room = set_game_server_communication(reader, writer, pid)
+    room = set_game_server_communication(reader, writer, get_gspid())
     request = None
     while request != 'quit':
             # request = (await reader.read(255)).decode('utf8')

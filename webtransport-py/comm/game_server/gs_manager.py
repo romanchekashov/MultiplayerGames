@@ -25,13 +25,13 @@ class GameServer:
         self.writer = writer
         self.pid = pid
         Log.info(f'SERVER connected: {self}')
-    
+
     def write(self, msg):
         out_data = stream_encode(msg)
         self.writer.write(out_data)
 
     def __str__(self):
-        return f'GameServer(pid = {id(self.pid)}, reader = {id(self.reader)}, writer = {id(self.writer)})'
+        return f'GameServer(pid = {self.pid}, reader = {id(self.reader)}, writer = {id(self.writer)})'
 
 GAME_SERVER_STOP_TIMEOUT = 10
 GAME_SERVER_START_TIMEOUT = 1
@@ -49,6 +49,9 @@ isWin = platform == "win32"
 def set_event_loop(loop):
     global event_loop
     event_loop = loop
+
+def get_gspid() -> int:
+    return game_server_start_pid_queue.get()
 
 # ps aux | grep 'dmengine_headless'
 def findGameProcess() -> List[Any]:
@@ -106,16 +109,20 @@ def stop_game_server(pid, fn):
     # asyncio.ensure_future(_stop_game_server(pid), loop=event_loop)
     _terminate_game_server(pid)
 
-def _start_game_server():
+async def _start_game_server():
     Log.info(f'Game Server starting...')
     # create as a subprocess using create_subprocess_shell
-    # process = await asyncio.create_subprocess_shell(os.environ['START_GAME_SERVER_SHELL_SCRIPT'])
+    process = await asyncio.create_subprocess_shell(os.environ['START_GAME_SERVER_SHELL_SCRIPT'])
     # report the details of the subprocess
-    # print(f'subprocess: {process}')
+    # print(f'subprocess: {process}, {process.pid}')
+    if process.pid not in game_server_pid_to_process.keys():
+        game_server_pid_to_process[process.pid] = process
+        game_server_start_pid_queue.put(process.pid)
+        Log.info(f'Game Server[PID:{process.pid}], running: {len(game_server_pid_to_process)}, in queue: {game_server_start_pid_queue.qsize()}')
     # await asyncio.sleep(3)
     # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
-    Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
-    
+    # Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
+
     # Log.info(f'_put_start_game_server')
     # processList = findGameProcess()
     # for process in processList:
@@ -124,15 +131,15 @@ def _start_game_server():
     #         game_server_start_pid_queue.put(process.pid)
     #         Log.info(f'Game Server[PID:{process.pid}] started: {len(game_server_pid_to_process)}')
 
-def start_game_server():
+async def start_game_server():
     global gameStopNeeded, event_loop
     gameStopNeeded = False
     processList = findGameProcess()
     size = len(processList)
 
     if size < MAX_ROOMS:
-        # event_loop.create_task(_start_game_server())
-        Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
+        await _start_game_server()
+        # Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
         # asyncio.ensure_future(_start_game_server(), loop=event_loop)
     else:
         Log.info(f'MAX {size} Game Sever Processes like {processList[0].name()} already running.')

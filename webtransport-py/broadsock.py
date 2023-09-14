@@ -66,23 +66,23 @@ class Room:
         self.game_server = gs
         self.state = RoomState.PLAYING
 
-    def start_game(self):
+    async def start_game(self):
         game_server_star_room_queue.put(self)
-        start_game_server()
+        await start_game_server()
 
     def end_game(self):
         stop_game_server(self.game_server.pid, game_server_stopped_clear_communication)
 
     def players_len(self):
         return len(self.family_uids) + len(self.survivor_uids)
-    
+
     def has_player(self, c_uid) -> bool:
         if c_uid in self.family_uids.keys():
             return True
         if c_uid in self.survivor_uids.keys():
             return True
         return False
-    
+
     def remove_player(self, client: Client):
         c_uid = client.uid
         if c_uid in self.family_uids.keys():
@@ -100,7 +100,7 @@ class Room:
             self.family_uids[c_uid] = {'ready' : False}
         else:
             self.survivor_uids[c_uid] = {'ready' : False}
-    
+
     def ready_players(self):
         ready_players = 0
         for value in self.family_uids.values():
@@ -130,7 +130,7 @@ class Room:
             res += f'.{key}'
             if value['ready']:
                 ready_players += 1
-        
+
         res += '.survivors'
         for key, value in self.survivor_uids.items():
             res += f'.{key}'
@@ -138,7 +138,7 @@ class Room:
                 ready_players += 1
 
         return res + f'.ready.{ready_players}'
-    
+
 class Rooms:
     def __init__(self):
         self.list: List[Room] = []
@@ -171,7 +171,7 @@ class Rooms:
             if room.name == room_name:
                 room.player_ready(client.uid)
                 break
-    
+
     def remove_room_by_player(self, c_uid: int):
         for room in self.list:
             players_len = room.players_len()
@@ -233,20 +233,17 @@ def handle_client_connected(websocket) -> Client:
 
     if websocket is not None:
         client = get_client_by_ws(websocket)
-    
+
     uid_sequence += 1
-    
+
     if client is None:
         client = Client(uid_sequence, None, websocket, None)
         clients.append(client)
-    
+
     if client.reliableWS is None and websocket is not None:
         client.reliableWS = websocket
 
     Log.info(f'client connected: {client}, clients = {len(clients)}')
-
-    if len(clients) > 0:
-        start_game_server()
 
     return client
 
@@ -254,13 +251,13 @@ async def handle_client_disconnected(websocket):
     Log.debug(f'clients = {", ".join(map(str, clients))}: disconnecting..., WS: {id(websocket)}')
     if len(clients) == 0:
         return
-    
+
     client = get_client_by_ws(websocket)
     clients.remove(client)
-    
+
     # rooms.remove_room_by_player(client.uid)
     rooms.remove_player(client)
-    
+
     await reliable_connection.send_message_all(f'{rooms}')
 
     Log.info(f'client disconected: {client}, clients = {len(clients)}')
@@ -279,16 +276,17 @@ def set_game_server_communication(reader, writer, pid) -> Room:
     global game_server
     game_server = GameServer(reader, writer, pid)
     room: Room = game_server_star_room_queue.get()
+    Log.debug(f'{pid} {room}')
     if room != None:
         room.set_game_server(game_server)
         for client in room.clients:
             game_server.write(f'{client.uid}.CONNECT_ME')
 
     return room
-    while not cache_client_msg_while_server_not_ready_queue.empty():
-        item = cache_client_msg_while_server_not_ready_queue.get()
-        # Log.debug(item)
-        to_game_server(item.get("msg"), item.get("client"))
+    # while not cache_client_msg_while_server_not_ready_queue.empty():
+    #     item = cache_client_msg_while_server_not_ready_queue.get()
+    #     # Log.debug(item)
+    #     to_game_server(item.get("msg"), item.get("client"))
 
 async def set_game_client_communication_websocket(websocket) -> Client:
     global game_client_websocket
@@ -329,15 +327,15 @@ async def to_server(msg, client: Client):
     elif 'NOT_GS_PLAYER_READY' in msg:
         parts = msg.split('.')
         rooms.player_ready(parts[1], client)
-        # room = rooms.get_room_by_client_uid(client.uid)
-        # if room.can_start_game():
-        #     room.start_game()
+        room = rooms.get_room_by_client_uid(client.uid)
+        if room.can_start_game():
+            await room.start_game()
         send_to_server = False
     elif 'NOT_GS_SET_PLAYER_USERNAME' in msg:
         parts = msg.split('.')
         client.set_username(parts[1])
         send_to_server = False
-    
+
     if send_to_server:
         to_game_server(msg, client)
     else:

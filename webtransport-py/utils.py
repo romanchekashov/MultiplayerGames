@@ -14,7 +14,7 @@ CRITICAL=50
 
 from datetime import datetime
 import logging
-LOG_FORMAT = '%(asctime)s : %(levelname)-8.8s : %(name)-20.20s : Fn %(funcName)-20.20s : Ln %(lineno)-5d : %(message)s'
+LOG_FORMAT = '%(asctime)s : %(levelname)-8.8s : %(name)-30.30s : Fn %(funcName)-20.20s : Ln %(lineno)-5d : %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 from logging.handlers import RotatingFileHandler
 
@@ -33,7 +33,7 @@ class LoggerWrapper:
     def print(self, msg):
         if LoggerWrapper.disabled:
             return
-        
+
         self._calls_count += 1
         if msg not in self._prev_msgs:
             print(f'{datetime.now()}:[{self.prefix}](calls: {self._calls_count}): {msg}')
@@ -70,9 +70,9 @@ def getLogger(name):
     logger = logging.getLogger(name)
     # add_file_log(logger, 'webtransport.log')
     add_rotating_file_log(logger, 'logs/webtransport.log')
-    logger.setLevel(logging.DEBUG)
-    # logger.setLevel(logging.INFO)
-    
+    # logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+
     # create console handler with a higher log level
     # ch = logging.StreamHandler()
     # ch.setLevel(logging.DEBUG)
