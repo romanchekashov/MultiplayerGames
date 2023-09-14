@@ -16,7 +16,7 @@ local M = {
     },
     GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
-    GAME_TIMEOUT_IN_SEC = 30,
+    GAME_TIMEOUT_IN_SEC = 20,
     PLAYER_TYPE = {
         SURVIVOR = 0,
         FAMILY = 1
@@ -272,7 +272,7 @@ function M.createRoom(name)
 end
 
 function M.setRooms(str)
-    print(str)
+    --print(str)
     local res = utils.split(str, ".")
     local rooms = Collections.createList()
     local room = nil

@@ -261,8 +261,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			remove_client(from_uid)
 		elseif msg_id == MSG_IDS.GAME_OVER then
 			log("SERVER TIMER GAME_OVER")
-			msg.post("/gui#menu", "game_over")
 			remove_client(uid)
+			msg.post("/gui#menu", "game_over")
 			msg.post("/spawner-player#script", "remove_player", {uid = uid})
 		elseif msg_id == MSG_IDS.GAME_PRE_START then
 			log("SERVER GAME_PRE_START")

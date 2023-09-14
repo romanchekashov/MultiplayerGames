@@ -4,16 +4,22 @@ local btnAction = Buttons.action
 local server_nakama = require "client.server_nakama"
 local debugUtils = require "src.utils.debug-utils"
 
+local MSG = require "src.utils.messages"
 local druid = require("druid.druid")
 local timer_component = require("druid.extended.timer")
 
 local ACTION_IDS = MainState.ACTION_IDS
 
 
-local function set_is_joined(self, is_joined)
-	self.is_joined = is_joined
-	gui.set_enabled(gui.get_node("panel-join"), not is_joined)
-	gui.set_enabled(gui.get_node("btn-exit"), is_joined)
+local function set_pause(pause)
+	print("set_pause", pause)
+	MainState.pause = pause
+	if not pause then
+		local nodeBtnExit = gui.get_node("btn-exit")
+		MainState.setPauseBound(gui.get_screen_position(nodeBtnExit), gui.get_size(nodeBtnExit))
+	end
+	gui.set_enabled(gui.get_node("panel-join"), pause)
+	gui.set_enabled(gui.get_node("btn-exit"), not pause)
 end
 
 local function add_player_stat(player, pos, scale, parent, scorePosX)
@@ -59,32 +65,17 @@ end
 
 local UPDATE_STATS_INTERVAL = 2
 
-local function onGameOver(self)
-	-- msg.post("spawner-player#script", "remove_player")
-	set_is_joined(self, false)
-	MainState.pause = true
-	gui.set_enabled(gui.get_node("panel-join"), false)
-
-	MainState.currentGameState = MainState.GAME_STATES.END
-	msg.post("gui#game-over", "show")
-end
-
 local function onBtnExit(self)
 	-- msg.post("spawner-player#script", "remove_player")
-	set_is_joined(self, false)
-	MainState.pause = true
+	set_pause(true)
 end
 
-local function onBtnJoin(self, player_type)
+local function onBtnJoin(self)
 	if not MainState.players:has(MainState.player.uid) then
-		msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = player_type})
+		msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type})
 	end
 
-	local nodeBtnExit = gui.get_node("btn-exit")
-	MainState.setPauseBound(gui.get_screen_position(nodeBtnExit), gui.get_size(nodeBtnExit))
-	MainState.pause = false
-
-	set_is_joined(self, true)
+	set_pause(false)
 end
 
 
@@ -107,12 +98,10 @@ function init(self)
 	setup_timer(self)
 
 	self.playersTextNodes = {}
-	MainState.pause = true
-	set_is_joined(self, false)
 	self.update_stats_timeframe = UPDATE_STATS_INTERVAL
 	msg.post("gui#game-over", "hide")
 
-	onBtnJoin(self, MainState.player.type)
+	onBtnJoin(self)
 end
 
 function final(self)
@@ -137,12 +126,16 @@ function on_message(self, message_id, message, sender)
 
 	if message_id == hash("set_online_players") then
 		update_stats(self)
-	elseif message_id == hash("non_remote_player_killed") then
-		onBtnExit(self)
 	elseif message_id == hash("player_exit") then
+		print("player_exit")
 		onBtnExit(self)
 	elseif message_id == hash("game_over") then
-		onGameOver(self)
+		--msg.post("/spawner-player#script", "remove_player")
+		MainState.pause = true
+		gui.set_enabled(gui.get_node("panel-join"), false)
+		gui.set_enabled(gui.get_node("btn-exit"), false)
+		MainState.currentGameState = MainState.GAME_STATES.END
+		msg.post("gui#game-over", "show")
 	elseif message_id == hash("set_username") then
 		local nodeId = gui.get_node("username")
         -- format max 30 characters
@@ -152,24 +145,24 @@ end
 
 function on_input(self, action_id, action)
 	if action_id == ACTION_IDS.JOIN and action.released then
-		if self.is_joined then
-			onBtnExit(self)
-		else
+		if MainState.pause then
 			onBtnJoin(self)
+		else
+			onBtnExit(self)
 		end
 	end
 
 	if action_id == hash("touch") then
-		if self.is_joined then
-			btnAction(action, "btn-exit", nil, nil, function ()
-				onBtnExit(self)
+		if MainState.pause then
+			btnAction(action, "btn-leave-yes", nil, nil, function ()
+				MSG.BROADSOCK:leave_room({})
+			end)
+			btnAction(action, "btn-leave-no", nil, nil, function ()
+				set_pause(false)
 			end)
 		else
-			btnAction(action, "btn-join-survivor", nil, nil, function ()
-				onBtnJoin(self, MainState.PLAYER_TYPE.SURVIVOR)
-			end)
-			btnAction(action, "btn-join-family", nil, nil, function ()
-				onBtnJoin(self, MainState.PLAYER_TYPE.FAMILY)
+			btnAction(action, "btn-exit", nil, nil, function ()
+				onBtnExit(self)
 			end)
 		end
 	end

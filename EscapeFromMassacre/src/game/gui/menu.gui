@@ -105,7 +105,7 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "btn-join-survivor"
+  id: "btn-leave-yes"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
@@ -163,7 +163,7 @@ nodes {
   }
   type: TYPE_TEMPLATE
   id: "btn-join-1"
-  parent: "btn-join-survivor"
+  parent: "btn-leave-yes"
   layer: ""
   inherit_alpha: false
   alpha: 1.0
@@ -264,7 +264,7 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Join as Survivor"
+  text: "Yes"
   font: "tictactoe"
   id: "btn-join-1/text"
   xanchor: XANCHOR_NONE
@@ -332,7 +332,7 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Wellcome Jony!"
+  text: "Do you want to leave?"
   font: "tictactoe"
   id: "username"
   xanchor: XANCHOR_NONE
@@ -400,7 +400,7 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "btn-join-family"
+  id: "btn-leave-no"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
@@ -458,7 +458,7 @@ nodes {
   }
   type: TYPE_TEMPLATE
   id: "btn-join-"
-  parent: "btn-join-family"
+  parent: "btn-leave-no"
   layer: ""
   inherit_alpha: false
   alpha: 1.0
@@ -559,7 +559,7 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Join as Family"
+  text: "No"
   font: "tictactoe"
   id: "btn-join-/text"
   xanchor: XANCHOR_NONE
