@@ -13,6 +13,7 @@ local M = {
         END = 3,
         LOBBY = 4,
     },
+    GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
     GAME_TIMEOUT_IN_SEC = 30,
     PLAYER_TYPE = {
@@ -206,7 +207,7 @@ function M.setPauseBound(pos, size)
 end
 
 function M.insidePauseBound(action)
-    return action.screen_x >= pauseBound.x1 and action.screen_x <= pauseBound.x2 
+    return action.screen_x >= pauseBound.x1 and action.screen_x <= pauseBound.x2
         and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
 end
 

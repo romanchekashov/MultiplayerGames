@@ -21,7 +21,6 @@ end
 function init(self)
     self.druid = druid.new(self)
     register_druid_extended_components(self)
-    setup_timer(self)
 end
 
 function final(self)
@@ -34,4 +33,7 @@ end
 
 function on_message(self, message_id, message, sender)
     self.druid:on_message(message_id, message, sender)
+    if message_id == hash("game_start") then
+        setup_timer(self)
+    end
 end
