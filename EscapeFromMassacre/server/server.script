@@ -2,7 +2,7 @@ go.property("port", 5000)
 msg.post("@system:", "set_vsync", { swap_interval = 0 })
 
 local debugUtils = require "src.utils.debug-utils"
-local broadsock = require "server.broadsock_client"
+local broadsock = require "server.server_broadsock"
 local performance_utils = require "server.performance_utils"
 
 local log = debugUtils.createLog("[ESCAPE_SERVER]").log
@@ -12,8 +12,8 @@ local handle_client_connected = broadsock.handle_client_connected
 local handle_client_disconnected = broadsock.handle_client_disconnected
 local handle_client_message = broadsock.handle_client_message
 
-debugUtils.debug(false)
-local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_20_PERCENT)
+debugUtils.debug(true)
+local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_5_PERCENT)
 
 function init(self)
 	msg.post("@system:", "set_vsync", { swap_interval = 0 })

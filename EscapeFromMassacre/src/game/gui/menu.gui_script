@@ -98,8 +98,7 @@ end
 
 
 local function empty_callback(self, param)
-	print("GAME OVER: Empty callback. Param", param)
-	onGameOver(self)
+	print("CLIENT TIMER GAME OVER: Empty callback. Param", param)
 end
 local function setup_timer(self)
 	self.timer = self.druid:new_timer("timer", MainState.GAME_TIMEOUT_IN_SEC, 0, empty_callback)
@@ -151,6 +150,8 @@ function on_message(self, message_id, message, sender)
 		onBtnExit(self)
 	elseif message_id == hash("player_exit") then
 		onBtnExit(self)
+	elseif message_id == hash("game_over") then
+		onGameOver(self)
 	elseif message_id == hash("set_username") then
 		local nodeId = gui.get_node("username")
         -- format max 30 characters

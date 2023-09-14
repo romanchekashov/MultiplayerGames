@@ -184,12 +184,6 @@ function on_input(self, action_id, action)
 				MSG.BROADSOCK:player_ready({room_name = self.selectedRoom.name})
 			end
 		end)
-		btnAction(action, "btn-new-room", nil, nil, function ()
-			MSG.BROADSOCK:create_room()
-			-- MainState.rooms:add(MainState.createRoom("Room " .. tostring(MainState.rooms.length)))
-			-- room_updateDataList(self)
-			-- msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.GAME})
-		end)
 		btnAction(action, "survivors/btn", nil, nil, function ()
 			print("survivors/btn")
 			if self.selectedRoom ~= nil and self.selectedRoom.survivors.length - self.selectedRoom.family.length < 1 then

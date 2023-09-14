@@ -6,7 +6,9 @@ local M = {
         GAME_LEAVE = "GAME_LEAVE",
         CONNECT_OTHER = "CONNECT_OTHER",
         CONNECT_SELF = "CONNECT_SELF",
-        DISCONNECT = "DISCONNECT"
+        DISCONNECT = "DISCONNECT",
+        CONNECT_ME = "CONNECT_ME",
+        GAME_OVER = "GAME_OVER"
     }
 }
 

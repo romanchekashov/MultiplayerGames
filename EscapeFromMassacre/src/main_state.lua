@@ -123,7 +123,7 @@ M.player = {
     type = M.PLAYER_TYPE.SURVIVOR,
 }
 
-M.currentGameState = M.GAME_STATES.RUNNING
+M.currentGameState = M.GAME_STATES.START
 
 M.playerOnMapLevel = M.MAP_LEVELS.HOUSE
 M.isGamepadActionId = {

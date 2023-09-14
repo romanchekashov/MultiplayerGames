@@ -259,6 +259,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		elseif msg_id == MSG_IDS.DISCONNECT then
 			log("DISCONNECT")
 			remove_client(from_uid)
+		elseif msg_id == MSG_IDS.GAME_OVER then
+			log("SERVER TIMER GAME_OVER")
+			msg.post("/gui#menu", "game_over")
 		else
 			log("CUSTOM MESSAGE", msg_id)
 			local message_data, message_length = sr.rest()
@@ -270,7 +273,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- Any registered game objects will send their transforms
 	-- This will also send any other queued data
 	function instance.update(dt)
-		if uid == nil then
+		if uid == nil or MainState.currentGameState ~= MainState.GAME_STATES.RUNNING then
 			return
 		end
 

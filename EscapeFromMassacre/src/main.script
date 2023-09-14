@@ -9,7 +9,7 @@ local log = debugUtils.createLog("[MAIN]").log
 -- local BROADSOCK = msg.url("default:/server#broadsock")
 
 function init(self)
-	local enableLogs = false
+	local enableLogs = true
 	debugUtils.debug(enableLogs)
 	if html5 then
 		if enableLogs then
@@ -65,6 +65,7 @@ function on_message(self, message_id, message, sender)
 			self.current_screen = collectionfactory.create("#collectionfactory-game", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
 			print("GAME", #self.current_screen)
+			MainState.currentGameState = MainState.GAME_STATES.RUNNING
 		end
 
 		self.map_level = message.map_level

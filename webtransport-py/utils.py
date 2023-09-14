@@ -70,8 +70,8 @@ def getLogger(name):
     logger = logging.getLogger(name)
     # add_file_log(logger, 'webtransport.log')
     add_rotating_file_log(logger, 'logs/webtransport.log')
-    # logger.setLevel(logging.DEBUG)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    # logger.setLevel(logging.INFO)
     
     # create console handler with a higher log level
     # ch = logging.StreamHandler()

@@ -6,6 +6,7 @@ local M = {
         JOIN_ROOM = "NOT_GS_JOIN_ROOM",
         PLAYER_READY = "NOT_GS_PLAYER_READY",
         SET_PLAYER_USERNAME = "NOT_GS_SET_PLAYER_USERNAME",
+        START_GAME = "NOT_GS_START_GAME",
     },
     BROADSOCK = {
         connect = {

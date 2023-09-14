@@ -5,6 +5,7 @@ local stream = require "client.stream"
 local multiplayer = require "server.multiplayer"
 local debugUtils = require "src.utils.debug-utils"
 local performance_utils = require "server.performance_utils"
+local MainState = require "src.main_state"
 
 local log = debugUtils.createLog("[BROADSOCK SERVER]").log
 local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._20_MILISECONDS)
@@ -174,10 +175,6 @@ end
 
 local function on_data(data, data_length)
 	log("on_data", #data, "data:", data, table.tostring(M.clients or {}))
-	if data == "CONNECT_ME" then
-		M.handle_client_connected()
-		return
-	end
 
 	local sr = stream.reader(data, data_length)
 	local from_uid = sr.number()
@@ -192,6 +189,10 @@ local function on_data(data, data_length)
 		M.send(data)
 	elseif msg_id == MSG_IDS.GOD then
 		M.send(data)
+	elseif msg_id == MSG_IDS.CONNECT_ME then
+		-- M.handle_client_connected()
+		local client = create_client(from_uid)
+		add_client(client)
 	elseif msg_id == MSG_IDS.DISCONNECT then
 		M.handle_client_disconnected(from_uid)
 	end
@@ -219,6 +220,11 @@ function M.start(port)
 	end
 	log("created client")
 	connection.connected = true
+	
+	timer.delay(MainState.GAME_TIMEOUT_IN_SEC, false, function ()
+		M.send(MSG_IDS.GAME_OVER)
+	end)
+
 	return true
 end
 
