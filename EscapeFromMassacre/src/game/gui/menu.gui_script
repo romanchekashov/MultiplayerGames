@@ -59,15 +59,6 @@ end
 
 local UPDATE_STATS_INTERVAL = 2
 
-local function update_gui()
-	if MainState.currentGameState == MainState.GAME_STATES.RUNNING then
-		gui.set_enabled(gui.get_node("panel-join"), true)
-	else
-		gui.set_enabled(gui.get_node("panel-join"), false)
-	end
-end
-
-
 local function onGameOver(self)
 	-- msg.post("spawner-player#script", "remove_player")
 	set_is_joined(self, false)
@@ -126,13 +117,13 @@ end
 
 function final(self)
 	self.druid:final()
-	
+
 	msg.post(".", "release_input_focus")
 end
 
 function update(self, dt)
 	self.druid:update(dt)
-	
+
 	if self.update_stats_timeframe < 0 then
 		update_stats(self)
 		self.update_stats_timeframe = UPDATE_STATS_INTERVAL

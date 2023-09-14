@@ -14,6 +14,13 @@ local CONNECTOR_MSG_IDS = {
 local hasReliableConnection = false
 local hasFastUnreliableConnection = false
 
+local msgs = {
+	[MSG.BROADSOCK.msg_ids.join_room] = true,
+	[MSG.BROADSOCK.msg_ids.leave_room] = true,
+	[MSG.BROADSOCK.msg_ids.player_ready] = true,
+	[MSG.BROADSOCK.msg_ids.set_player_username] = true,
+}
+
 local function sendToReliableConnection(msg)
 	if html5 and hasReliableConnection then
 		log("sendToReliableConnection", msg)
@@ -123,11 +130,7 @@ function on_message(self, message_id, message, sender)
 			sendToReliableConnection(MSG.BASE_MSG_IDS.ROOMS_GET)
 		elseif message_id == MSG.BROADSOCK.msg_ids.create_room then
 			sendToReliableConnection(MSG.BASE_MSG_IDS.CREATE_ROOM)
-		elseif message_id == MSG.BROADSOCK.msg_ids.join_room then
-			sendToReliableConnection(message.data)
-		elseif message_id == MSG.BROADSOCK.msg_ids.player_ready then
-			sendToReliableConnection(message.data)
-		elseif message_id == MSG.BROADSOCK.msg_ids.set_player_username then
+		elseif msgs[message_id] ~= nil then
 			sendToReliableConnection(message.data)
 		elseif message_id == hash("send_message") then
 			local sw = stream.writer()

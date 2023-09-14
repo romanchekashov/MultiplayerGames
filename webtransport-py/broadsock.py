@@ -151,8 +151,9 @@ class Rooms:
     def add(self, room: Room):
         self.list.append(room)
 
-    def get_room_by_client_uid(self, c_uid: int) -> Room:
-        return self.client_to_room[c_uid]
+    def get_room_by_client_uid(self, c_uid: int) -> Room | None:
+        if c_uid in self.client_to_room.keys():
+            return self.client_to_room[c_uid]
 
     def remove_player(self, client: Client):
         room = self.get_room_by_client_uid(client.uid)
@@ -332,12 +333,15 @@ async def to_server(msg, client: Client):
         parts = msg.split('.')
         rooms.player_ready(parts[1], client)
         room = rooms.get_room_by_client_uid(client.uid)
-        if room.can_start_game():
+        if room is not None and room.can_start_game():
             await room.start_game()
         send_to_server = False
     elif 'NOT_GS_SET_PLAYER_USERNAME' in msg:
         parts = msg.split('.')
         client.set_username(parts[1])
+        send_to_server = False
+    elif 'NOT_GS_LEAVE_ROOM' in msg:
+        rooms.remove_player(client)
         send_to_server = False
 
     if send_to_server:

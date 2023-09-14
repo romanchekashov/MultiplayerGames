@@ -123,9 +123,10 @@ M.player = {
     uid = 0,
     username = "N/A",
     type = M.PLAYER_TYPE.SURVIVOR,
+    room = nil
 }
 
-M.currentGameState = M.GAME_STATES.START
+M.currentGameState = M.GAME_STATES.LOBBY
 
 M.playerOnMapLevel = M.MAP_LEVELS.HOUSE
 M.isGamepadActionId = {
