@@ -1,7 +1,7 @@
 from stream import get_uid_from_msg
 from typing import List, Dict
 from utils import getLogger
-from models import Client, ReliableConnection, FastUnreliableConnection
+from models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY
 from comm.game_server.gs_manager import GameServer, GameServerMessages, _terminate_game_server
 
 Log = getLogger(__name__)
@@ -83,11 +83,12 @@ class Room:
             self.remove_client(client)
             del self.survivor_uids[c_uid]
 
-    def add_player(self, type, client: Client):
+    def add_player(self, type: 0 | 1, client: Client):
+        client.type = type
         c_uid = client.uid
         self.remove_player(client)
         self.add_client(client)
-        if type == 'family':
+        if type == PLAYER_TYPE_FAMILY:
             self.family_uids[c_uid] = {'ready' : False}
         else:
             self.survivor_uids[c_uid] = {'ready' : False}

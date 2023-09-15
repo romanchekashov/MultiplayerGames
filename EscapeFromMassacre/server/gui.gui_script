@@ -8,7 +8,7 @@ local MSG_IDS = multiplayer.MSG_IDS
 
 local function empty_callback(self, param)
     print("SERVER TIMER GAME OVER: Empty callback. Param", param)
-    broadsock.send(MSG_IDS.GAME_OVER)
+    broadsock.sendGameOver()
 end
 local function setup_timer(self)
     self.timer = self.druid:new_timer("timer", MainState.GAME_TIMEOUT_IN_SEC, 0, empty_callback)

@@ -16,6 +16,7 @@ local MSG_IDS = multiplayer.MSG_IDS
 M.TCP_SEND_CHUNK_SIZE = 255
 
 local clients = {}
+local clients_map = {}
 
 local uid_sequence = 0
 
@@ -39,9 +40,23 @@ local function tomessage(str)
 	return number_to_int32(#str) .. str
 end
 
+local function create_client(uid, player_type)
+	assert(uid, "you must provide an uid")
+	local client = {
+		uid = uid,
+		type = player_type,
+		map_level = MainState.MAP_LEVELS.HOUSE,
+		health = 100,
+		score = 0,
+		ws_latency = -1
+	}
+	return client
+end
+
 local function add_client(client)
 	assert(client)
 	table.insert(clients, client)
+	clients_map[client.uid] = client
 	log("add_client", client.uid, "clients.length = ", #clients)
 end
 
@@ -53,6 +68,7 @@ local function remove_client(uid_to_remove)
 		if client.uid == uid_to_remove then
 			log("remove_client - removed")
 			table.remove(clients, i)
+			clients_map[client.uid] = nil
 			return
 		end
 	end
@@ -112,12 +128,6 @@ function M.send_message_client(message, uid)
 	end
 end
 
-local function create_client(uid)
-	assert(uid, "you must provide an uid")
-	local client = {uid = uid}
-	return client
-end
-
 function M.handle_client_message(client_uid, message)
 	assert(client_uid, "You must provide a client")
 	assert(message, "You must provide a message")
@@ -173,6 +183,22 @@ function M.send(data)
 	end
 end
 
+function M.sendGameOver()
+	local sw = stream.writer()
+	sw.number(-1)
+	sw.string(MSG_IDS.GAME_OVER)
+	for _, client in pairs(clients_map) do
+		sw.string("player")
+		sw.number(client.uid)
+		sw.number(client.type)
+		sw.number(client.map_level)
+		sw.number(client.health)
+		sw.number(client.score)
+		sw.number(client.ws_latency)
+	end
+	M.send(sw.tostring())
+end
+
 local function on_data(data, data_length)
 	log("on_data", #data, "data:", data, table.tostring(M.clients or {}))
 
@@ -187,11 +213,34 @@ local function on_data(data, data_length)
 		-- 	return
 		-- end
 		M.send(data)
+
+		local player_map_level = sr.number()
+		local player = clients_map[from_uid]
+		if player ~= nil then
+			player.map_level = player_map_level
+		end
+
+		local count = sr.number()
+		--log("remote GO", tostring(count))
+		for _=1,count do
+			local gouid = sr.string()
+			local type = sr.string()
+
+			local pos = sr.vector3()
+			local rot = sr.quat()
+			local scale = sr.vector3()
+		end
+
+		if player ~= nil then
+			player.health = sr.number()
+			player.score = sr.number()
+			player.ws_latency = sr.number()
+		end
 	elseif msg_id == MSG_IDS.GOD then
 		M.send(data)
 	elseif msg_id == MSG_IDS.CONNECT_ME then
 		-- M.handle_client_connected()
-		local client = create_client(from_uid)
+		local client = create_client(from_uid, sr.number())
 		add_client(client)
 	elseif msg_id == MSG_IDS.DISCONNECT then
 		M.handle_client_disconnected(from_uid)

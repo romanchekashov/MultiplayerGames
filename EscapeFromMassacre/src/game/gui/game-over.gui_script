@@ -16,6 +16,23 @@ local function create_function(self, data, index, data_list)
 	return root
 end
 
+local function updateDataList(self)
+	local survivors = {}
+	local family = {}
+
+	MainState.game_over_players:for_each(function (player)
+		if player.type == MainState.PLAYER_TYPE.SURVIVOR then
+			print("SURVIVOR", player.uid, player.type)
+			table.insert(survivors, {uid = player.uid, username = string.format("user - %d", player.uid)})
+		else
+			print("FAMILY", player.uid, player.type)
+			table.insert(family, {uid = player.uid, username = string.format("user - %d", player.uid)})
+		end
+	end)
+
+	self.data_list:set_data(survivors)
+end
+
 local function register_druid_extended_components(self)
 	druid.register("data_list", data_list)
 end
@@ -24,29 +41,31 @@ local function show_results(self)
 	self.prefab = gui.get_node("prefab")
 	gui.set_enabled(self.prefab, false)
 
+	local survivors = {}
+	local family = {}
+	MainState.game_over_players:for_each(function (player)
+		if player.type == MainState.PLAYER_TYPE.SURVIVOR then
+			print("SURVIVOR", player.uid, player.type)
+			table.insert(survivors, {uid = player.uid, username = string.format("user - %d", player.uid)})
+		else
+			print("FAMILY", player.uid, player.type)
+			table.insert(family, {uid = player.uid, username = string.format("user - %d", player.uid)})
+		end
+	end)
+
 	local data = {}
 
 	table.insert(data, {title = "Survivors"})
 
-	MainState.players:for_each(function (player)
-		if not player:is_family() then
-			table.insert(data, player)
-		end
-	end)
+	for _,player in ipairs(survivors) do
+		table.insert(data, player)
+	end
 
 	table.insert(data, {title = "Family"})
 
-	MainState.players:for_each(function (player)
-		if player:is_family() then
-			table.insert(data, player)
-		end
-	end)
-	-- for i = 1, 10 do
-	-- 	table.insert(data, {
-	-- 		is_checked = false,
-	-- 		value = i
-	-- 	})
-	-- end
+	for _,player in ipairs(family) do
+		table.insert(data, player)
+	end
 
 	self.scroll = self.druid:new_scroll("data_list_view", "data_list_content")
 	self.scroll:set_horizontal_scroll(false)

@@ -261,6 +261,19 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			remove_client(from_uid)
 		elseif msg_id == MSG_IDS.GAME_OVER then
 			log("SERVER TIMER GAME_OVER")
+			MainState.players:for_each(function (v)
+				MainState.game_over_players:put(v.uid, v)
+			end)
+
+			while sr.string() == "player" do
+				local uid = sr.number()
+				local player = MainState.game_over_players:get(uid)
+				local type = sr.number()
+				local map_level = sr.number()
+				local health = sr.number()
+				player.score = sr.number()
+				local ws_latency = sr.number()
+			end
 			remove_client(uid)
 			msg.post("/gui#menu", "game_over")
 			msg.post("/spawner-player#script", "remove_player", {uid = uid})

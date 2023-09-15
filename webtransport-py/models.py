@@ -8,11 +8,14 @@ Log = getLogger(__name__)
 def get_ws_latency_in_ms(ws):
     return int(ws.latency * 1000)
 
+PLAYER_TYPE_SURVIVOR = 0
+PLAYER_TYPE_FAMILY = 1
 
 class Client:
     def __init__(self, uid, web_transport, websocket, data):
         self.uid = uid
         self.username = f'user-{uid}'
+        self.type = PLAYER_TYPE_SURVIVOR
         self.reliableWS = websocket
         self.unreliableFastWT = web_transport
         self.wt_latency = -1
@@ -41,7 +44,7 @@ class ReliableConnection:
                     await client.reliableWS.send(msg)
             except Exception as e:
                 Log.info(f'Cannot send to {client} because {str(e)}')
-            
+
     async def send_message_all(self, msg: str) -> None:
         for client in self.clients:
             await self.send_msg_to(client, msg)

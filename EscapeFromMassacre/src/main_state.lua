@@ -5,6 +5,7 @@ local utils = require "src.utils.utils"
 local M = {
     pause = true,
     players = Collections.createMap(),
+    game_over_players = Collections.createMap(),
     zombies = Collections.createMap(),
     rooms = Collections.createList(),
     selectedRoom = nil,

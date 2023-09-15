@@ -2,7 +2,7 @@ import queue
 
 from typing import List, Dict
 from utils import getLogger
-from models import Client, ReliableConnection, FastUnreliableConnection
+from models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, PLAYER_TYPE_SURVIVOR
 from room import Room, RoomState
 
 from comm.game_server.gs_manager import start_game_server, stop_game_server, GameServer, GameServerMessages, _terminate_game_server
@@ -33,7 +33,7 @@ class Rooms:
             del self.client_to_room[client.uid]
         room.remove_player(client)
 
-    def add_player(self, room_name: str, type, client: Client):
+    def add_player(self, room_name: str, type: 0 | 1, client: Client):
         if client.uid in self.client_to_room.keys():
             del self.client_to_room[client.uid]
         for room in self.list:
@@ -147,7 +147,7 @@ def set_game_server_communication(reader, writer, pid) -> Room:
     if room != None:
         room.set_game_server(game_server)
         for client in room.clients:
-            game_server.write(f'{client.uid}.CONNECT_ME')
+            game_server.write(f'{client.uid}.CONNECT_ME.{client.type}')
 
     return room
 
@@ -183,7 +183,11 @@ async def to_server(msg, client: Client):
     #     send_to_server = False
     elif 'NOT_GS_JOIN_ROOM' in msg:
         parts = msg.split('.')
-        rooms.add_player(parts[1], parts[2], client)
+        room_name = parts[1]
+        player_type = PLAYER_TYPE_SURVIVOR
+        if parts[2] == 'family':
+            player_type = PLAYER_TYPE_FAMILY
+        rooms.add_player(room_name, player_type, client)
         send_to_server = False
     elif 'NOT_GS_PLAYER_READY' in msg:
         parts = msg.split('.')
