@@ -1,4 +1,5 @@
 local MainState = require "src.main_state"
+local assets = require "src.utils.assets"
 
 function init(self)
 	-- use the x and y component to track which screen is currently displayed.
@@ -28,14 +29,14 @@ function on_message(self, message_id, message, sender)
 		if message.map_level == MainState.MAP_LEVELS.BASEMENT then
 			MainState.playerOnMapLevel = MainState.MAP_LEVELS.BASEMENT
 			self.current_screen = collectionfactory.create("#collectionfactory-basement", self.screen_pos)
-			msg.post("@render:", "clear_color", {color = MainState.COLORS.RED_DARK})
+			msg.post("@render:", "clear_color", {color = assets.COLORS.RED})
 
 			msg.post("/gate", "disable")
 			print("BASEMENT", #self.current_screen)
 		elseif message.map_level == MainState.MAP_LEVELS.HOUSE then
 			MainState.playerOnMapLevel = MainState.MAP_LEVELS.HOUSE
 			self.current_screen = collectionfactory.create("#collectionfactory-house", self.screen_pos)
-			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
+			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})
 
 			if MainState.fixedFuzeBoxCount == 4 then
 				msg.post("/gate", "disable")

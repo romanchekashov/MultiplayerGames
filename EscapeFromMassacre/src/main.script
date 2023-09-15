@@ -1,6 +1,7 @@
 local debugUtils = require "src.utils.debug-utils"
 local defold_utils = require "src.utils.defold-utils"
 local MainState = require "src.main_state"
+local assets = require "src.utils.assets"
 local MSG = require "src.utils.messages"
 
 local log = debugUtils.createLog("[MAIN]").log
@@ -58,12 +59,12 @@ function on_message(self, message_id, message, sender)
 
 		if message.map_level == MainState.GAME_SCREENS.LOBBY then
 			self.current_screen = collectionfactory.create("#collectionfactory-lobby", self.screen_pos)
-			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
+			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})
 			print("LOBBY", #self.current_screen)
 			go.set_position(vmath.vector3(-100, -100, 0), "crosshair")
 		elseif message.map_level == MainState.GAME_SCREENS.GAME then
 			self.current_screen = collectionfactory.create("#collectionfactory-game", self.screen_pos)
-			msg.post("@render:", "clear_color", {color = MainState.COLORS.GREEN})
+			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})
 			print("GAME", #self.current_screen)
 			MainState.currentGameState = MainState.GAME_STATES.RUNNING
 		end
