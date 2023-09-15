@@ -66,10 +66,7 @@ class Rooms:
             res += f'.{item}'
         return res
 
-# create a queue with no size limit
-cache_client_msg_while_server_not_ready_queue = queue.Queue()
-game_server = None
-game_client_websocket = None
+
 reliable_connection = ReliableConnection(clients)
 fast_unreliable_connection = FastUnreliableConnection(reliable_connection)
 rooms = Rooms()
@@ -96,11 +93,6 @@ def get_client_by_wt(wt) -> Client:
     for c in clients:
         if c.unreliableFastWT is wt:
             return c
-
-def game_server_stopped_clear_communication():
-    global game_server
-    game_server = None
-    Log.info(f'SERVER stopped.')
 
 """
 Client connect/disconnect
@@ -141,7 +133,6 @@ async def handle_client_disconnected(websocket):
 
     if len(clients) == 0:
         Log.info(f'clients = {len(clients)}: Need stop game server')
-        # stop_game_server(game_server_stopped_clear_communication)
     elif client.uid is not None:
         to_game_server(GameServerMessages.DISCONNECT, client)
 
@@ -150,7 +141,6 @@ async def handle_client_disconnected(websocket):
 Set client/server connection
 """
 def set_game_server_communication(reader, writer, pid) -> Room:
-    global game_server
     game_server = GameServer(reader, writer, pid)
     room: Room = game_server_star_room_queue.get()
     Log.debug(f'{pid} {room}')
@@ -160,14 +150,8 @@ def set_game_server_communication(reader, writer, pid) -> Room:
             game_server.write(f'{client.uid}.CONNECT_ME')
 
     return room
-    # while not cache_client_msg_while_server_not_ready_queue.empty():
-    #     item = cache_client_msg_while_server_not_ready_queue.get()
-    #     # Log.debug(item)
-    #     to_game_server(item.get("msg"), item.get("client"))
 
 async def set_game_client_communication_websocket(websocket) -> Client:
-    global game_client_websocket
-    game_client_websocket = websocket
     client = handle_client_connected(websocket)
     await reliable_connection.send_message_all(f'{rooms}')
     return client
@@ -184,7 +168,7 @@ Send messages to server and client
 async def to_server(msg, client: Client):
     Log.debug(f'TO-SERVER: {msg}, client: {client}')
 
-    global game_server, rooms
+    global rooms
     send_to_server = True
 
     if 'CONNECT_ME' in msg:
@@ -228,8 +212,3 @@ def to_game_server(msg, client: Client):
     room = rooms.get_room_by_client_uid(client.uid)
     if room.game_server is not None:
         room.game_server.write(msg)
-
-    # if game_server is not None:
-    #     game_server.write(msg)
-    # else:
-    #     cache_client_msg_while_server_not_ready_queue.put({'msg': msg, 'client': client})
