@@ -1,6 +1,6 @@
 local MainState = require "src.main_state"
-local Buttons = require "src.utils.buttons"
 local MSG = require "src.utils.messages"
+local Buttons = require "src.utils.buttons"
 local btnAction = Buttons.action
 
 local druid = require("druid.druid")
@@ -149,6 +149,8 @@ function init(self)
 	MSG.BROADSOCK:get_rooms()
 
 	enable_start_leave_btns(false)
+
+	self.enabled = true
 end
 
 
@@ -167,10 +169,11 @@ function on_message(self, message_id, message, sender)
 	self.druid:on_message(message_id, message, sender)
 
 	if message_id == hash("show") then
-        gui.set_enabled(gui.get_node("panel-game-over"), true)
-		room_show_results(self)
+        gui.set_enabled(gui.get_node("root"), true)
+		self.enabled = true
     elseif message_id == hash("hide") then
-        gui.set_enabled(gui.get_node("panel-game-over"), false)
+        gui.set_enabled(gui.get_node("root"), false)
+		self.enabled = false
     elseif message_id == MSG.ROOMS.RECIEVE_ROOMS.hash then
         room_updateDataList(self)
 		if MainState.selectedRoom ~= nil then
@@ -194,7 +197,7 @@ end
 
 
 function on_input(self, action_id, action)
-	if action_id == hash("touch") then
+	if action_id == hash("touch") and self.enabled then
 		btnAction(action, "btn-start-game", nil, nil, function ()
 			if not canStartGame(MainState.selectedRoom) then
 				MSG.BROADSOCK:player_ready({room_name = MainState.selectedRoom.name})
@@ -224,6 +227,10 @@ function on_input(self, action_id, action)
 			end
 			-- MainState.selectedRoom:joinFamily(MainState.player.uid)
 			-- room_updateDataList(self)
+		end)
+		btnAction(action, "btn-help", nil, nil, function ()
+			msg.post("default:/gui#help", "show")
+			msg.post("#", "hide")
 		end)
 	end
 
