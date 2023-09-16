@@ -14,6 +14,18 @@ game_server_star_room_queue = queue.Queue()
 uid_sequence = 0
 clients: List[Client] = []
 
+class ClientGameMessages:
+    ROOMS = 'NOT_GS_ROOMS'
+    ROOMS_GET = 'NOT_GS_ROOMS_GET'
+    USERNAMES = 'NOT_GS_USERNAMES'
+    GET_USERNAMES = 'NOT_GS_GET_USERNAMES'
+    SET_PLAYER_USERNAME = 'NOT_GS_SET_PLAYER_USERNAME'
+    CREATE_ROOM = 'NOT_GS_CREATE_ROOM'
+    JOIN_ROOM = 'NOT_GS_JOIN_ROOM'
+    LEAVE_ROOM = 'NOT_GS_LEAVE_ROOM'
+    PLAYER_READY = 'NOT_GS_PLAYER_READY'
+    START_GAME = 'NOT_GS_START_GAME'
+
 
 class Rooms:
     def __init__(self):
@@ -162,6 +174,11 @@ def set_game_client_communication_web_transport(c_uid: int, web_transport) -> Cl
             client.unreliableFastWT = web_transport
             return client
 
+async def send_usernames():
+    res = ClientGameMessages.USERNAMES
+    for client in clients:
+        res += f'{client.uid}.{len(client.username)}#{client.username}'
+    await reliable_connection.send_message_all(f'{res}')
 """
 Send messages to server and client
 """
@@ -172,8 +189,13 @@ async def to_server(msg, client: Client):
     send_to_server = True
 
     if 'CONNECT_ME' in msg:
-        await reliable_connection.send_msg_to(client, f'{client.uid}.CONNECT_SELF')
+        await reliable_connection.send_msg_to(client, f'{client.uid}.CONNECT_SELF.{client.username}')
         await reliable_connection.send_message_others(f'{client.uid}.CONNECT_OTHER', client.uid)
+        await send_usernames()
+        return
+
+    if ClientGameMessages.GET_USERNAMES in msg:
+        await send_usernames()
         return
 
     if 'NOT_GS_ROOMS_GET' in msg:
@@ -189,7 +211,7 @@ async def to_server(msg, client: Client):
             player_type = PLAYER_TYPE_FAMILY
         rooms.add_player(room_name, player_type, client)
         send_to_server = False
-    elif 'NOT_GS_PLAYER_READY' in msg:
+    elif ClientGameMessages.PLAYER_READY in msg:
         parts = msg.split('.')
         rooms.player_ready(parts[1], client)
         room = rooms.get_room_by_client_uid(client.uid)
@@ -197,11 +219,11 @@ async def to_server(msg, client: Client):
             game_server_star_room_queue.put(room)
             await start_game_server()
         send_to_server = False
-    elif 'NOT_GS_SET_PLAYER_USERNAME' in msg:
-        parts = msg.split('.')
-        client.set_username(parts[1])
-        send_to_server = False
-    elif 'NOT_GS_LEAVE_ROOM' in msg:
+    elif ClientGameMessages.SET_PLAYER_USERNAME in msg:
+        client.set_username(msg[27:])
+        await send_usernames()
+        return
+    elif ClientGameMessages.LEAVE_ROOM in msg:
         rooms.remove_player(client)
         send_to_server = False
 

@@ -252,10 +252,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			add_client(from_uid)
 			uid = from_uid
 			on_connected()
-
-			MainState.player.username = "user-" .. tostring(uid)
 			MainState.player.uid = uid
-			msg.post("/gui#rooms", "set_username", {username = MainState.player.username})
+			msg.post("/gui#rooms", "set_username", {username = sr.string()})
 			print("show connected user in lobby")
 		elseif msg_id == MSG_IDS.DISCONNECT then
 			log("DISCONNECT")

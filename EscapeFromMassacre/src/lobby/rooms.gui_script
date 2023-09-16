@@ -2,6 +2,7 @@ local MainState = require "src.main_state"
 local MSG = require "src.utils.messages"
 local Buttons = require "src.utils.buttons"
 local btnAction = Buttons.action
+local Storage = require "src.utils.storage"
 
 local druid = require("druid.druid")
 local data_list = require("druid.extended.data_list")
@@ -18,7 +19,7 @@ local function room_create_function(self, data, index, data_list)
 	local nodes = gui.clone_tree(self.prefab)
 	local root = nodes["prefab"]
 	gui.set_enabled(root, true)
-	gui.set_text(nodes["text"], string.format("%s: survs %d / family %d", data.name, data.survivors.length, data.family.length))
+	gui.set_text(nodes["text"], string.format("%s: mafia %d / survs %d", data.name, data.survivors.length, data.family.length))
 
 	local button = self.druid:new_button(root, function()
 		if MainState.player.room ~= nil then return end
@@ -49,8 +50,8 @@ local function room_updateDataList(self)
 	-- survivors
 	local survivors = {}
 	room.survivors:for_each(function (c_uid)
-		--print("survivors", c_uid, room.ready_players_map:get(c_uid))
-		table.insert(survivors, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = string.format("user - %d", c_uid)})
+		print("survivors", c_uid, room.ready_players_map:get(c_uid), MainState.uid_to_username:get(c_uid))
+		table.insert(survivors, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = MainState.uid_to_username:get(c_uid)})
 		if MainState.player.uid == c_uid then
 			enable_start_leave_btns(true)
 		end
@@ -61,8 +62,8 @@ local function room_updateDataList(self)
 	-- family
 	local family = {}
 	room.family:for_each(function (c_uid)
-		--print("family", c_uid, room.ready_players_map:get(c_uid))
-		table.insert(family, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = string.format("user - %d", c_uid)})
+		print("family", c_uid, room.ready_players_map:get(c_uid), MainState.uid_to_username:get(c_uid))
+		table.insert(family, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = MainState.uid_to_username:get(c_uid)})
 		if MainState.player.uid == c_uid then
 			enable_start_leave_btns(true)
 		end
@@ -151,10 +152,11 @@ function init(self)
 			self.input_username:set_text(text:sub(1, 30))
 		else
 			MSG.BROADSOCK:set_player_username({username = text})
+			Storage.save({username = text})
 		end
 	end)
 
-	MSG.BROADSOCK:get_rooms()
+	MSG.BROADSOCK:get_usernames()
 
 	enable_start_leave_btns(false)
 
@@ -182,7 +184,9 @@ function on_message(self, message_id, message, sender)
     elseif message_id == hash("hide") then
         gui.set_enabled(gui.get_node("root"), false)
 		self.enabled = false
-    elseif message_id == MSG.ROOMS.RECIEVE_ROOMS.hash then
+    elseif message_id == MSG.ROOMS.RECIEVE_USERNAMES.hash then
+		MSG.BROADSOCK:get_rooms()
+	elseif message_id == MSG.ROOMS.RECIEVE_ROOMS.hash then
         room_updateDataList(self)
 		if MainState.selectedRoom ~= nil then
 			if not canStartGame(MainState.selectedRoom) then
@@ -190,8 +194,10 @@ function on_message(self, message_id, message, sender)
 			end
 		end
 	elseif message_id == hash("set_username") then
-        -- format max 30 characters
-		self.input_username:set_text(string.format("%.30s!", message.username))
+		if MainState.player.username == nil then
+			MainState.player.username = message.username
+		end
+		self.input_username:set_text(string.format("%.30s", MainState.player.username))
 	elseif message_id == hash("game_pre_start") then
 		MainState.currentGameState = MainState.GAME_STATES.START
 		gui.set_enabled(gui.get_node("survivors/btn"), false)

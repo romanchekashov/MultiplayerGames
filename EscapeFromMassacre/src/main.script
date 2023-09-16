@@ -3,6 +3,7 @@ local defold_utils = require "src.utils.defold-utils"
 local MainState = require "src.main_state"
 local assets = require "src.utils.assets"
 local MSG = require "src.utils.messages"
+local Storage = require "src.utils.storage"
 
 local log = debugUtils.createLog("[MAIN]").log
 
@@ -32,6 +33,8 @@ function init(self)
 	self.current_screen = nil
 	self.loading = false
 	self.map_level = MainState.GAME_SCREENS.LOBBY
+	local state = Storage.load()
+	MainState.player.username = state.username
 	msg.post("#", "load_screen", {map_level = MainState.GAME_SCREENS.LOBBY})
 	print("main init")
 end

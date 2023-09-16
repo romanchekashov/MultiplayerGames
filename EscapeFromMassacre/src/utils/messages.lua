@@ -2,11 +2,13 @@ local M = {
     BASE_MSG_IDS = {
         ROOMS = "NOT_GS_ROOMS",
         ROOMS_GET = "NOT_GS_ROOMS_GET",
+        USERNAMES = "NOT_GS_USERNAMES",
+        GET_USERNAMES = "NOT_GS_GET_USERNAMES",
+        SET_PLAYER_USERNAME = "NOT_GS_SET_PLAYER_USERNAME",
         CREATE_ROOM = "NOT_GS_CREATE_ROOM",
         JOIN_ROOM = "NOT_GS_JOIN_ROOM",
         LEAVE_ROOM = "NOT_GS_LEAVE_ROOM",
         PLAYER_READY = "NOT_GS_PLAYER_READY",
-        SET_PLAYER_USERNAME = "NOT_GS_SET_PLAYER_USERNAME",
         START_GAME = "NOT_GS_START_GAME",
     },
     BROADSOCK = {
@@ -27,6 +29,10 @@ local M = {
             name = "recieve_rooms",
             hash = hash("recieve_rooms"),
         },
+        RECIEVE_USERNAMES = {
+            name = "recieve_usernames",
+            hash = hash("recieve_usernames"),
+        },
     }
 }
 M.BROADSOCK = {
@@ -42,6 +48,7 @@ M.BROADSOCK = {
         leave_room = hash("leave_room"),
         get_rooms = hash("get_rooms"),
         player_ready = hash("player_ready"),
+        get_usernames = hash("get_usernames"),
         set_player_username = hash("set_player_username"),
     },
     connect = function (self, data)
@@ -52,6 +59,9 @@ M.BROADSOCK = {
     end,
     get_rooms = function (self)
         msg.post(self.URL, "get_rooms", {})
+    end,
+    get_usernames = function (self)
+        msg.post(self.URL, "get_usernames", {})
     end,
     create_room = function (self, data)
         msg.post(self.URL, "create_room", data)

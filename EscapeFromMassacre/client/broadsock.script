@@ -43,6 +43,8 @@ local function js_listener(self, message_id, message)
 	if message_id == "ServerMsg" then
 		if message:sub(1, 12) == MSG.BASE_MSG_IDS.ROOMS then
 			MainState.setRooms(message)
+		elseif message:sub(1, 16) == MSG.BASE_MSG_IDS.USERNAMES then
+			MainState.setUsernames(message)
 		else
 			self.client.on_data(message, #message)
 		end
@@ -127,6 +129,8 @@ function on_message(self, message_id, message, sender)
 			self.client.register_factory(message.url, message.type)
 		elseif message_id == MSG.BROADSOCK.msg_ids.get_rooms then
 			sendToReliableConnection(MSG.BASE_MSG_IDS.ROOMS_GET)
+		elseif message_id == MSG.BROADSOCK.msg_ids.get_usernames then
+			sendToReliableConnection(MSG.BASE_MSG_IDS.GET_USERNAMES)
 		elseif message_id == MSG.BROADSOCK.msg_ids.create_room then
 			sendToReliableConnection(MSG.BASE_MSG_IDS.CREATE_ROOM)
 		elseif msgs[message_id] ~= nil then

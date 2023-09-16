@@ -8,6 +8,7 @@ local M = {
     players = Collections.createMap(),
     game_over_players = Collections.createMap(),
     zombies = Collections.createMap(),
+    uid_to_username = Collections.createMap(),
     rooms = Collections.createList(),
     selectedRoom = nil,
     GAME_STATES = {
@@ -301,6 +302,37 @@ function M.setRooms(str)
 
     M.rooms = rooms
 	msg.post("/gui#rooms", MSG.ROOMS.RECIEVE_ROOMS.name)
+end
+
+function M.setUsernames(str)
+    print(str)
+    local map = Collections.createMap()
+    local uid = -1
+    local username = ""
+    local index = 17
+
+    for i = index, #str do
+        if str:sub(i, i) == "." then
+            local s = str:sub(index, i - 1)
+            index = index + #s + 1
+            uid = tonumber(s)
+        elseif str:sub(i, i) == "#" then
+            local s = str:sub(index, i - 1)
+            index = index + #s + 1
+            local len = tonumber(s)
+            username = str:sub(index, index + len - 1)
+            index = index + #username
+            print(uid, username, len)
+            map:put(uid, username)
+        end
+    end
+
+    --table.insert(result, str:sub(index, #str))
+    map:for_each(function (v)
+        print(v)
+    end)
+    M.uid_to_username = map
+	msg.post("/gui#rooms", MSG.ROOMS.RECIEVE_USERNAMES.name)
 end
 
 return M
