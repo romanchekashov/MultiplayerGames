@@ -17,6 +17,9 @@ local EXCLUDE = {["#"]=true,["."]=true,["@"]=true,}
 old_msg_post = msg.post
 msg.post = function(url, ...)
     if type(url) ~= "string" or EXCLUDE[url:sub(1, 1)] ~= nil or url:sub(1, 8) == "/screens" then
+        --if url == nil then
+        --    print(url, ...)
+        --end
         old_msg_post(url, ...)
         return
     end
@@ -30,6 +33,23 @@ msg.post = function(url, ...)
     end
 
     old_msg_post(M.COLLECTION_URLS[url] or url, ...)
+end
+
+old_factory_create = factory.create
+factory.create = function(url, ...)
+    if type(url) ~= "string" or EXCLUDE[url:sub(1, 1)] ~= nil or url:sub(1, 8) == "/screens" then
+        return old_factory_create(url, ...)
+    end
+
+    if M.COLLECTION_URLS[url] == nil then
+        local res = utils.split(url, "#")
+        -- print(url, res[1], #res > 1 and res[2] or nil, M.CURRENT_COLLECTION_IDS[res[1]])
+        if M.CURRENT_COLLECTION_IDS[res[1]] ~= nil then
+            M.COLLECTION_URLS[url] = msg.url("default", M.CURRENT_COLLECTION_IDS[res[1]], #res > 1 and res[2] or nil)
+        end
+    end
+
+    return old_factory_create(M.COLLECTION_URLS[url] or url, ...)
 end
 
 function M.SET_CURRENT_COLLECTION_IDS(ids)
@@ -67,7 +87,7 @@ function M.setVirtualGamepadLeftStickBound(pos, size)
 end
 
 function M.insideVirtualGamepadLeftStickBound(action)
-    return action.screen_x >= pauseBound.x1 and action.screen_x <= pauseBound.x2 
+    return action.screen_x >= pauseBound.x1 and action.screen_x <= pauseBound.x2
         and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
 end
 

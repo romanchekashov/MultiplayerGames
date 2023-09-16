@@ -191,6 +191,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						if factory_url then
 							log("GO create obj", from_uid, tostring(type))
 							local id = factory.create(factory_url, pos, rot, {remote = true, uid = from_uid}, scale)
+							--assert(id, factory_url .. " should return non nil id")
 							remote_gameobjects_for_user[gouid] = { id = id, type = type }
 							if enable then
 								msg.post(id, "enable")

@@ -12,12 +12,13 @@ from stream import stream_encode
 Log = getLogger(__name__)
 
 class GameServerMessages:
-    CONNECT_ME = 'CONNECT_ME'
     GO = 'GO'
     GOD = 'GOD'
     CONNECT_SELF = 'CONNECT_SELF'
     CONNECT_OTHER = 'CONNECT_OTHER'
     DISCONNECT = 'DISCONNECT'
+    CONNECT_ME = 'CONNECT_ME'
+    GAME_PRE_START = 'GAME_PRE_START'
     GAME_START = 'GAME_START'
     GAME_OVER = 'GAME_OVER'
 

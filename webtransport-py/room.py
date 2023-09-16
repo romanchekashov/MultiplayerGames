@@ -33,12 +33,14 @@ class Room:
         self.fast_unreliable_connection.clients = self.clients
 
     async def to_game_client(self, msg):
-        Log.debug(f'TO-CLIENT: {msg}')
-        if GameServerMessages.GO in msg: # and GOD
+        Log.info(f'TO-CLIENT: {msg}')
+
+        if GameServerMessages.GOD in msg:
+            # await self.reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
+            await self.reliable_connection.send_message_all(msg)
+        elif GameServerMessages.GO in msg:
             # await fast_unreliable_connection.send_message_others(msg, get_uid_from_msg(msg))
             await self.fast_unreliable_connection.send_message_all(msg)
-        # elif GameServerMessages.GOD in msg:
-        #     await reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
         elif GameServerMessages.CONNECT_SELF in msg:
             uid = get_uid_from_msg(msg)
             for client in self.clients:
@@ -54,7 +56,7 @@ class Room:
             await self.reliable_connection.send_message_all(msg)
             self.end_game()
         else:
-            await self.fast_unreliable_connection.send_message_all(msg)
+            await self.reliable_connection.send_message_all(msg)
 
     def set_game_server(self, gs: GameServer):
         self.game_server = gs

@@ -38,6 +38,7 @@ end
 function final(self)
 	print("clear fuzes")
 	for key, val in pairs(self.fuzeOnMapLevel) do
+		print("clear fuzes:", val.fuze)
 		if val.fuze ~= nil and go.exists(val.fuze) then
 			go.delete(val.fuze)
 		end
