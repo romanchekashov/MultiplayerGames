@@ -1,9 +1,36 @@
 local MainState = require "src.main_state"
 local Buttons = require "src.utils.buttons"
+local druid_utils = require "src.utils.druid-utils"
 local btnAction = Buttons.action
 
 local druid = require("druid.druid")
 local data_list = require("druid.extended.data_list")
+
+local function create_function2(self, data, index, data_list)
+	-- In data list create funtion we made all init stuff for this node
+	local nodes = gui.clone_tree(self.prefab)
+	local root = nodes["family-prefab"]
+	gui.set_enabled(root, true)
+	gui.set_text(nodes["family-text"], data.username)
+	gui.set_text(nodes["family-text-score"], data.score)
+
+	-- We should return in this function root node and optionally - Druid component
+	return root
+end
+
+local function show_results2(self, data)
+	self.prefab = gui.get_node("family-prefab")
+	gui.set_enabled(self.prefab, false)
+
+	self.scroll = self.druid:new_scroll("family-data_list_view", "family-data_list_content")
+	self.scroll:set_horizontal_scroll(false)
+	self.grid = self.druid:new_static_grid("family-data_list_content", "family-prefab", 1)
+
+	-- Pass already created scroll and grid components to data_list:
+	self.data_list = self.druid:new_data_list(self.scroll, self.grid, create_function2)
+
+	self.data_list:set_data(data or {})
+end
 
 local function create_function(self, data, index, data_list)
 	-- In data list create funtion we made all init stuff for this node
@@ -17,56 +44,9 @@ local function create_function(self, data, index, data_list)
 	return root
 end
 
-local function updateDataList(self)
-	local survivors = {}
-	local family = {}
-
-	MainState.game_over_players:for_each(function (player)
-		if player.type == MainState.PLAYER_TYPE.SURVIVOR then
-			print("SURVIVOR", player.uid, player.type)
-			table.insert(survivors, {uid = player.uid, username = string.format("user - %d", player.uid)})
-		else
-			print("FAMILY", player.uid, player.type)
-			table.insert(family, {uid = player.uid, username = string.format("user - %d", player.uid)})
-		end
-	end)
-
-	self.data_list:set_data(survivors)
-end
-
-local function register_druid_extended_components(self)
-	druid.register("data_list", data_list)
-end
-
-local function show_results(self)
+local function show_results(self, data)
 	self.prefab = gui.get_node("prefab")
 	gui.set_enabled(self.prefab, false)
-
-	local survivors = {}
-	local family = {}
-	MainState.game_over_players:for_each(function (player)
-		if player.type == MainState.PLAYER_TYPE.SURVIVOR then
-			print("SURVIVOR", player.uid, player.type)
-			table.insert(survivors, player)
-		else
-			print("FAMILY", player.uid, player.type)
-			table.insert(family, player)
-		end
-	end)
-
-	local data = {}
-
-	--table.insert(data, {title = "Survivors"})
-
-	for _,player in ipairs(survivors) do
-		table.insert(data, player)
-	end
-
-	--table.insert(data, {title = "Family"})
-
-	for _,player in ipairs(family) do
-		table.insert(data, player)
-	end
 
 	self.scroll = self.druid:new_scroll("data_list_view", "data_list_content")
 	self.scroll:set_horizontal_scroll(false)
@@ -75,7 +55,29 @@ local function show_results(self)
 	-- Pass already created scroll and grid components to data_list:
 	self.data_list = self.druid:new_data_list(self.scroll, self.grid, create_function)
 
-	self.data_list:set_data(data)
+	self.data_list:set_data(data or {})
+end
+
+local function updateDataList(self)
+	local survivors = {}
+	local family = {}
+
+	MainState.game_over_players:for_each(function (player)
+		if player.type == MainState.PLAYER_TYPE.SURVIVOR then
+			print("SURVIVOR", player.uid, player.type, player.username, player.score)
+			table.insert(survivors, player)
+		else
+			print("FAMILY", player.uid, player.type, player.username, player.score)
+			table.insert(family, player)
+		end
+	end)
+
+	show_results(self, survivors)
+	show_results2(self, family)
+end
+
+local function register_druid_extended_components(self)
+	druid.register("data_list", data_list)
 end
 
 function init(self)
@@ -102,7 +104,8 @@ function on_message(self, message_id, message, sender)
 	if message_id == hash("show") then
         gui.set_enabled(gui.get_node("panel-game-over"), true)
 		gui.set_enabled(gui.get_node("btn-game-exit"), true)
-		show_results(self)
+		--show_results(self)
+		updateDataList(self)
     elseif message_id == hash("hide") then
         gui.set_enabled(gui.get_node("panel-game-over"), false)
 		gui.set_enabled(gui.get_node("btn-game-exit"), false)

@@ -269,7 +269,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			while sr.string() == "player" do
 				local uid = sr.number()
 				local player = MainState.game_over_players:get(uid)
-				local type = sr.number()
+				player.type = sr.number()
 				local map_level = sr.number()
 				local health = sr.number()
 				player.score = sr.number()
