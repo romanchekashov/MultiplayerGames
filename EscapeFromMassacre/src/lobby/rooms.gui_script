@@ -49,7 +49,7 @@ local function room_updateDataList(self)
 	-- survivors
 	local survivors = {}
 	room.survivors:for_each(function (c_uid)
-		print("survivors", c_uid, room.ready_players_map:get(c_uid))
+		--print("survivors", c_uid, room.ready_players_map:get(c_uid))
 		table.insert(survivors, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = string.format("user - %d", c_uid)})
 		if MainState.player.uid == c_uid then
 			enable_start_leave_btns(true)
@@ -61,7 +61,7 @@ local function room_updateDataList(self)
 	-- family
 	local family = {}
 	room.family:for_each(function (c_uid)
-		print("family", c_uid, room.ready_players_map:get(c_uid))
+		--print("family", c_uid, room.ready_players_map:get(c_uid))
 		table.insert(family, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = string.format("user - %d", c_uid)})
 		if MainState.player.uid == c_uid then
 			enable_start_leave_btns(true)

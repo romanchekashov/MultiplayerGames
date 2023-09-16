@@ -113,7 +113,6 @@ function update(self, dt)
 end
 
 function on_message(self, message_id, message, sender)
-	print(message_id)
 	if not self.client then
 		if message_id == MSG.BROADSOCK.msg_ids.connect then
 			self.creator = sender

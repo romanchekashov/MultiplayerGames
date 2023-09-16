@@ -12,13 +12,13 @@ local log = debugUtils.createLog("[MAIN]").log
 function init(self)
 	local enableLogs = true
 	debugUtils.debug(enableLogs)
-	if html5 then
-		if enableLogs then
-			html5.run("enableLogs(true)")
-		else
-			html5.run("enableLogs(false)")
-		end
-	end
+	--if html5 then
+	--	if enableLogs then
+	--		html5.run("enableLogs(true)")
+	--	else
+	--		html5.run("enableLogs(false)")
+	--	end
+	--end
 
 	math.randomseed(os.time())
 
