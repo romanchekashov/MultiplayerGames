@@ -50,6 +50,9 @@ local function room_updateDataList(self)
 	MainState.selectedRoom.survivors:for_each(function (c_uid)
 		print("survivors", c_uid)
 		table.insert(survivors, {uid = c_uid, username = string.format("user - %d", c_uid)})
+		if MainState.player.uid == c_uid then
+			enable_start_leave_btns(true)
+		end
 	end)
 
 	self.survivors_data_list.data_list:set_data(survivors)
@@ -59,6 +62,9 @@ local function room_updateDataList(self)
 	MainState.selectedRoom.family:for_each(function (c_uid)
 		print("family", c_uid)
 		table.insert(family, {uid = c_uid, username = string.format("user - %d", c_uid)})
+		if MainState.player.uid == c_uid then
+			enable_start_leave_btns(true)
+		end
 	end)
 
 	self.family_data_list.data_list:set_data(family)
