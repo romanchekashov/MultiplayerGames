@@ -65,6 +65,10 @@ class Room:
     def end_game(self):
         _terminate_game_server(self.game_server.pid)
         # stop_game_server(self.game_server.pid, game_server_stopped_clear_communication)
+        for c_uid in self.family_uids.keys():
+            self.family_uids[c_uid]['ready'] = False
+        for c_uid in self.survivor_uids.keys():
+            self.survivor_uids[c_uid]['ready'] = False
 
     def players_len(self):
         return len(self.family_uids) + len(self.survivor_uids)
@@ -120,14 +124,16 @@ class Room:
     def __str__(self):
         ready_players = 0
         res = f'{self.name}.family'
-        for key, value in self.family_uids.items():
-            res += f'.{key}'
+        for c_uid, value in self.family_uids.items():
+            ready = 1 if self.family_uids[c_uid]['ready'] else 0
+            res += f'.{c_uid}.{ready}'
             if value['ready']:
                 ready_players += 1
 
         res += '.survivors'
-        for key, value in self.survivor_uids.items():
-            res += f'.{key}'
+        for c_uid, value in self.survivor_uids.items():
+            ready = 1 if self.survivor_uids[c_uid]['ready'] else 0
+            res += f'.{c_uid}.{ready}'
             if value['ready']:
                 ready_players += 1
 

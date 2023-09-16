@@ -50,8 +50,8 @@ M.BROADSOCK = {
     register_factory = function (self, data)
         msg.post(self.URL, "register_factory", data)
     end,
-    get_rooms = function (self, data)
-        msg.post(self.URL, "get_rooms", data)
+    get_rooms = function (self)
+        msg.post(self.URL, "get_rooms", {})
     end,
     create_room = function (self, data)
         msg.post(self.URL, "create_room", data)

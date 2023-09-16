@@ -45,11 +45,12 @@ local function room_updateDataList(self)
 	end
 
 	MainState.selectedRoom = MainState.rooms:find("name", MainState.selectedRoom.name)
+	local room = MainState.selectedRoom
 	-- survivors
 	local survivors = {}
-	MainState.selectedRoom.survivors:for_each(function (c_uid)
-		print("survivors", c_uid)
-		table.insert(survivors, {uid = c_uid, username = string.format("user - %d", c_uid)})
+	room.survivors:for_each(function (c_uid)
+		print("survivors", c_uid, room.ready_players_map:get(c_uid))
+		table.insert(survivors, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = string.format("user - %d", c_uid)})
 		if MainState.player.uid == c_uid then
 			enable_start_leave_btns(true)
 		end
@@ -59,9 +60,9 @@ local function room_updateDataList(self)
 
 	-- family
 	local family = {}
-	MainState.selectedRoom.family:for_each(function (c_uid)
-		print("family", c_uid)
-		table.insert(family, {uid = c_uid, username = string.format("user - %d", c_uid)})
+	room.family:for_each(function (c_uid)
+		print("family", c_uid, room.ready_players_map:get(c_uid))
+		table.insert(family, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = string.format("user - %d", c_uid)})
 		if MainState.player.uid == c_uid then
 			enable_start_leave_btns(true)
 		end
@@ -89,10 +90,11 @@ local function player_show_results(self, prefix)
 	local M = {}
 	function M.player_create_function(self, data, index, data_list)
 		-- In data list create funtion we made all init stuff for this node
-		local nodes = gui.clone_tree(self.prefab)
-		local root = nodes["prefab"]
+		local nodes = gui.clone_tree(M.prefab)
+		local root = nodes[prefix .. "prefab"]
 		gui.set_enabled(root, true)
-		gui.set_text(nodes["text"], data.username)
+		gui.set_text(nodes[prefix .. "text"], data.username)
+		gui.set_enabled(nodes[prefix .. "ready"], data.ready == 1)
 
 		local button = self.druid:new_button(root, function()
 			print(data.username)

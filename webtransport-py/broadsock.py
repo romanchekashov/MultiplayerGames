@@ -61,7 +61,7 @@ class Rooms:
         return len(self.list)
 
     def __str__(self):
-        res = f'NOT_GS_ROOMS'
+        res = f'NOT_GS_ROOMS.{len(self.list)}'
         for item in self.list:
             res += f'.{item}'
         return res

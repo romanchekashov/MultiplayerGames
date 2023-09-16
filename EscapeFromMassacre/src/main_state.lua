@@ -1,6 +1,7 @@
 local Collections = require "src.utils.collections"
 local MSG = require "src.utils.messages"
 local utils = require "src.utils.utils"
+local stream = require "client.stream"
 
 local M = {
     pause = true,
@@ -236,7 +237,7 @@ function M.createRoom(name)
         survivors = Collections.createSet(),
         family = Collections.createSet(),
         ready_players = 0,
-        startPressPlayers = Collections.createMap(),
+        ready_players_map = Collections.createMap(),
         pressStart = function (self, playerUid)
             -- self.startPressCount:put(playerUid, true)
         end,
@@ -268,46 +269,36 @@ function M.createRoom(name)
     }
 end
 
+-- NOT_GS_ROOMS.2.Room 1.family.15.survivors.ready.0.Room 2.family.survivors.ready.0
 function M.setRooms(str)
     --print(str)
-    local res = utils.split(str, ".")
+    local sr = stream.reader(str, #str)
     local rooms = Collections.createList()
     local room = nil
-    local is_family = false
-    local is_ready = false
-    local client_uid = nil
 
-    for index, value in ipairs(res) do
-        if index ~= 1 then
-            if value == "family" then
-                is_family = true
-            end
-            if value == "survivors" then
-                is_family = false
-            end
-            if value == "ready" then
-                is_ready = true
-            end
-            if value ~= "survivors" and value ~= "family" and value ~= "ready" then
-                num = tonumber(value)
-                if num == nil then
-                    room = M.createRoom(value)
-                    rooms:add(room)
-                else
-                    if is_ready then
-                        room.ready_players = num
-                        is_ready = false
-                    else
-                        if is_family then
-                            room:joinFamily(num)
-                        else
-                            room:joinSurvivors(num)
-                        end
-                    end
-                end
-            end
+    sr.string() -- NOT_GS_ROOMS
+    local count = sr.number()
+    for _=1,count do
+        room = M.createRoom(sr.string())
+        rooms:add(room)
+        sr.string() -- family
+        local uid = sr.number()
+        while uid ~= nil do
+            room:joinFamily(uid)
+            room.ready_players_map:put(uid, sr.number())
+            uid = sr.number()
         end
+        -- survivors
+        uid = sr.number()
+        while uid ~= nil do
+            room:joinSurvivors(uid)
+            room.ready_players_map:put(uid, sr.number())
+            uid = sr.number()
+        end
+        -- ready
+        room.ready_players = sr.number()
     end
+
     M.rooms = rooms
 	msg.post("/gui#rooms", MSG.ROOMS.RECIEVE_ROOMS.name)
 end
