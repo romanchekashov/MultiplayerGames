@@ -10,7 +10,8 @@ local function create_function(self, data, index, data_list)
 	local nodes = gui.clone_tree(self.prefab)
 	local root = nodes["prefab"]
 	gui.set_enabled(root, true)
-	gui.set_text(nodes["text"], data.title ~= nil and data.title or data.username)
+	gui.set_text(nodes["text"], data.username)
+	gui.set_text(nodes["text-score"], data.score)
 
 	-- We should return in this function root node and optionally - Druid component
 	return root
@@ -46,22 +47,22 @@ local function show_results(self)
 	MainState.game_over_players:for_each(function (player)
 		if player.type == MainState.PLAYER_TYPE.SURVIVOR then
 			print("SURVIVOR", player.uid, player.type)
-			table.insert(survivors, {uid = player.uid, username = string.format("user - %d", player.uid)})
+			table.insert(survivors, player)
 		else
 			print("FAMILY", player.uid, player.type)
-			table.insert(family, {uid = player.uid, username = string.format("user - %d", player.uid)})
+			table.insert(family, player)
 		end
 	end)
 
 	local data = {}
 
-	table.insert(data, {title = "Survivors"})
+	--table.insert(data, {title = "Survivors"})
 
 	for _,player in ipairs(survivors) do
 		table.insert(data, player)
 	end
 
-	table.insert(data, {title = "Family"})
+	--table.insert(data, {title = "Family"})
 
 	for _,player in ipairs(family) do
 		table.insert(data, player)

@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "house.tmx",
+    "activeFile": "FamilyHouse2.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -26,11 +26,11 @@
             "expandedGroupLayers": [
                 5
             ],
-            "scale": 0.33,
+            "scale": 0.0637,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 7421.21212121212,
-                "y": 4396.969696969697
+                "x": 9160.125588697016,
+                "y": 6459.968602825746
             }
         },
         "FamilyHouse2.tmx#topdown_tilesheet_complete2": {
@@ -102,10 +102,10 @@
     ],
     "project": "FamilyHouse.tiled-project",
     "recentFiles": [
-        "FamilyHouse2.tmx",
-        "bg.tmx",
         "basement.tmx",
         "house.tmx",
+        "bg.tmx",
+        "FamilyHouse2.tmx",
         "house copy.tmx",
         "FamilyHouse.tmx"
     ],
