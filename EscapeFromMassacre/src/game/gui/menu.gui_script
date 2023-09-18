@@ -1,5 +1,6 @@
 local MainState = require "src.main_state"
 local Buttons = require "src.utils.buttons"
+local ACTION_IDS = require "src.utils.actions"
 local btnAction = Buttons.action
 local server_nakama = require "client.server_nakama"
 local debugUtils = require "src.utils.debug-utils"
@@ -7,9 +8,6 @@ local debugUtils = require "src.utils.debug-utils"
 local MSG = require "src.utils.messages"
 local druid = require("druid.druid")
 local timer_component = require("druid.extended.timer")
-
-local ACTION_IDS = MainState.ACTION_IDS
-
 
 local function set_pause(pause)
 	print("set_pause", pause)

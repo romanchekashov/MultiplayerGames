@@ -3,12 +3,11 @@ local input = require "ludobits.m.input"
 local MainState = require "src.main_state"
 local debugUtils = require "src.utils.debug-utils"
 local defoldUtils = require "src.utils.defold-utils"
+local ACTION_IDS = require "src.utils.actions"
 local device = require "src.utils.device"
 
-local ACTION_IDS = MainState.ACTION_IDS
-local isGamepadActionId = MainState.isGamepadActionId
-local isGamepadLeftStickActionId = MainState.isGamepadLeftStickActionId
-local isGamepadRightStickActionId = MainState.isGamepadRightStickActionId
+local isGamepadLeftStickActionId = ACTION_IDS.isGamepadLeftStickActionId
+local isGamepadRightStickActionId = ACTION_IDS.isGamepadRightStickActionId
 local IS_MOBILE = device.type == "mobile" or device.type == "tablet"
 local log = debugUtils.createLog("[PLAYER]").log
 local getRotation = defoldUtils.getRotation
@@ -302,13 +301,6 @@ function on_input(self, action_id, action)
 			end
         end
     end
-
-	-- if isGamepadActionId[action_id] then
-	-- 	if not MainState.HAS_GAMEPAD  then
-	-- 		MainState.HAS_GAMEPAD = true
-	-- 		msg.post("/virtual_gamepad", "disable")
-	-- 	end
-	-- end
 
 	if MainState.pause or insidePauseBound(action) then
 		if self.sound_run_playing then

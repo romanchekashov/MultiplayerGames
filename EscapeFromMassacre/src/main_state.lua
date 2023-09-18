@@ -27,27 +27,6 @@ local M = {
     bulletBelongToPlayerUid = {},
     playerUidToScore = {},
     playerUidToWsLatency = {},
-    ACTION_IDS = {
-        JOIN = hash("join"),
-        USE = hash("use"),
-        GAMEPAD = {
-            CONNECTED = hash("gamepad_connected"),
-            DISCONNECTED = hash("gamepad_dicconnected"),
-            START = hash("gamepad_start"),
-            RIGHT_STICK = {
-                RIGHT = hash("rs_right"),
-                LEFT = hash("rs_left"),
-                UP = hash("rs_up"),
-                DOWN = hash("rs_down")
-            },
-            LEFT_STICK = {
-                RIGHT = hash("ls_right"),
-                LEFT = hash("ls_left"),
-                UP = hash("ls_up"),
-                DOWN = hash("ls_down")
-            }
-        }
-    },
     MSG_IDS = {
         GAME_START = hash("game_start")
     },
@@ -128,32 +107,6 @@ M.player = {
 M.currentGameState = M.GAME_STATES.LOBBY
 
 M.playerOnMapLevel = M.MAP_LEVELS.HOUSE
-M.isGamepadActionId = {
-    [M.ACTION_IDS.GAMEPAD.CONNECTED] = true,
-    [M.ACTION_IDS.GAMEPAD.START] = true,
-
-    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.DOWN] = true,
-    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.UP] = true,
-    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.RIGHT] = true,
-    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.LEFT] = true,
-
-    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.DOWN] = true,
-    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.UP] = true,
-    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.RIGHT] = true,
-    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.LEFT] = true,
-}
-M.isGamepadLeftStickActionId = {
-    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.DOWN] = true,
-    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.UP] = true,
-    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.RIGHT] = true,
-    [M.ACTION_IDS.GAMEPAD.LEFT_STICK.LEFT] = true,
-}
-M.isGamepadRightStickActionId = {
-    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.DOWN] = true,
-    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.UP] = true,
-    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.RIGHT] = true,
-    [M.ACTION_IDS.GAMEPAD.RIGHT_STICK.LEFT] = true,
-}
 
 function M.increasePlayerScore(killer_uid)
 	if killer_uid ~= nil and killer_uid ~= "" then
