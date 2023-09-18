@@ -55,6 +55,7 @@ local PLAYER_SPEED = 275
 local STAIRS_CHANGE_COOLDOWN = 1
 local HIT_COOLDOWN = 0.2
 local FIRE_COOLDOWN = 0.2
+local rad_minus90 = math.rad(-90)
 
 local CROSSHAIR_OFFSET = vmath.vector3(10,200,0)
 
@@ -462,6 +463,12 @@ function on_message(self, message_id, message, sender)
 			self.velocity.y = -PLAYER_SPEED
 		else
 			self.velocity.y = 0
+		end
+
+		if message.x ~= 0 or message.y ~= 0 then
+			--print(message.x, message.y, math.atan2(message.y, message.x), math.rad(-90))
+			--go.set_rotation(get_rotation(message))
+			go.set_rotation(vmath.quat_rotation_z(math.atan2(message.y, message.x) + rad_minus90))
 		end
 	end
 
