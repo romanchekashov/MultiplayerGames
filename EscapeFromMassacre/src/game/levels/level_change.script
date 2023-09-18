@@ -1,5 +1,6 @@
 local MainState = require "src.main_state"
 local assets = require "src.utils.assets"
+local MSG = require "src.utils.messages"
 
 function init(self)
 	-- use the x and y component to track which screen is currently displayed.
@@ -47,8 +48,8 @@ function on_message(self, message_id, message, sender)
 		end
 
 		self.map_level = message.map_level
-		msg.post("/factory#fuze", "map_level_change", {map_level = self.map_level})
-		msg.post("/factory#fuze-box", "map_level_change", {map_level = self.map_level})
+		msg.post("/factory#fuze", MSG.LEVEL_CHANGE.map_level_change.name, {map_level = self.map_level})
+		msg.post("/factory#fuze-box", MSG.LEVEL_CHANGE.map_level_change.name, {map_level = self.map_level})
 	elseif message_id == hash("gate_open") then
 		if self.map_level == MainState.MAP_LEVELS.HOUSE and MainState.fixedFuzeBoxCount == 4 then
 			msg.post("/gate", "disable")

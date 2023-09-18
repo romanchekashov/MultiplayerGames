@@ -10,6 +10,7 @@ local M = {
     zombies = Collections.createMap(),
     uid_to_username = Collections.createMap(),
     rooms = Collections.createList(),
+    INITIAL_FUZES_CREATE = {},
     FACTORY_TYPES = {
         player = "player",
         zombie = "zombie",
@@ -24,6 +25,7 @@ local M = {
         END = 3,
         LOBBY = 4,
     },
+    RECREATE_PLAYER_TIMEOUT_IN_SEC = 2,
     GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
     GAME_TIMEOUT_IN_SEC = 20,

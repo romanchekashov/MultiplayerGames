@@ -1,9 +1,14 @@
 local M = {
+    CLIENT_MSG_IDS = {
+        CREATE_PLAYER = "CREATE_PLAYER",
+    },
     MSG_IDS = {
         GO = "GO",
         GOD = "GOD",
         GAME_JOIN = "GAME_JOIN",
         GAME_LEAVE = "GAME_LEAVE",
+        PLAYER_CREATE_POS = "PLAYER_CREATE_POS",
+        CREATE_FUZES = "CREATE_FUZES",
         CONNECT_OTHER = "CONNECT_OTHER",
         CONNECT_SELF = "CONNECT_SELF",
         DISCONNECT = "DISCONNECT",

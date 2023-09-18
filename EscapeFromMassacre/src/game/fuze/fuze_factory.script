@@ -1,13 +1,25 @@
 local MainState = require "src.main_state"
 local Utils = require "src.utils.utils"
+local MSG = require "src.utils.messages"
 
 local random_position = Utils.random_position
+
+local fuzeColorToMapLevel = {
+	[MainState.FUZE.RED] = MainState.MAP_LEVELS.HOUSE,
+	[MainState.FUZE.GREEN] = MainState.MAP_LEVELS.HOUSE,
+	[MainState.FUZE.BLUE] = MainState.MAP_LEVELS.BASEMENT,
+	[MainState.FUZE.YELLOW] = MainState.MAP_LEVELS.BASEMENT,
+}
 
 local function create_fuze(color, pos)
 	return factory.create("#factory-fuze", pos or random_position(), nil, {remote = false, color = color})
 end
 
 local function use_map_level_visibility(self, map_level)
+	if self.fuzeOnMapLevel == nil then
+		return
+	end
+
 	for key, val in pairs(self.fuzeOnMapLevel) do
 		if val.fuze ~= nil and go.exists(val.fuze) then
 			if val.map == map_level then
@@ -20,12 +32,13 @@ local function use_map_level_visibility(self, map_level)
 end
 
 function init(self)
-	self.fuzeOnMapLevel = {
-		[MainState.FUZE.RED] = {map = MainState.MAP_LEVELS.HOUSE, fuze = create_fuze(MainState.FUZE.RED, nil)},
-		[MainState.FUZE.GREEN] = {map = MainState.MAP_LEVELS.HOUSE, fuze = create_fuze(MainState.FUZE.GREEN, nil)},
-		[MainState.FUZE.BLUE] = {map = MainState.MAP_LEVELS.BASEMENT, fuze = create_fuze(MainState.FUZE.BLUE, nil)},
-		[MainState.FUZE.YELLOW] = {map = MainState.MAP_LEVELS.BASEMENT, fuze = create_fuze(MainState.FUZE.YELLOW, nil)},
-	}
+	self.fuzeOnMapLevel = {}
+	for _, v in ipairs(MainState.INITIAL_FUZES_CREATE) do
+		print(v.color, v.pos)
+		self.fuzeOnMapLevel[v.color] = {
+			map = fuzeColorToMapLevel[v.color],
+			fuze = create_fuze(v.color, v.pos)}
+	end
 
 	use_map_level_visibility(self, MainState.playerOnMapLevel)
 	-- self.zombies = MainState.zombies
@@ -36,6 +49,9 @@ function init(self)
 end
 
 function final(self)
+	if self.fuzeOnMapLevel == nil then
+		return
+	end
 	print("clear fuzes")
 	for key, val in pairs(self.fuzeOnMapLevel) do
 		print("clear fuzes:", val.fuze)
@@ -46,12 +62,28 @@ function final(self)
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == hash("map_level_change") then
+	if message_id == MSG.LEVEL_CHANGE.map_level_change.hash then
 		use_map_level_visibility(self, message.map_level)
-	elseif message_id == hash("pick_fuze") then
+	elseif message_id == MSG.FUZE_FACTORY.create_fuzes.hash then
+		self.fuzeOnMapLevel = {
+			[MainState.FUZE.RED] = {
+				map = MainState.MAP_LEVELS.HOUSE,
+				fuze = create_fuze(message.color_red, message.color_red_pos)},
+			[MainState.FUZE.GREEN] = {
+				map = MainState.MAP_LEVELS.HOUSE,
+				fuze = create_fuze(message.color_green, message.color_green_pos)},
+			[MainState.FUZE.BLUE] = {
+				map = MainState.MAP_LEVELS.BASEMENT,
+				fuze = create_fuze(message.color_blue, message.color_blue_pos)},
+			[MainState.FUZE.YELLOW] = {
+				map = MainState.MAP_LEVELS.BASEMENT,
+				fuze = create_fuze(message.color_yellow, message.color_yellow_pos)},
+		}
+		use_map_level_visibility(self, MainState.playerOnMapLevel)
+	elseif message_id == MSG.FUZE_FACTORY.pick_fuze.hash then
 		go.delete(self.fuzeOnMapLevel[message.color].fuze)
 		self.fuzeOnMapLevel[message.color].fuze = nil
-	elseif message_id == hash("throw_fuze") then
+	elseif message_id == MSG.FUZE_FACTORY.throw_fuze.hash then
 		local fuze = create_fuze(message.color, message.pos)
 		self.fuzeOnMapLevel[message.color] = {map = message.map_level, fuze = fuze}
 		-- local to = message.pos

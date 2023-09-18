@@ -1,10 +1,10 @@
 local input = require "ludobits.m.input"
-
 local MainState = require "src.main_state"
 local debugUtils = require "src.utils.debug-utils"
 local defoldUtils = require "src.utils.defold-utils"
 local ACTION_IDS = require "src.utils.actions"
 local device = require "src.utils.device"
+local MSG = require "src.utils.messages"
 
 local isGamepadLeftStickActionId = ACTION_IDS.isGamepadLeftStickActionId
 local isGamepadRightStickActionId = ACTION_IDS.isGamepadRightStickActionId
@@ -117,7 +117,11 @@ local function throw_fuzes(player_uid)
 			pos.x = pos.x + 30
 			pos.y = pos.y + 30
 			MainState.fuzeToPlayerUid[key_fuze_color] = nil
-			msg.post("/factory#fuze", "throw_fuze", {map_level = MainState.playerOnMapLevel, color = key_fuze_color, pos = pos})
+			MSG.BROADSOCK:send_reliable_go({
+				player_uid = player_uid,
+				map_level = MainState.playerOnMapLevel,
+				fuze_color = key_fuze_color,
+				pos = pos})
 			msg.post("/gui#player", "update_fuzes", {fuze_color = key_fuze_color})
 		end
 	end
@@ -188,7 +192,7 @@ function init(self)
 	if not self.remote then
 		msg.post(".", "acquire_input_focus")
 		msg.post("camera", "acquire_camera_focus")
-		msg.post("/broadsock", "register_gameobject", { id = go_id, type = "player" })
+		msg.post("/broadsock", "register_gameobject", { id = go_id, type = MainState.FACTORY_TYPES.player })
 		input.acquire()
 		msg.post("/virtual_gamepad", "register")
 
@@ -213,9 +217,13 @@ function final(self)
 		msg.post("/virtual_gamepad", "unregister")
 	end
 
-	MainState.players:remove(self.uid)
-	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
-	print("clear player", self.uid)
+	--if MainState.GAME_STATES.RUNNING ~= MainState.currentGameState then
+	--	MainState.players:remove(self.uid)
+	--	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
+	--	print("clear player", self.uid)
+	--end
+
+	msg.post("/gui#menu", "create_player")
 end
 
 function update(self, dt)
@@ -469,7 +477,7 @@ function on_message(self, message_id, message, sender)
 				-- print(message.group, fuze_color, go.get_position(), go.get_position(message.other_id))
 				MainState.fuzeToPlayerUid[fuze_color] = self.uid
 				update_fuzes(self.uid)
-				msg.post("/factory#fuze", "pick_fuze", {color = fuze_color})
+				MSG.BROADSOCK:send_reliable_god({player_uid = self.uid, fuze_color = message.color})
 				msg.post("/gui#player", "update_fuzes", {fuze_color = fuze_color})
 			end
 		elseif message.group == MSG_GROUPS.FUZE_BOX then

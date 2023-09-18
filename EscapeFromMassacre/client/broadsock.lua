@@ -3,6 +3,7 @@ local multiplayer = require "server.multiplayer"
 local debugUtils = require "src.utils.debug-utils"
 local MainState = require "src.main_state"
 local performance_utils = require "server.performance_utils"
+local MSG = require "src.utils.messages"
 
 
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
@@ -251,6 +252,24 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					remote_gameobjects_for_user[gouid] = nil
 				end
 			end
+		elseif msg_id == MSG_IDS.CREATE_FUZES then
+			MainState.INITIAL_FUZES_CREATE = {}
+			table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+			table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+			table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+			table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+			--msg.post("/factory#factory-fuze", MSG.FUZE_FACTORY.create_fuzes.name, {
+			--	color_red = sr.number(), color_red_pos = sr.vector3(),
+			--	color_green = sr.number(), color_green_pos = sr.vector3(),
+			--	color_blue = sr.number(), color_blue_pos = sr.vector3(),
+			--	color_yellow = sr.number(), color_yellow_pos = sr.vector3(),
+			--})
+		elseif msg_id == MSG.BASE_MSG_IDS.RELIABLE_GO then
+			msg.post("/factory#fuze", MSG.FUZE_FACTORY.throw_fuze.name, {map_level = sr.number(), color = sr.number(), pos = sr.vector3()})
+		elseif msg_id == MSG.BASE_MSG_IDS.RELIABLE_GOD then
+			msg.post("/factory#fuze", MSG.FUZE_FACTORY.pick_fuze.name, {color = sr.number()})
+		elseif msg_id == MSG_IDS.PLAYER_CREATE_POS then
+			msg.post("/spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type, pos = sr.vector3()})
 		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")
 			add_client(from_uid)

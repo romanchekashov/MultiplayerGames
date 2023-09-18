@@ -1,3 +1,4 @@
+local MainState = require "src.main_state"
 local Utils = require "src.utils.utils"
 local _wall = Utils.wall
 
@@ -34,7 +35,7 @@ end
 
 function init(self)
 	if not self.remote then
-		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = "zombie" })
+		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = MainState.FACTORY_TYPES.zombie })
 	end
 
 	self.target_id = nil
@@ -75,16 +76,16 @@ function update(self, dt)
 	local pos = go.get_world_position()
 	local x = self.target_position.x - pos.x
 	local y = self.target_position.y - pos.y
-	
+
 	local target_angle = -math.atan2(x, y)
 	-- print(string.format("%d %d %d", x, y, target_angle))
 	local target_quat = vmath.quat_rotation_z(target_angle)
 	local current_quat = go.get_rotation()
-	
+
 	-- rotate towards target
 	local q = vmath.slerp(0.08, current_quat, target_quat)
 	go.set_rotation(q)
-	
+
 	-- move towards target
 	local d = vmath.rotate(q, vmath.vector3(0, 1, 0))
 	go.set_position(pos + d * self.speed * dt)
@@ -92,7 +93,7 @@ function update(self, dt)
 	-- if we have a target id we assume that it will die this frame and pick a random
 	-- target position and reset the target id flag.
 	-- if the target is still alive the next frame we will get a new collision and
-	-- we'll be able to set the target position again. 
+	-- we'll be able to set the target position again.
 	if self.target_id then
 		random_position_on_wall(self)
 

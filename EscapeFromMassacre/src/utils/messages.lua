@@ -1,3 +1,5 @@
+local stream = require "client.stream"
+
 local M = {
     BASE_MSG_IDS = {
         ROOMS = "NOT_GS_ROOMS",
@@ -10,6 +12,10 @@ local M = {
         LEAVE_ROOM = "NOT_GS_LEAVE_ROOM",
         PLAYER_READY = "NOT_GS_PLAYER_READY",
         START_GAME = "NOT_GS_START_GAME",
+
+        CREATE_PLAYER = "CREATE_PLAYER",
+        RELIABLE_GO = "GAO",
+        RELIABLE_GOD = "GAOD",
     },
     BROADSOCK = {
         connect = {
@@ -33,6 +39,26 @@ local M = {
             name = "recieve_usernames",
             hash = hash("recieve_usernames"),
         },
+    },
+    LEVEL_CHANGE = {
+        map_level_change = {
+            name = "map_level_change",
+            hash = hash("map_level_change"),
+        }
+    },
+    FUZE_FACTORY = {
+        create_fuzes = {
+            name = "create_fuzes",
+            hash = hash("create_fuzes"),
+        },
+        pick_fuze = {
+            name = "pick_fuze",
+            hash = hash("pick_fuze"),
+        },
+        throw_fuze = {
+            name = "throw_fuze",
+            hash = hash("throw_fuze"),
+        }
     }
 }
 M.BROADSOCK = {
@@ -50,6 +76,9 @@ M.BROADSOCK = {
         player_ready = hash("player_ready"),
         get_usernames = hash("get_usernames"),
         set_player_username = hash("set_player_username"),
+        create_player = hash("create_player"),
+        send_reliable_go = hash("send_reliable_go"),
+        send_reliable_god = hash("send_reliable_god"),
     },
     connect = function (self, data)
         msg.post(self.URL, "connect", data)
@@ -77,6 +106,27 @@ M.BROADSOCK = {
     end,
     set_player_username = function (self, data)
         msg.post(self.URL, "set_player_username", {data = string.format("%s.%s", M.BASE_MSG_IDS.SET_PLAYER_USERNAME, data.username)})
+    end,
+    create_player = function (self)
+        msg.post(self.URL, "create_player", {})
+    end,
+    send_reliable_go = function (self, data)
+        msg.post(self.URL, "send_reliable_go", {
+            data = stream.writer()
+                    .number(data.player_uid)
+                    .string(M.BASE_MSG_IDS.RELIABLE_GO)
+                    .number(data.map_level)
+                    .number(data.fuze_color)
+                    .vector3(data.pos)
+        })
+    end,
+    send_reliable_god = function (self, data)
+        msg.post(self.URL, "send_reliable_god", {
+            data = stream.writer()
+                         .number(data.player_uid)
+                         .string(M.BASE_MSG_IDS.RELIABLE_GOD)
+                         .number(data.fuze_color)
+        })
     end,
 }
 return M

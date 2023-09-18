@@ -8,7 +8,7 @@ local MSG_GROUPS = MainState.MSG_GROUPS
 function init(self)
 	local id = go.get_id()
 	if not self.remote then
-		msg.post("/broadsock", "register_gameobject", { id = id, type = "bullet" })
+		msg.post("/broadsock", "register_gameobject", { id = id, type = MainState.FACTORY_TYPES.bullet })
 	else
 		MainState.bulletBelongToPlayerUid[id] = self.uid
 	end

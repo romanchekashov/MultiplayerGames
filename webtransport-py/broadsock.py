@@ -188,7 +188,7 @@ async def to_server(msg, client: Client):
     global rooms
     send_to_server = True
 
-    if 'CONNECT_ME' in msg:
+    if GameServerMessages.CONNECT_ME in msg:
         await reliable_connection.send_msg_to(client, f'{client.uid}.CONNECT_SELF.{client.username}')
         await reliable_connection.send_message_others(f'{client.uid}.CONNECT_OTHER', client.uid)
         await send_usernames()

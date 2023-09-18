@@ -9,6 +9,7 @@ local fuze_color_to_texture = {
 	[MainState.FUZE.YELLOW] = {open = "fuze_box_yellow_open", close = "fuze_box_yellow_close"},
 }
 
+go.property("remote", true)
 go.property("color", 1)
 
 local function enable(self)
@@ -17,15 +18,20 @@ local function enable(self)
 end
 
 function init(self)
+	local id = go.get_id()
+	if not self.remote then
+		msg.post("/broadsock", "register_gameobject", { id = id, type = MainState.FACTORY_TYPES.fuze_box })
+	end
 	-- print(go.get("#fuze_box_sprite", "image"))
 	enable(self)
 	MainState.fuzeBoxIdsToColor[go.get_id()] = self.color
 end
 
 function final(self)
-	-- Add finalization code here
-	-- Learn more: https://defold.com/manuals/script/
-	-- Remove this function if not needed
+	local id = go.get_id()
+	if not self.remote then
+		msg.post("/broadsock", "unregister_gameobject", { id = id })
+	end
 end
 
 function update(self, dt)

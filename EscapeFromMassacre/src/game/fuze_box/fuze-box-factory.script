@@ -1,5 +1,6 @@
 local MainState = require "src.main_state"
 local Utils = require "src.utils.utils"
+local MSG = require "src.utils.messages"
 
 local random_position = Utils.random_position
 
@@ -62,7 +63,7 @@ function final(self)
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == hash("map_level_change") then
+	if message_id == MSG.LEVEL_CHANGE.map_level_change.hash then
 		use_map_level_visibility(self, message.map_level)
 	end
 end

@@ -15,10 +15,18 @@ local hasReliableConnection = false
 local hasFastUnreliableConnection = false
 
 local msgs = {
+	[MSG.BROADSOCK.msg_ids.create_player] = MSG.BASE_MSG_IDS.CREATE_PLAYER,
+	[MSG.BROADSOCK.msg_ids.create_room] = MSG.BASE_MSG_IDS.CREATE_ROOM,
+	[MSG.BROADSOCK.msg_ids.get_usernames] = MSG.BASE_MSG_IDS.GET_USERNAMES,
+	[MSG.BROADSOCK.msg_ids.get_rooms] = MSG.BASE_MSG_IDS.ROOMS_GET,
+}
+local msgs_with_data = {
 	[MSG.BROADSOCK.msg_ids.join_room] = true,
 	[MSG.BROADSOCK.msg_ids.leave_room] = true,
 	[MSG.BROADSOCK.msg_ids.player_ready] = true,
 	[MSG.BROADSOCK.msg_ids.set_player_username] = true,
+	[MSG.BROADSOCK.msg_ids.send_reliable_go] = true,
+	[MSG.BROADSOCK.msg_ids.send_reliable_god] = true,
 }
 
 local function sendToReliableConnection(msg)
@@ -127,14 +135,10 @@ function on_message(self, message_id, message, sender)
 			self.client.unregister_gameobject(message)
 		elseif message_id == MSG.BROADSOCK.msg_ids.register_factory then
 			self.client.register_factory(message.url, message.type)
-		elseif message_id == MSG.BROADSOCK.msg_ids.get_rooms then
-			sendToReliableConnection(MSG.BASE_MSG_IDS.ROOMS_GET)
-		elseif message_id == MSG.BROADSOCK.msg_ids.get_usernames then
-			sendToReliableConnection(MSG.BASE_MSG_IDS.GET_USERNAMES)
-		elseif message_id == MSG.BROADSOCK.msg_ids.create_room then
-			sendToReliableConnection(MSG.BASE_MSG_IDS.CREATE_ROOM)
 		elseif msgs[message_id] ~= nil then
-			sendToReliableConnection(message.data)
+				sendToReliableConnection(msgs[message_id])
+		elseif msgs_with_data[message_id] ~= nil then
+				sendToReliableConnection(message.data)
 		elseif message_id == hash("send_message") then
 			local sw = stream.writer()
 			for _,value in ipairs(message) do

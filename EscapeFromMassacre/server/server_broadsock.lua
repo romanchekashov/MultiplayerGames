@@ -6,12 +6,14 @@ local multiplayer = require "server.multiplayer"
 local debugUtils = require "src.utils.debug-utils"
 local performance_utils = require "server.performance_utils"
 local MainState = require "src.main_state"
+local Utils = require "src.utils.utils"
 
 local log = debugUtils.createLog("[BROADSOCK SERVER]").log
 local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._20_MILISECONDS)
 
 local M = {}
 local MSG_IDS = multiplayer.MSG_IDS
+local CLIENT_MSG_IDS = multiplayer.CLIENT_MSG_IDS
 
 M.TCP_SEND_CHUNK_SIZE = 255
 
@@ -149,26 +151,26 @@ function M.handle_client_disconnected(client_uid)
 	remove_client(client_uid)
 end
 
-function M.handle_client_connected()
-	uid_sequence = uid_sequence + 1
-	local client = create_client(uid_sequence)
+function M.handle_client_connected(uid, player_type)
+	local client = create_client(uid, player_type)
 	add_client(client)
+	--local pos = Utils.random_position()
 
-	local _other = stream.writer()
-		.number(client.uid)
-		.string(MSG_IDS.CONNECT_OTHER)
-		.tostring()
-	log("handle_client_connected: ", _other)
-	local other_message = tomessage(_other)
-	M.send_message_others(other_message, client.uid)
+	--local _other = stream.writer()
+	--		.number(client.uid)
+	--		.string(MSG_IDS.CONNECT_OTHER)
+	--		.vector3(pos)
+	--		.tostring()
+	--log("handle_client_connected: ", _other)
+	--M.send_message_others(tomessage(_other), client.uid)
 
-	local _self = stream.writer()
-		.number(client.uid)
-		.string(MSG_IDS.CONNECT_SELF)
-		.tostring()
-	log("handle_client_connected: ", _self)
-	local self_message = tomessage(_self)
-	M.send_message(client.uid, self_message)
+	--local _self = stream.writer()
+	--		.number(client.uid)
+	--		.string(MSG_IDS.PLAYER_CREATE_POS)
+	--		.vector3(pos)
+	--		.tostring()
+	--log("handle_client_connected: ", _self)
+	--M.send_message(client.uid, tomessage(_self))
 	return client
 end
 
@@ -240,10 +242,14 @@ local function on_data(data, data_length)
 		end
 	elseif msg_id == MSG_IDS.GOD then
 		M.send(data)
+	elseif msg_id == CLIENT_MSG_IDS.CREATE_PLAYER then
+		M.send(stream.writer()
+					 .number(from_uid)
+					 .string(MSG_IDS.PLAYER_CREATE_POS)
+					 .vector3(Utils.random_position())
+					 .tostring())
 	elseif msg_id == MSG_IDS.CONNECT_ME then
-		-- M.handle_client_connected()
-		local client = create_client(from_uid, sr.number())
-		add_client(client)
+		 M.handle_client_connected(from_uid, sr.number())
 	elseif msg_id == MSG_IDS.DISCONNECT then
 		M.handle_client_disconnected(from_uid)
 	end
@@ -275,6 +281,18 @@ function M.start(port)
 	M.send(MSG_IDS.GAME_PRE_START)
 	timer.delay(MainState.GAME_START_TIMEOUT_IN_SEC, false, function ()
 		M.send(MSG_IDS.GAME_START)
+		M.send(stream.writer()
+					 .number(-1)
+					 .string(MSG_IDS.CREATE_FUZES)
+					 .number(MainState.FUZE.RED)
+					 .vector3(Utils.random_position())
+					 .number(MainState.FUZE.GREEN)
+					 .vector3(Utils.random_position())
+					 .number(MainState.FUZE.BLUE)
+					 .vector3(Utils.random_position())
+					 .number(MainState.FUZE.YELLOW)
+					 .vector3(Utils.random_position())
+					 .tostring())
 		msg.post("/gui#gui", "game_start")
 	end)
 

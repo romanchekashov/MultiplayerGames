@@ -19,6 +19,8 @@ function init(self)
 
 	msg.post("@system:", "set_vsync", { swap_interval = 0 })
 
+	math.randomseed(os.time())
+
 	local ok, err = broadsock.start(self.port)
 	if ok then
 		log("start", self.port)
