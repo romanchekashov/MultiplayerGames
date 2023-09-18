@@ -14,6 +14,8 @@ local M = {
         player = "player",
         zombie = "zombie",
         bullet = "bullet",
+        fuze = "fuze",
+        fuze_box = "fuze-box",
     },
     selectedRoom = nil,
     GAME_STATES = {
