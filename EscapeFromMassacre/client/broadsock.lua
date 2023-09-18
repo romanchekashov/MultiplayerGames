@@ -10,6 +10,7 @@ local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES.
 
 local M = {}
 local MSG_IDS = multiplayer.MSG_IDS
+local FACTORY_TYPE_PLAYER = MainState.FACTORY_TYPES.player
 
 --- Create a broadsock instance
 -- @param server_ip
@@ -174,6 +175,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			end
 			local enable = player_map_level == MainState.playerOnMapLevel
 
+			local player_type = sr.number()
+
 			local remote_gameobjects_for_user = remote_gameobjects[from_uid]
 			local count = sr.number()
 			log("remote GO", tostring(count))
@@ -190,7 +193,11 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						local factory_url = factories[type]
 						if factory_url then
 							log("GO create obj", from_uid, tostring(type))
-							local id = factory.create(factory_url, pos, rot, {remote = true, uid = from_uid}, scale)
+							local factory_data = {remote = true, uid = from_uid}
+							if type == FACTORY_TYPE_PLAYER then
+								factory_data.player_type = player_type
+							end
+							local id = factory.create(factory_url, pos, rot, factory_data, scale)
 							--assert(id, factory_url .. " should return non nil id")
 							remote_gameobjects_for_user[gouid] = { id = id, type = type }
 							if enable then
@@ -306,6 +313,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			local sw = stream.writer()
 			sw.string("GO")
 			sw.number(MainState.playerOnMapLevel)
+			sw.number(MainState.player.type)
 			sw.number(gameobject_count)
 			for gouid,gameobject in pairs(gameobjects) do
 				local pos = go.get_position(gameobject.id)

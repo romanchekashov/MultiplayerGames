@@ -6,6 +6,7 @@ local MSG = require "src.utils.messages"
 local Storage = require "src.utils.storage"
 
 local log = debugUtils.createLog("[MAIN]").log
+local FACTORY_TYPES = MainState.FACTORY_TYPES
 
 -- local BROADSOCK = msg.url("default:/broadsock#script")
 -- local BROADSOCK = msg.url("default:/server#broadsock")
@@ -24,9 +25,9 @@ function init(self)
 	math.randomseed(os.time())
 
 	MSG.BROADSOCK:connect({ ip = "127.0.0.1", port = 5001 })
-	MSG.BROADSOCK:register_factory({ url = "/spawner-player#factory-player", type = "player" })
-	MSG.BROADSOCK:register_factory({ url = "/spawner-zombie#factory-zombie", type = "zombie" })
-	MSG.BROADSOCK:register_factory({ url = "/spawner-bullet#factory-bullet", type = "bullet" })
+	MSG.BROADSOCK:register_factory({ url = "/spawner-player#factory-player", type = FACTORY_TYPES.player })
+	MSG.BROADSOCK:register_factory({ url = "/spawner-zombie#factory-zombie", type = FACTORY_TYPES.zombie })
+	MSG.BROADSOCK:register_factory({ url = "/spawner-bullet#factory-bullet", type = FACTORY_TYPES.bullet })
 
 	self.screen_pos = vmath.vector3(0, 0, 0)
 	self.next_screen = nil

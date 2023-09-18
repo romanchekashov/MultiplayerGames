@@ -10,6 +10,11 @@ local M = {
     zombies = Collections.createMap(),
     uid_to_username = Collections.createMap(),
     rooms = Collections.createList(),
+    FACTORY_TYPES = {
+        player = "player",
+        zombie = "zombie",
+        bullet = "bullet",
+    },
     selectedRoom = nil,
     GAME_STATES = {
         START = 1,

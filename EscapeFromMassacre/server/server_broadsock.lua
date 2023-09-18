@@ -215,9 +215,11 @@ local function on_data(data, data_length)
 		M.send(data)
 
 		local player_map_level = sr.number()
+		local player_type = sr.number()
 		local player = clients_map[from_uid]
 		if player ~= nil then
 			player.map_level = player_map_level
+			player.type = player_type
 		end
 
 		local count = sr.number()
