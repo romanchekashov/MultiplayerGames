@@ -6,6 +6,11 @@
 local ACTION_IDS = {
     JOIN = hash("join"),
     USE = hash("use"),
+    LEFT = hash("left"),
+    RIGHT = hash("right"),
+    UP = hash("up"),
+    DOWN = hash("down"),
+
     GAMEPAD = {
         CONNECTED = hash("gamepad_connected"),
         DISCONNECTED = hash("gamepad_dicconnected"),

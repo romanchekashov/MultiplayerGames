@@ -25,21 +25,6 @@ go.property("player_type", 0)
 
 local MSG_GROUPS = MainState.MSG_GROUPS
 
-local LEFT = hash("left")
-local RIGHT = hash("right")
-local UP = hash("up")
-local DOWN = hash("down")
-
-local RIGHT_STICK_RIGHT = hash("rs_right")
-local RIGHT_STICK_LEFT = hash("rs_left")
-local RIGHT_STICK_UP = hash("rs_up")
-local RIGHT_STICK_DOWN = hash("rs_down")
-
-local LEFT_STICK_LEFT = hash("ls_left")
-local LEFT_STICK_RIGHT = hash("ls_right")
-local LEFT_STICK_UP = hash("ls_up")
-local LEFT_STICK_DOWN = hash("ls_down")
-
 local STAIRS_TO_BASEMENT = hash("stairs_to_basement")
 local STAIRS_TO_HOUSE = hash("stairs_to_house")
 local FUSE = hash("fuse")
@@ -78,16 +63,16 @@ local function get_rotation(touch)
 end
 
 local function input_controls(self)
-	if input.is_pressed(LEFT) then
+	if input.is_pressed(ACTION_IDS.LEFT) then
 		self.velocity.x = -PLAYER_SPEED
-	elseif input.is_pressed(RIGHT) then
+	elseif input.is_pressed(ACTION_IDS.RIGHT) then
 		self.velocity.x = PLAYER_SPEED
 	else
 		self.velocity.x = 0
 	end
-	if input.is_pressed(UP) then
+	if input.is_pressed(ACTION_IDS.UP) then
 		self.velocity.y = PLAYER_SPEED
-	elseif input.is_pressed(DOWN) then
+	elseif input.is_pressed(ACTION_IDS.DOWN) then
 		self.velocity.y = -PLAYER_SPEED
 	else
 		self.velocity.y = 0
@@ -313,24 +298,24 @@ function on_input(self, action_id, action)
 	if MainState.HAS_GAMEPAD then
 		-- FIX: Move with gamepad left stick
 		if isGamepadLeftStickActionId[action_id] then
-			if action_id == LEFT_STICK_LEFT then
+			if action_id == ACTION_IDS.GAMEPAD.LEFT_STICK.LEFT then
 				self.velocity.x = -PLAYER_SPEED
-			elseif action_id == LEFT_STICK_RIGHT then
+			elseif action_id == ACTION_IDS.GAMEPAD.LEFT_STICK.RIGHT then
 				self.velocity.x = PLAYER_SPEED
 			end
-			if action_id == LEFT_STICK_UP then
+			if action_id == ACTION_IDS.GAMEPAD.LEFT_STICK.UP then
 				self.velocity.y = PLAYER_SPEED
-			elseif action_id == LEFT_STICK_DOWN then
+			elseif action_id == ACTION_IDS.GAMEPAD.LEFT_STICK.DOWN then
 				self.velocity.y = -PLAYER_SPEED
 			end
 		elseif isGamepadRightStickActionId[action_id] then
-			if action_id == RIGHT_STICK_LEFT then
+			if action_id == ACTION_IDS.GAMEPAD.RIGHT_STICK.LEFT then
 				self.right_stick_value.x = -STICK_MAX_DISTANCE * action.value
-			elseif action_id == RIGHT_STICK_RIGHT then
+			elseif action_id == ACTION_IDS.GAMEPAD.RIGHT_STICK.RIGHT then
 				self.right_stick_value.x = STICK_MAX_DISTANCE * action.value
-			elseif action_id == RIGHT_STICK_UP then
+			elseif action_id == ACTION_IDS.GAMEPAD.RIGHT_STICK.UP then
 				self.right_stick_value.y = STICK_MAX_DISTANCE * action.value
-			elseif action_id == RIGHT_STICK_DOWN then
+			elseif action_id == ACTION_IDS.GAMEPAD.RIGHT_STICK.DOWN then
 				self.right_stick_value.y = -STICK_MAX_DISTANCE * action.value
 			end
 
@@ -345,7 +330,7 @@ function on_input(self, action_id, action)
 		input.update(action_id, action)
 	end
 
-	if action_id == LEFT or action_id == RIGHT or action_id == UP or action_id == DOWN then
+	if action_id == ACTION_IDS.LEFT or action_id == ACTION_IDS.RIGHT or action_id == ACTION_IDS.UP or action_id == ACTION_IDS.DOWN then
 		-- print(action_id, action.value, action.pressed, action.released, action.x, action.y) -- a value between 0.0 an -1.0
 		if action.pressed and not self.sound_run_playing then
 			MainState.SOUND.loop_run.play()
