@@ -65,6 +65,19 @@
 	}
 
 	{{{DEFOLD_CUSTOM_CSS_INLINE}}}
+
+	.buttons-background {
+		background-color: #ffffff77;
+		width: 162px;
+		height: 20px;
+		position: fixed;
+		bottom: 0;
+		right: 0;
+	}
+
+	.buttons-background div {
+		padding-top: 2px;
+	}
 	</style>
 </head>
 
@@ -83,7 +96,7 @@
 			<div class="button" onclick="Module.toggleFullscreen();">Fullscreen</div>
 {{/html5.show_fullscreen_button}}
 {{#html5.show_made_with_defold}}
-			<div class="link">Made with <a href="https://defold.com/" target="_blank">Defold</a></div>
+			<div class="link">Use <a href="https://defold.com/" target="_blank">Defold</a></div>
 {{/html5.show_made_with_defold}}
 		</div>
 	</div>
@@ -118,7 +131,7 @@
 	};
 
 	{{^DEFOLD_HAS_WASM_ENGINE}}
-	Module["isWASMSupported"] = false; 
+	Module["isWASMSupported"] = false;
 	{{/DEFOLD_HAS_WASM_ENGINE}}
 
 	var is_iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -126,10 +139,10 @@
 	var prevInnerWidth = -1;
 	var prevInnerHeight = -1;
 {{#html5.show_made_with_defold}}
-	buttonHeight = 42;
+	buttonHeight = 0;
 {{/html5.show_made_with_defold}}
 {{#html5.show_fullscreen_button}}
-	buttonHeight = 42;
+	buttonHeight = 0;
 {{/html5.show_fullscreen_button}}
 	function resize_game_canvas() {
 		// Hack for iOS when exit from Fullscreen mode
@@ -268,7 +281,7 @@
 				}
 			} else {
 				WebSocketReliableConnectionSendData(rawData);
-			}			
+			}
 		}
 
 
@@ -279,7 +292,7 @@
 				WebTransportSendData('PING');
 				return;
 			}
-			
+
 			if (uidBoundToFastUnreliableConnection) {
 				addToEventLog(text);
 				return;
@@ -307,13 +320,13 @@
 			function webSocketСonnect() {
 				// Create WebSocket connection.
 				socket = new WebSocket(`wss://${BASE_ADDRESS}:5002`);
-		
+
 				// Connection opened
 				socket.addEventListener("open", (event) => {
 					log('[WS reliable]: Connection ready.');
 					JsToDef.send("RELIABLE_CONNECTION_READY", "");
 				});
-		
+
 				// Listen for messages
 				socket.addEventListener("message", async (event) => {
 					log("[WS reliable]: Message from server: ", event.data);
@@ -325,7 +338,7 @@
 					}
 				});
 			}
-	
+
 			// "Connect" button handler.
 			async function webTransportСonnect() {
 				// const url = 'https://game.look.ovh:4433/counter';
@@ -337,15 +350,15 @@
 					log('[WT unreliable&fast]: Failed to create connection object. ' + e, 'error');
 					return;
 				}
-	
+
 				try {
 					await transport.ready;
 					log('[WT unreliable&fast]: Connection ready.');
 				} catch (e) {
-					log('[WT unreliable&fast]: Connection failed. ' + e, 'error');		
+					log('[WT unreliable&fast]: Connection failed. ' + e, 'error');
 					return;
 				}
-	
+
 				transport.closed
 					.then(() => {
 						log('[WT unreliable&fast]: Connection closed normally.');
@@ -353,7 +366,7 @@
 					.catch(() => {
 						log('[WT unreliable&fast]: Connection closed abruptly.', 'error');
 					});
-	
+
 				currentTransport = transport;
 				streamNumber = 1;
 				try {
@@ -365,7 +378,7 @@
 				}
 				webTransportReadDatagrams(transport);
 			}
-	
+
 			// Reads datagrams from |transport| into the event log until EOF is reached.
 			async function webTransportReadDatagrams(transport) {
 				try {
@@ -393,7 +406,7 @@
 					log('[WT unreliable&fast]: Error while reading datagrams: ' + e, 'error');
 				}
 			}
-		}		
+		}
 	</script>
 </body>
 </html>
