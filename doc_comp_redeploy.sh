@@ -9,10 +9,10 @@ mkdir certificate
 cp /etc/letsencrypt/live/look.ovh/fullchain.pem certificate/fullchain.pem
 cp /etc/letsencrypt/live/look.ovh/privkey.pem certificate/privkey.pem
 
-echo "Build game server"
-cd EscapeFromMassacre
-./build_game_server.sh -P x86_64-linux
-cd ..
+#echo "Build game server"
+#cd EscapeFromMassacre
+#./build_game_server.sh -P x86_64-linux
+#cd ..
 
 echo "Deploying docker-compose..."
 docker-compose --env-file .env.local up --build -d
