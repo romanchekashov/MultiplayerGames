@@ -1,3 +1,6 @@
+git status
+git pull
+
 echo "Stopping docker-compose..."
 docker-compose --env-file .env.local down
 
