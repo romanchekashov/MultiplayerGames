@@ -9,6 +9,8 @@ mkdir certificate
 cp /etc/letsencrypt/live/look.ovh/fullchain.pem certificate/fullchain.pem
 cp /etc/letsencrypt/live/look.ovh/privkey.pem certificate/privkey.pem
 
+mkdir webtransport-py/logs
+
 #echo "Build game server"
 #cd EscapeFromMassacre
 #./build_game_server.sh -P x86_64-linux
