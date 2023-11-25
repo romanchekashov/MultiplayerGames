@@ -1,11 +1,12 @@
 echo "Stopping docker-compose..."
 docker-compose --env-file .env.local down
 
-# echo "Copy ssl cetf to use from docker: only once"
-# mkdir certificate
-# cp /etc/letsencrypt/live/look.ovh/fullchain.pem certificate/fullchain.pem
-# cp /etc/letsencrypt/live/look.ovh/privkey.pem certificate/privkey.pem
+echo "Copy ssl certificates to use from docker: only once"
+mkdir certificate
+cp /etc/letsencrypt/live/look.ovh/fullchain.pem certificate/fullchain.pem
+cp /etc/letsencrypt/live/look.ovh/privkey.pem certificate/privkey.pem
 
+echo "Build game server"
 cd EscapeFromMassacre
 ./build_game_server.sh -P x86_64-linux
 cd ..
@@ -14,7 +15,6 @@ echo "Deploying docker-compose..."
 docker-compose --env-file .env.local up --build -d
 
 docker container ls -a
-
 
 # echo "Starting servers..."
 # python3.10 main.py ::1 /Users/romanchekashov/workspace/example.com+5.pem /Users/romanchekashov/workspace/example.com+5-key.pem
