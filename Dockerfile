@@ -25,7 +25,7 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
 
 # Build game server
 RUN apt install -y openjdk-17-jdk
-RUN cd /EscapeFromMassacre
+RUN cd EscapeFromMassacre/
 RUN ./build_game_server.sh -P x86_64-linux
 RUN cd ..
 
