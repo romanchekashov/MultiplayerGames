@@ -24,10 +24,10 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     apt-get install -y python3.10 python3-distutils python3-pip python3-apt python3.10-dev
 
 # Build game server
-#RUN apt install -y openjdk-17-jdk
-#RUN cd EscapeFromMassacre
-#RUN ./build_game_server.sh -P x86_64-linux
-#RUN cd ..
+RUN apt install -y openjdk-17-jdk
+RUN cd /EscapeFromMassacre
+RUN ./build_game_server.sh -P x86_64-linux
+RUN cd ..
 
 # RUN apt-get -y update && apt-get -y install software-properties-common && apt-get -y install build-essential && add-apt-repository ppa:deadsnakes/ppa && apt-get install -y python3.10-dev python3-distutils python3-pip python3-apt
 # RUN pip install --no-cache-dir -r requirements.txt
