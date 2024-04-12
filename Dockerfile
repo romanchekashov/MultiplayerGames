@@ -33,7 +33,7 @@ RUN apt install -y openjdk-17-jdk
 COPY webtransport-py/requirements.txt webtransport-py/requirements.txt
 RUN cd webtransport-py
 RUN ls -l
-RUN pip install -r requirements.txt
+RUN pip install -r webtransport-py/requirements.txt
 RUN cd ..
 
 COPY . .
