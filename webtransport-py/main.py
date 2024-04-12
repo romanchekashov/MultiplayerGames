@@ -94,7 +94,7 @@ from comm.game_server.gs_manager import set_event_loop, _terminate_game_server
 from dotenv import load_dotenv
 from pathlib import Path
 
-from utils import getLogger
+from app_logs import getLogger
 
 Log = getLogger(__name__)
 

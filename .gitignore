@@ -72,3 +72,4 @@ webtransport-py/venv
 */**/__pycache__
 webtransport-py/certificate
 webtransport-py/logs
+webtransport-py/app_logs/logs

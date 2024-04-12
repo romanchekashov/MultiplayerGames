@@ -1,6 +1,6 @@
 from stream import get_uid_from_msg
 from typing import List, Dict
-from utils import getLogger
+from app_logs import getLogger
 from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY
 from comm.game_server.gs_manager import GameServer, GameServerMessages, _terminate_game_server
 

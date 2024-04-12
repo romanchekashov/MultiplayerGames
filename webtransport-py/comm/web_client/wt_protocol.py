@@ -1,6 +1,6 @@
 import argparse
 import asyncio
-from utils import getLogger
+from app_logs import getLogger
 from collections import defaultdict
 from typing import Dict, Optional
 

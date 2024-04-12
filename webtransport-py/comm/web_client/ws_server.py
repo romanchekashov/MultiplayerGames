@@ -5,7 +5,7 @@ import json
 import ssl
 
 from broadsock import set_game_client_communication_websocket, handle_client_disconnected, to_server
-from utils import getLogger
+from app_logs import getLogger
 
 Log = getLogger(__name__)
 

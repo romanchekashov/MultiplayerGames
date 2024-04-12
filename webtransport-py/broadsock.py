@@ -1,7 +1,7 @@
 import queue
 
 from typing import List, Dict
-from utils import getLogger
+from app_logs import getLogger
 from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, PLAYER_TYPE_SURVIVOR, Room
 
 from comm.game_server.gs_manager import start_game_server, stop_game_server, GameServer, GameServerMessages, _terminate_game_server

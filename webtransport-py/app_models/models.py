@@ -1,5 +1,5 @@
 from typing import List, Dict
-from utils import getLogger
+from app_logs import getLogger
 from comm.game_server.gs_manager import GameServerMessages
 
 Log = getLogger(__name__)

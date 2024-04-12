@@ -12,8 +12,11 @@ ERROR=40
 CRITICAL=50
 """
 
-from datetime import datetime
 import logging
+
+from settings import LOGS # type: ignore
+
+from datetime import datetime
 LOG_FORMAT = '%(asctime)s : %(levelname)-8.8s : %(name)-30.30s : Fn %(funcName)-20.20s : Ln %(lineno)-5d : %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 from logging.handlers import RotatingFileHandler
@@ -69,7 +72,7 @@ def add_rotating_file_log(logger, file_path, maxMbPerFile = 5):
 def getLogger(name):
     logger = logging.getLogger(name)
     # add_file_log(logger, 'webtransport.log')
-    add_rotating_file_log(logger, 'logs/webtransport.log')
+    add_rotating_file_log(logger, LOGS)
     # logger.setLevel(logging.DEBUG)
     logger.setLevel(logging.INFO)
 

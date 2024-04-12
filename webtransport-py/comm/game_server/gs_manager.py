@@ -6,7 +6,7 @@ import queue
 from sys import platform
 from typing import Any, List
 from subprocess import Popen
-from utils import getLogger
+from app_logs import getLogger
 from stream import stream_encode
 
 Log = getLogger(__name__)
