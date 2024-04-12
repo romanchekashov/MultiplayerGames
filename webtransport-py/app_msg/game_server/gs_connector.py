@@ -2,10 +2,9 @@ import socket
 import struct
 import asyncio
 
-from comm.game_server.gs_manager import get_gspid
+from app_msg.game_server import get_gspid
 from broadsock import set_game_server_communication
 
-from stream import stream_encode
 from app_logs import getLogger
 
 Log = getLogger(__name__)

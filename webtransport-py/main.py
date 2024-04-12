@@ -86,10 +86,8 @@ from aioquic.h3.events import H3Event, HeadersReceived, WebTransportStreamDataRe
 from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
-from comm.web_client.ws_server import run_server_websockets
-from comm.web_client.wt_protocol import WebTransportProtocol
-from comm.game_server.gs_connector import run_game_server_connector
-from comm.game_server.gs_manager import set_event_loop, _terminate_game_server
+from app_msg.web_client import run_server_websockets, WebTransportProtocol
+from app_msg.game_server import run_game_server_connector, set_event_loop, terminate_game_server
 
 from dotenv import load_dotenv
 from pathlib import Path
@@ -116,7 +114,7 @@ if __name__ == '__main__':
     # BIND_ADDRESS = args.bind_address
     BIND_ADDRESS = os.environ['BIND_ADDRESS']
 
-    _terminate_game_server()
+    terminate_game_server()
 
     configuration = QuicConfiguration(
         alpn_protocols=H3_ALPN,

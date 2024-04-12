@@ -11,7 +11,7 @@ from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import stream_is_unidirectional
 from aioquic.quic.events import ProtocolNegotiated, StreamReset, QuicEvent
 
-from comm.web_client.wt_handler import CounterHandler
+from app_msg.web_client import CounterHandler
 import threading
 
 Log = getLogger(__name__)

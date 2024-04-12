@@ -7,7 +7,7 @@ from sys import platform
 from typing import Any, List
 from subprocess import Popen
 from app_logs import getLogger
-from stream import stream_encode
+from app_msg.game_server import stream_encode
 
 Log = getLogger(__name__)
 
@@ -92,9 +92,9 @@ def terminate_process(process):
     process.terminate()
     process.wait()
 
-def _terminate_game_server(pid = None):
+def terminate_game_server(pid = None):
     global gameServerStopCallbackFn
-    Log.info(f'_terminate_game_server {pid}')
+    Log.info(f'terminate_game_server {pid}')
     processList = findGameProcess()
     if pid is None:
         Log.info(f'Found {len(processList)} game servers to terminate.')
@@ -116,7 +116,7 @@ async def _stop_game_server(pid):
     if not gameStopNeeded:
         Log.info('Connected clients found: stop_game_server cancelled.')
         return
-    _terminate_game_server(pid)
+    terminate_game_server(pid)
 
 def stop_game_server(pid, fn):
     global gameStopNeeded, gameServerStopCallbackFn
@@ -124,7 +124,7 @@ def stop_game_server(pid, fn):
     gameStopNeeded = True
     Log.info(f'stop {gameStopNeeded}')
     # asyncio.ensure_future(_stop_game_server(pid), loop=event_loop)
-    _terminate_game_server(pid)
+    terminate_game_server(pid)
 
 async def _start_game_server():
     Log.info(f'Game Server starting...')
