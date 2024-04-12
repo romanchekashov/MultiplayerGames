@@ -1,4 +1,4 @@
-echo "Build game server"
+echo "Build game server!"
 
 cd EscapeFromMassacre
 
