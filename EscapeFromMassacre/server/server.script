@@ -21,6 +21,8 @@ function init(self)
 
 	math.randomseed(os.time())
 
+	log("[GAME SERVER] started", self.port)
+
 	local ok, err = broadsock.start(self.port)
 	if ok then
 		log("start", self.port)
@@ -31,6 +33,7 @@ function init(self)
 end
 
 function final(self)
+	log("[GAME SERVER] stopped", self.port)
 	broadsock.stop()
 end
 
