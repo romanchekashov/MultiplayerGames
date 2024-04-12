@@ -112,6 +112,7 @@ async def send_usernames():
     for client in clients:
         res += f'{client.uid}.{len(client.username)}#{client.username}'
     await reliable_connection.send_message_all(f'{res}')
+
 """
 Send messages to server and client
 """

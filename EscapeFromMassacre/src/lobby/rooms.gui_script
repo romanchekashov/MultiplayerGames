@@ -3,11 +3,14 @@ local MSG = require "src.utils.messages"
 local Buttons = require "src.utils.buttons"
 local btnAction = Buttons.action
 local Storage = require "src.utils.storage"
+local debugUtils = require "src.utils.debug-utils"
 
 local druid = require("druid.druid")
 local data_list = require("druid.extended.data_list")
 local input = require("druid.extended.input")
 local timer_component = require("druid.extended.timer")
+
+local log = debugUtils.createLog("[ROOMS GUI_SCRIPT]").log
 
 local function enable_start_leave_btns(is_enable)
 	gui.set_enabled(gui.get_node("btn-leave-game"), is_enable)
@@ -131,6 +134,8 @@ local function register_druid_extended_components(self)
 end
 
 function init(self)
+	log("init")
+
 	msg.post(".", "acquire_input_focus")
 	if MainState.selectedRoom ~= nil then
 		gui.set_text(gui.get_node("room"), MainState.selectedRoom.name)
@@ -188,15 +193,14 @@ function on_message(self, message_id, message, sender)
 		MSG.BROADSOCK:get_rooms()
 	elseif message_id == MSG.ROOMS.RECIEVE_ROOMS.hash then
         room_updateDataList(self)
+		self.input_username:set_text(string.format("%.30s", MainState.player.username))
 		if MainState.selectedRoom ~= nil then
 			if not canStartGame(MainState.selectedRoom) then
 				gui.set_text(gui.get_node("btn-join-/text"), "Ready")
 			end
 		end
 	elseif message_id == hash("set_username") then
-		if MainState.player.username == nil then
-			MainState.player.username = message.username
-		end
+		MainState.player.username = message.username
 		self.input_username:set_text(string.format("%.30s", MainState.player.username))
 	elseif message_id == hash("game_pre_start") then
 		MainState.currentGameState = MainState.GAME_STATES.START
