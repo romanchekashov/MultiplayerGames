@@ -16,10 +16,13 @@ components {
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
-  "default_animation: \"laserBlue01\"\n"
+  data: "default_animation: \"laserBlue01\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
+  "textures {\n"
+  "  sampler: \"texture_sampler\"\n"
+  "  texture: \"/assets/rotate_and_move.atlas\"\n"
+  "}\n"
   ""
   position {
     x: 0.0
@@ -62,6 +65,7 @@ embedded_components {
   "    }\n"
   "    index: 0\n"
   "    count: 3\n"
+  "    id: \"\"\n"
   "  }\n"
   "  data: 4.5\n"
   "  data: 27.0\n"

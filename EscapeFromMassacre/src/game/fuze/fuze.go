@@ -16,10 +16,13 @@ components {
 embedded_components {
   id: "fuze_blue"
   type: "sprite"
-  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
-  "default_animation: \"fuze_blue\"\n"
+  data: "default_animation: \"fuze_blue\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
+  "textures {\n"
+  "  sampler: \"texture_sampler\"\n"
+  "  texture: \"/assets/rotate_and_move.atlas\"\n"
+  "}\n"
   ""
   position {
     x: 0.0
@@ -36,10 +39,13 @@ embedded_components {
 embedded_components {
   id: "fuze_red"
   type: "sprite"
-  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
-  "default_animation: \"fuze_red\"\n"
+  data: "default_animation: \"fuze_red\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
+  "textures {\n"
+  "  sampler: \"texture_sampler\"\n"
+  "  texture: \"/assets/rotate_and_move.atlas\"\n"
+  "}\n"
   ""
   position {
     x: 0.0
@@ -56,10 +62,13 @@ embedded_components {
 embedded_components {
   id: "fuze_green"
   type: "sprite"
-  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
-  "default_animation: \"fuze_green\"\n"
+  data: "default_animation: \"fuze_green\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
+  "textures {\n"
+  "  sampler: \"texture_sampler\"\n"
+  "  texture: \"/assets/rotate_and_move.atlas\"\n"
+  "}\n"
   ""
   position {
     x: 0.0
@@ -76,10 +85,13 @@ embedded_components {
 embedded_components {
   id: "fuze_yellow"
   type: "sprite"
-  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
-  "default_animation: \"fuze_yellow\"\n"
+  data: "default_animation: \"fuze_yellow\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
+  "textures {\n"
+  "  sampler: \"texture_sampler\"\n"
+  "  texture: \"/assets/rotate_and_move.atlas\"\n"
+  "}\n"
   ""
   position {
     x: 0.0
@@ -120,6 +132,7 @@ embedded_components {
   "    }\n"
   "    index: 0\n"
   "    count: 1\n"
+  "    id: \"\"\n"
   "  }\n"
   "  data: 20.0\n"
   "}\n"

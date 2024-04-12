@@ -41,6 +41,7 @@ embedded_components {
   "    }\n"
   "    index: 0\n"
   "    count: 1\n"
+  "    id: \"\"\n"
   "  }\n"
   "  data: 20.0\n"
   "}\n"
@@ -87,6 +88,7 @@ embedded_components {
   "    }\n"
   "    index: 0\n"
   "    count: 1\n"
+  "    id: \"\"\n"
   "  }\n"
   "  data: 250.0\n"
   "}\n"
@@ -110,10 +112,13 @@ embedded_components {
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "tile_set: \"/assets/rotate_and_move.atlas\"\n"
-  "default_animation: \"zombie\"\n"
+  data: "default_animation: \"zombie\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
+  "textures {\n"
+  "  sampler: \"texture_sampler\"\n"
+  "  texture: \"/assets/rotate_and_move.atlas\"\n"
+  "}\n"
   ""
   position {
     x: 0.0
