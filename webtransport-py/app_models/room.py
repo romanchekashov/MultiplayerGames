@@ -2,8 +2,8 @@ from typing import List, Dict
 
 from app_models import get_uid_from_msg
 from app_logs import getLogger
-from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY
-from app_msg.game_server import GameServer, GameServerMessages, terminate_game_server
+from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, GameServerMessages
+from app_msg.game_server import GameServer, terminate_game_server
 
 Log = getLogger(__name__)
 

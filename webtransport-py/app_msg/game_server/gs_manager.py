@@ -11,18 +11,6 @@ from app_msg.game_server import stream_encode
 
 Log = getLogger(__name__)
 
-class GameServerMessages:
-    GO = 'GO'
-    GOD = 'GOD'
-    PLAYER_CREATE_POS = 'PLAYER_CREATE_POS'
-    CONNECT_ME = 'CONNECT_ME'
-    CONNECT_SELF = 'CONNECT_SELF'
-    CONNECT_OTHER = 'CONNECT_OTHER'
-    DISCONNECT = 'DISCONNECT'
-    GAME_PRE_START = 'GAME_PRE_START'
-    GAME_START = 'GAME_START'
-    GAME_OVER = 'GAME_OVER'
-
 class GameServer:
     def __init__(self, reader, writer, pid):
         self.reader = reader
