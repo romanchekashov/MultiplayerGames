@@ -15,4 +15,4 @@ services:
       - 4433:4433/udp
       - 5002:5002
     volumes:
-      - ./certificate:/home/certificate
+      - ./webtransport-py/certificate:/home/webtransport-py/certificate

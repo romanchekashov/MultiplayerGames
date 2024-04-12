@@ -5,9 +5,9 @@ echo "Stopping docker-compose..."
 docker-compose --env-file .env.local down
 
 echo "Copy ssl certificates to use from docker: only once"
-mkdir certificate
-cp /etc/letsencrypt/live/look.ovh/fullchain.pem certificate/fullchain.pem
-cp /etc/letsencrypt/live/look.ovh/privkey.pem certificate/privkey.pem
+mkdir webtransport-py/certificate
+cp /etc/letsencrypt/live/look.ovh/fullchain.pem webtransport-py/certificate/fullchain.pem
+cp /etc/letsencrypt/live/look.ovh/privkey.pem webtransport-py/certificate/privkey.pem
 
 mkdir webtransport-py/logs
 
