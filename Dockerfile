@@ -30,6 +30,9 @@ RUN apt install -y openjdk-17-jdk
 # RUN apt-get -y update && apt-get -y install software-properties-common && apt-get -y install build-essential && add-apt-repository ppa:deadsnakes/ppa && apt-get install -y python3.10-dev python3-distutils python3-pip python3-apt
 # RUN pip install --no-cache-dir -r requirements.txt
 
+COPY webtransport-py/requirements.txt ./webtransport-py/requirements.txt
+RUN pip install -r requirements.txt
+
 COPY . .
 
 RUN ./build.sh

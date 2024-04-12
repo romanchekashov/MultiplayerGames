@@ -59,10 +59,12 @@ python3.10 webtransport_server.py # run
 - 
 
 ### Deploy:
-- Start Docker:
-- `docker-compose --env-file .env.local up --build -d`
-- Stop Docker:
-- `docker-compose --env-file .env.local down`
+```shell
+docker-compose --env-file .env.local up --build -d # build and start Dockers
+docker-compose --env-file .env.local up -d         # start Dockers without rebuild
+docker-compose --env-file .env.local down          # stop Dockers
+```
+
 ##### Resources
 - [Best practices for writing Dockerfiles](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 - [Exposing Container Ports in Docker](https://blog.knoldus.com/exposing-container-ports-in-docker/)
