@@ -14,3 +14,5 @@ services:
     ports:
       - 4433:4433/udp
       - 5002:5002
+    volumes:
+      - ./certificate:/home/certificate
