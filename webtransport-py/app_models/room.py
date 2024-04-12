@@ -11,6 +11,7 @@ class RoomState:
     MATCHING = 'MATCHING'
     PLAYING = 'PLAYING'
 
+
 class Room:
     def __init__(self, name):
         self.name = name
@@ -138,3 +139,55 @@ class Room:
                 ready_players += 1
 
         return res + f'.ready.{ready_players}'
+
+
+class Rooms:
+    def __init__(self):
+        self.list: List[Room] = []
+        self.client_to_room: Dict[int, Room] = dict()
+
+    def add(self, room: Room):
+        self.list.append(room)
+
+    def get_room_by_client_uid(self, c_uid: int) -> Room | None:
+        if c_uid in self.client_to_room.keys():
+            return self.client_to_room[c_uid]
+
+    def remove_player(self, client: Client):
+        room = self.get_room_by_client_uid(client.uid)
+        if client.uid in self.client_to_room.keys():
+            del self.client_to_room[client.uid]
+        room.remove_player(client)
+
+    def add_player(self, room_name: str, type: 0 | 1, client: Client):
+        if client.uid in self.client_to_room.keys():
+            del self.client_to_room[client.uid]
+        for room in self.list:
+            if room.name == room_name:
+                room.add_player(type, client)
+                self.client_to_room[client.uid] = room
+            else:
+                room.remove_player(client)
+
+    def player_ready(self, room_name: str, client: Client):
+        for room in self.list:
+            if room.name == room_name:
+                room.player_ready(client.uid)
+                break
+
+    def remove_room_by_player(self, c_uid: int):
+        for room in self.list:
+            players_len = room.players_len()
+            if room.has_player(c_uid) and (players_len == 0 or players_len == 1):
+                self.list.remove(room)
+                if c_uid in self.client_to_room.keys():
+                    del self.client_to_room[c_uid]
+
+    def size(self):
+        return len(self.list)
+
+    def __str__(self):
+        res = f'NOT_GS_ROOMS.{len(self.list)}'
+        for item in self.list:
+            res += f'.{item}'
+        return res

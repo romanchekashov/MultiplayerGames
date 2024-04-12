@@ -2,7 +2,7 @@ import queue
 
 from typing import List, Dict
 from app_logs import getLogger
-from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, PLAYER_TYPE_SURVIVOR, Room
+from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, PLAYER_TYPE_SURVIVOR, Room, Rooms, ClientGameMessages
 
 from comm.game_server.gs_manager import start_game_server, stop_game_server, GameServer, GameServerMessages, _terminate_game_server
 
@@ -12,72 +12,6 @@ Log = getLogger(__name__)
 game_server_star_room_queue = queue.Queue()
 uid_sequence = 0
 clients: List[Client] = []
-
-class ClientGameMessages:
-    ROOMS = 'NOT_GS_ROOMS'
-    ROOMS_GET = 'NOT_GS_ROOMS_GET'
-    USERNAMES = 'NOT_GS_USERNAMES'
-    GET_USERNAMES = 'NOT_GS_GET_USERNAMES'
-    SET_PLAYER_USERNAME = 'NOT_GS_SET_PLAYER_USERNAME'
-    CREATE_ROOM = 'NOT_GS_CREATE_ROOM'
-    JOIN_ROOM = 'NOT_GS_JOIN_ROOM'
-    LEAVE_ROOM = 'NOT_GS_LEAVE_ROOM'
-    PLAYER_READY = 'NOT_GS_PLAYER_READY'
-    START_GAME = 'NOT_GS_START_GAME'
-
-
-class Rooms:
-    def __init__(self):
-        self.list: List[Room] = []
-        self.client_to_room: Dict[int, Room] = dict()
-
-    def add(self, room: Room):
-        self.list.append(room)
-
-    def get_room_by_client_uid(self, c_uid: int) -> Room | None:
-        if c_uid in self.client_to_room.keys():
-            return self.client_to_room[c_uid]
-
-    def remove_player(self, client: Client):
-        room = self.get_room_by_client_uid(client.uid)
-        if client.uid in self.client_to_room.keys():
-            del self.client_to_room[client.uid]
-        room.remove_player(client)
-
-    def add_player(self, room_name: str, type: 0 | 1, client: Client):
-        if client.uid in self.client_to_room.keys():
-            del self.client_to_room[client.uid]
-        for room in self.list:
-            if room.name == room_name:
-                room.add_player(type, client)
-                self.client_to_room[client.uid] = room
-            else:
-                room.remove_player(client)
-
-    def player_ready(self, room_name: str, client: Client):
-        for room in self.list:
-            if room.name == room_name:
-                room.player_ready(client.uid)
-                break
-
-    def remove_room_by_player(self, c_uid: int):
-        for room in self.list:
-            players_len = room.players_len()
-            if room.has_player(c_uid) and (players_len == 0 or players_len == 1):
-                self.list.remove(room)
-                if c_uid in self.client_to_room.keys():
-                    del self.client_to_room[c_uid]
-
-    def size(self):
-        return len(self.list)
-
-    def __str__(self):
-        res = f'NOT_GS_ROOMS.{len(self.list)}'
-        for item in self.list:
-            res += f'.{item}'
-        return res
-
-
 reliable_connection = ReliableConnection(clients)
 fast_unreliable_connection = FastUnreliableConnection(reliable_connection)
 rooms = Rooms()
