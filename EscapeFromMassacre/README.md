@@ -11,6 +11,7 @@
 ./build_game_server.sh -P x86_64-macos
 ./build_game_server.sh -P x86_64-linux
 ```
+- [Bob the builder](https://defold.com/manuals/bob/)
 
 #### Start GAME SERVER for specific ENV
 ```sh
