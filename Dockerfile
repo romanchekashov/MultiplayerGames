@@ -4,10 +4,10 @@ FROM ubuntu:22.04
 # RUN apk add --no-cache mysql-client
 # RUN apk add --no-cache python3 py3-pip
 
-ARG BIND_ADDRESS
-ARG CERT
-ARG CERT_KEY
-RUN echo ${CERT_KEY}
+#ARG BIND_ADDRESS
+#ARG CERT
+#ARG CERT_KEY
+#RUN echo ${CERT_KEY}
 
 WORKDIR /home
 

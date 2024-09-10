@@ -9,8 +9,8 @@ services:
       context: .
       args:
         BIND_ADDRESS: ${BIND_ADDRESS}
-        CERT: ${CERT}
-        CERT_KEY: ${CERT_KEY}
+#        CERT: ${CERT}
+#        CERT_KEY: ${CERT_KEY}
     ports:
       - 4433:4433/udp
       - 5002:5002
