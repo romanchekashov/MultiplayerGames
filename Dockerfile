@@ -40,8 +40,10 @@ RUN ./build.sh
 # CMD python3.10 main.py $BIND_ADDRESS $CERT $CERT_KEY
 # CMD python3.10 main.py certificate/fullchain.pem certificate/privkey.pem
 # CMD ["python3.10", "main.py", "certificate/fullchain.pem", "certificate/privkey.pem"]
-#CMD ./run.sh
-RUN kill -9 $(lsof -t -i:4433)
+
+CMD ./run.sh
+
+#RUN kill -9 $(lsof -t -i:4433)
 RUN cd webtransport-py
 CMD ["python3.10", "main.py", "${CERT}", "${CERT_KEY}"]
 
