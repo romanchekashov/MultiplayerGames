@@ -43,7 +43,7 @@ RUN ./build.sh
 
 # Pass arguments to run.sh
 #CMD ./run.sh ${CERT} ${CERT_KEY}
-CMD ./run.sh
+CMD ["./run.sh"]
 
 EXPOSE 4433/udp
 EXPOSE 5002/tcp
