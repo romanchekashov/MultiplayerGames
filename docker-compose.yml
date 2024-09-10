@@ -15,4 +15,5 @@ services:
       - 4433:4433/udp
       - 5002:5002
     volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
       - ./webtransport-py/certificate:/home/webtransport-py/certificate
