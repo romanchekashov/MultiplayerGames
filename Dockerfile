@@ -42,7 +42,8 @@ RUN ./build.sh
 # CMD ["python3.10", "main.py", "certificate/fullchain.pem", "certificate/privkey.pem"]
 
 # Pass arguments to run.sh
-CMD ./run.sh ${CERT} ${CERT_KEY}
+#CMD ./run.sh ${CERT} ${CERT_KEY}
+CMD ./run.sh
 
 EXPOSE 4433/udp
 EXPOSE 5002/tcp
