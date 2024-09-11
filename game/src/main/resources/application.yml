@@ -1,0 +1,19 @@
+server:
+  port: 5002
+  ssl:
+    certificate: /Users/romanchekashov/workspace/defold/MultiplayerGames/webtransport-py/certificate/fullchain.pem
+    certificate-private-key: /Users/romanchekashov/workspace/defold/MultiplayerGames/webtransport-py/certificate/privkey.pem
+
+spring:
+  application:
+    name: game
+
+logging:
+  level:
+    root: INFO
+  file:
+    name: log/sample-webflux-websocket-netty.log
+
+sample:
+  path: /
+  send-interval: 500
