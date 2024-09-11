@@ -1,5 +1,5 @@
 server:
-  port: 5002
+  port: 5001
   ssl:
     certificate: /Users/romanchekashov/workspace/defold/MultiplayerGames/webtransport-py/certificate/fullchain.pem
     certificate-private-key: /Users/romanchekashov/workspace/defold/MultiplayerGames/webtransport-py/certificate/privkey.pem

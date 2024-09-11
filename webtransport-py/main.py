@@ -133,8 +133,8 @@ if __name__ == '__main__':
             create_protocol=WebTransportProtocol,
         ))
     # loop.create_task(run_game_server_connector(socket.gethostname(), 5001))
-    event_loop.create_task(run_game_server_connector('127.0.0.1', 5001))
-    event_loop.create_task(run_server_websockets(BIND_ADDRESS, 5002, args.certificate, args.key))
+    event_loop.create_task(run_server_websockets(BIND_ADDRESS, 5001, args.certificate, args.key))
+    event_loop.create_task(run_game_server_connector('127.0.0.1', 5002))
     
     try:
         Log.info("[WebTransport] Listening on https://{}:{}".format(BIND_ADDRESS, BIND_PORT))

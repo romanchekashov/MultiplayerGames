@@ -1,10 +1,10 @@
 package ovh.look.game;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
@@ -112,7 +112,7 @@ public class BroadSock {
     /*
      * Set client/server connection
      */
-    public static Room setGameServerCommunication(Object reader, OutputStream writer, int pid) {
+    public Room setGameServerCommunication(InputStream reader, OutputStream writer, int pid) {
         GameServer gameServer = new GameServer(reader, writer, pid);
         Room room = gameServerStarRoomQueue.poll();
         Log.fine(pid + " " + room);
@@ -182,7 +182,7 @@ public class BroadSock {
             Room room = rooms.getRoomByClientUid(client.getUid());
             if (room != null && room.canStartGame()) {
                 gameServerStarRoomQueue.add(room);
-                startGameServer();
+                GameServerManager.getInstance().startGameServer();
             }
             sendToServer = false;
         } else if (ClientGameMessages.SET_PLAYER_USERNAME.equals(msg)) {
@@ -198,11 +198,6 @@ public class BroadSock {
         } else {
             reliableConnection.sendMessageAll(rooms.toString());
         }
-    }
-
-    private static CompletableFuture<Void> startGameServer() {
-        // Implement the logic to start the game server
-        return CompletableFuture.completedFuture(null);
     }
 
     private void toGameServer(String msg, Client client) {

@@ -48,7 +48,7 @@ CMD ./run.sh
 #CMD ["/bin/bash", "-c", "run"]
 
 EXPOSE 4433/udp
-EXPOSE 5002/tcp
+EXPOSE 5001/tcp
 
 # COPY .env.local .env.local
 # COPY webtransport-py webtransport-py
