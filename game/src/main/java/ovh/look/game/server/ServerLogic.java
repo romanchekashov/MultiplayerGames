@@ -10,6 +10,8 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ovh.look.game.BroadSock;
+
 public class ServerLogic {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -21,10 +23,12 @@ public class ServerLogic {
     }
 
     public Mono<Void> doLogic(WebSocketSession session, long interval) {
+        var client = BroadSock.getInstance().setGameClientCommunicationWebSocket(session);
         return
             session
                 .receive()
                 .doOnNext(message -> {
+                    BroadSock.getInstance().toServer(message.getPayloadAsText(), client);
                     if (newClient.get()) {
                         logger.info("Server -> client connected id=[{}]", session.getId());
                     }
