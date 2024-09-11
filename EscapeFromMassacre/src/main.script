@@ -64,6 +64,17 @@ function on_message(self, message_id, message, sender)
 
 
 		if message.map_level == MainState.GAME_SCREENS.LOBBY then
+			-- MainState.game_over_players:for_each(function (player)
+			-- 	log("game_over_players: delete player", player.go_id, player.username, player.uid)
+			-- 	local url = player.go_id
+			-- 	if url ~= nil and go.exists(url) then
+			-- 		go.delete(url)
+			-- 	end
+			-- end)
+			-- MainState.players:for_each(function (player)
+			-- 	log("players: delete player", player.go_id, player.username, player.uid)
+			-- 	-- go.delete(player.go_id)
+			-- end)
 			self.current_screen = collectionfactory.create("#collectionfactory-lobby", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})
 			print("LOBBY", #self.current_screen)
