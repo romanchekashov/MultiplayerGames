@@ -28,16 +28,24 @@ public class ServerLogic {
             session
                 .receive()
                 .doOnNext(message -> {
-                    BroadSock.getInstance().toServer(message.getPayloadAsText(), client);
                     if (newClient.get()) {
                         logger.info("Server -> client connected id=[{}]", session.getId());
                     }
                 })
                 .map(WebSocketMessage::getPayloadAsText)
-                .doOnNext(message -> logger.info("Server -> received from client id=[{}]: [{}]", session.getId(), message))
+                .doOnNext(message -> {
+                    BroadSock.getInstance().toServer(message, client);
+                    logger.info("Server -> received from client id=[{}]: [{}]", session.getId(), message);
+                })
                 .filter(message -> newClient.get())
                 .doOnNext(message -> newClient.set(false))
-                .flatMap(message -> sendAtInterval(session, interval))
+                // .flatMap(message -> sendAtInterval(session, interval))
+                .doFinally(signalType -> {
+                    System.out.println(signalType);
+                    // Handle client disconnection
+                    BroadSock.getInstance().handleClientDisconnected(session);
+                    logger.info("Server -> client disconnected id=[{}]", session.getId());
+                })
                 .then();
     }
 
