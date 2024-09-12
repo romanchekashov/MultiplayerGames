@@ -1,10 +1,12 @@
 package ovh.look.game.models;
 
+import lombok.ToString;
 import org.springframework.web.reactive.socket.WebSocketSession;
 
 import lombok.Data;
 
 @Data
+@ToString
 public class Client {
     private int uid;
     private Object unreliableFastWT;

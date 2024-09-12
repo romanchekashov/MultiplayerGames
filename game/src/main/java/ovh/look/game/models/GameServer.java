@@ -1,6 +1,7 @@
 package ovh.look.game.models;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 import java.nio.ByteBuffer;
@@ -11,12 +12,12 @@ import lombok.Data;
 public class GameServer {
     private static final Logger Log = Logger.getLogger(GameServer.class.getName());
 
-    private Object reader; // Replace with appropriate type
+    private InputStream reader; // Replace with appropriate type
     private OutputStream writer;
     private int pid;
     private Room room;
 
-    public GameServer(Object reader, OutputStream writer, int pid) {
+    public GameServer(InputStream reader, OutputStream writer, int pid) {
         this.reader = reader;
         this.writer = writer;
         this.pid = pid;
@@ -27,6 +28,7 @@ public class GameServer {
         byte[] outData = streamEncode(msg);
         try {
             writer.write(outData);
+            writer.flush();
         } catch (IOException e) {
             Log.severe("Error writing data: " + e.getMessage());
         }

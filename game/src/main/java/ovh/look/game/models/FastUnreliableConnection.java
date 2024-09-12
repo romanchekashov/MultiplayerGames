@@ -42,7 +42,7 @@ public class FastUnreliableConnection {
     public void sendMessageOthers(String msg, int cUid) {
         for (Client client : clients) {
             if (client.getUid() != cUid) {
-                Log.fine("sendMessageOthers from " + msg + " to " + client);
+                Log.info("sendMessageOthers from " + msg + " to " + client);
                 sendMsgTo(client, msg);
             }
         }

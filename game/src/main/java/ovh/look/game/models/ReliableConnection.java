@@ -19,6 +19,7 @@ public class ReliableConnection {
     }
 
     public void sendMsgTo(Client client, String msg) {
+        Log.info("sendMsgTo from " + msg + " to " + client);
         if (client.getReliableWS() != null) {
             try {
                 if (msg.contains(GameServerMessages.GO.getValue())) {
@@ -41,7 +42,7 @@ public class ReliableConnection {
     public void sendMessageOthers(String msg, int cUid) {
         for (Client client : clients) {
             if (client.getUid() != cUid) {
-                Log.fine("sendMessageOthers from " + msg + " to " + client);
+                Log.info("sendMessageOthers from " + msg + " to " + client);
                 sendMsgTo(client, msg);
             }
         }
