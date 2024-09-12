@@ -18,7 +18,7 @@ embedded_instances {
   "  }\n"
   "  properties {\n"
   "    id: \"port\"\n"
-  "    value: \"5001.0\"\n"
+  "    value: \"5002.0\"\n"
   "    type: PROPERTY_TYPE_NUMBER\n"
   "  }\n"
   "  property_decls {\n"

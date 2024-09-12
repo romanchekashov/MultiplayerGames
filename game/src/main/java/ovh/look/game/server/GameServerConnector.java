@@ -63,10 +63,17 @@ class GameServerConnector {
     }
 
     public void connect() {
-        try (Socket socket = new Socket(host, port)) {
-            handleClient(socket);
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            Log.info("Server is listening on port " + port);
+
+            // Accept incoming client connections
+            Socket clientSocket = serverSocket.accept();
+            Log.info("New client connected");
+
+            // Handle the client in a separate method
+            handleClient(clientSocket);
         } catch (IOException e) {
-            Log.severe("Failed to connect to server socket: " + e.getMessage());
+            Log.severe("Server error: " + e.getMessage());
         }
     }
 }
