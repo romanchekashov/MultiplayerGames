@@ -209,10 +209,14 @@ public class BroadSock {
             Room room = rooms.getRoomByClientUid(client.getUid());
             if (room != null && room.canStartGame()) {
                 gameServerStarRoomQueue.add(room);
-                gameServerManager.startGameServer(gameServer -> {
+                new Thread(() -> gameServerManager.startGameServer(gameServer -> {
                     var gameServerRoom = setGameServerCommunication(gameServer);
                     gameServer.setRoom(gameServerRoom);
-                });
+                })).start();
+//                gameServerManager.startGameServer(gameServer -> {
+//                    var gameServerRoom = setGameServerCommunication(gameServer);
+//                    gameServer.setRoom(gameServerRoom);
+//                });
             }
             sendToServer = false;
         } else if (msg.contains(ClientGameMessages.SET_PLAYER_USERNAME.getValue())) {
