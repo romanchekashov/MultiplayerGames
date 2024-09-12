@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import io.netty.channel.EventLoop;
 
-public class GameServerManager {
+public class GameServerManager implements IGameServerManager {
     private static final Logger Log = Logger.getLogger(GameServerManager.class.getName());
     private static final int GAME_SERVER_STOP_TIMEOUT = 10;
     private static final int GAME_SERVER_START_TIMEOUT = 1;
@@ -33,54 +33,28 @@ public class GameServerManager {
     private GameServerManager() {
     }
 
-    public static GameServerManager getInstance() {
+    public static IGameServerManager getInstance() {
         return GameServerManagerHolder.INSTANCE;
     }
 
-    public static void setEventLoop(EventLoop loop) {
-        eventLoop = loop;
-    }
+    @Override
+    public void startGameServer() {
+        gameStopNeeded = false;
+        List<ProcessHandle> processList = findGameProcess();
+        int size = processList.size();
 
-    public static int getGspid() throws InterruptedException {
-        return gameServerStartPidQueue.poll();
-    }
-
-    public List<ProcessHandle> findGameProcess() {
-        List<ProcessHandle> processes = ProcessHandle.allProcesses()
-                .filter(ph -> ph.info().command().map(cmd -> cmd.contains("dmengine_headless")).orElse(false))
-                .collect(Collectors.toList());
-        Log.info("Found " + processes.size() + " GS processes");
-        return processes;
-    }
-
-    public CompletableFuture<Void> terminateProcessByPid(int pid) {
-        Process process = gameServerPidToProcess.get(pid);
-        if (process != null) {
-            Log.info("[PID:" + process.pid() + "] - Process found. Terminating it.");
-            process.destroy();
-            return process.onExit().thenRun(() -> gameServerPidToProcess.remove(pid));
+        if (size < MAX_ROOMS) {
+            startGameServerProcess();
         } else {
-            Log.info("[PID:" + pid + "] - Process NOT found");
-            return CompletableFuture.completedFuture(null);
+            Log.info("MAX " + size + " Game Server Processes like " + processList.get(0).info().command().orElse("") + " already running.");
         }
     }
 
-    public void terminateProcess(ProcessHandle process) {
-        Log.info(process + "[PID:" + process.pid() + "] - Process found. Terminating it.");
-        process.destroy();
-        try {
-            process.onExit().get();
-        } catch (InterruptedException | ExecutionException e) {
-            Log.severe("Failed to terminate process: " + e.getMessage());
-            process.destroyForcibly();
-            // Thread.currentThread().interrupt();
-        }
-    }
-
-    public void terminateGameServer(Integer pid) {
+    @Override
+    public void terminateGameServer(int pid) {
         Log.info("terminate_game_server " + pid);
         List<ProcessHandle> processList = findGameProcess();
-        if (pid == null) {
+        if (pid == 0) {
             Log.info("Found " + processList.size() + " game servers to terminate.");
             for (ProcessHandle process : processList) {
                 terminateProcess(process);
@@ -97,23 +71,52 @@ public class GameServerManager {
             }
         }
     }
-    public void stopGameServer(int pid, Runnable fn) {
+
+    private static void setEventLoop(EventLoop loop) {
+        eventLoop = loop;
+    }
+
+    private static int getGspid() throws InterruptedException {
+        return gameServerStartPidQueue.poll();
+    }
+
+    private List<ProcessHandle> findGameProcess() {
+        List<ProcessHandle> processes = ProcessHandle.allProcesses()
+                .filter(ph -> ph.info().command().map(cmd -> cmd.contains("dmengine_headless")).orElse(false))
+                .collect(Collectors.toList());
+        Log.info("Found " + processes.size() + " GS processes");
+        return processes;
+    }
+
+    private CompletableFuture<Void> terminateProcessByPid(int pid) {
+        Process process = gameServerPidToProcess.get(pid);
+        if (process != null) {
+            Log.info("[PID:" + process.pid() + "] - Process found. Terminating it.");
+            process.destroy();
+            return process.onExit().thenRun(() -> gameServerPidToProcess.remove(pid));
+        } else {
+            Log.info("[PID:" + pid + "] - Process NOT found");
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    private void terminateProcess(ProcessHandle process) {
+        Log.info(process + "[PID:" + process.pid() + "] - Process found. Terminating it.");
+        process.destroy();
+        try {
+            process.onExit().get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.severe("Failed to terminate process: " + e.getMessage());
+            process.destroyForcibly();
+            // Thread.currentThread().interrupt();
+        }
+    }
+
+    private void stopGameServer(int pid, Runnable fn) {
         gameServerStopCallbackFn = fn;
         gameStopNeeded = true;
         Log.info("stop " + gameStopNeeded);
         terminateGameServer(pid);
-    }
-
-    public void startGameServer() {
-        gameStopNeeded = false;
-        List<ProcessHandle> processList = findGameProcess();
-        int size = processList.size();
-
-        if (size < MAX_ROOMS) {
-            startGameServerProcess();
-        } else {
-            Log.info("MAX " + size + " Game Server Processes like " + processList.get(0).info().command().orElse("") + " already running.");
-        }
     }
 
     private void startGameServerProcess() {

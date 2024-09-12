@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import ovh.look.game.BroadSock;
 import ovh.look.game.models.*;
 
-public class GameServerConnector {
+class GameServerConnector {
     private static final Logger Log = Logger.getLogger(GameServerConnector.class.getName());
 
     private final String host;
