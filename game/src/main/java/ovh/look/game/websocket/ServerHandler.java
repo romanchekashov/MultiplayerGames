@@ -1,4 +1,4 @@
-package ovh.look.game.server;
+package ovh.look.game.websocket;
 
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;

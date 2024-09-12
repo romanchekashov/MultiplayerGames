@@ -1,4 +1,4 @@
-package ovh.look.game.server;
+package ovh.look.game.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

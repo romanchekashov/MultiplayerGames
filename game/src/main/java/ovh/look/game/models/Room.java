@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import lombok.Data;
-import ovh.look.game.GameServerManager;
+import ovh.look.game.server.GameServerManager;
 
 @Data
 public class Room {

@@ -1,4 +1,4 @@
-package ovh.look.game.server;
+package ovh.look.game.websocket;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

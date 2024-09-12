@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.springframework.web.reactive.socket.WebSocketSession;
 
 import ovh.look.game.models.*;
+import ovh.look.game.server.GameServerManager;
 
 public class BroadSock {
 
@@ -92,16 +93,16 @@ public class BroadSock {
     public void handleClientDisconnected(WebSocketSession session) {
         // Log.debug(f'clients = {", ".join(map(str, clients))}: disconnecting..., WS: {id(websocket)}')
         if (clients.isEmpty()) return;
-    
+
         Client client = getClientByWs(session);
         clients.remove(client);
-    
+
         rooms.removePlayer(client);
-    
+
         reliableConnection.sendMessageAll(rooms.toString());
-    
+
         // Log.info(f'client disconected: {client}, clients = {len(clients)}')
-    
+
         if (clients.isEmpty()) {
             // Log.info(f'clients = {len(clients)}: Need stop game server')
         } else if (client.getUid() != null) {

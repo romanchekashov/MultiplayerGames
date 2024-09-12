@@ -1,10 +1,11 @@
-package ovh.look.game;
+package ovh.look.game.server;
 
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
+import ovh.look.game.BroadSock;
 import ovh.look.game.models.*;
 
 public class GameServerConnector {

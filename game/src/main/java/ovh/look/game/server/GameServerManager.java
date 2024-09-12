@@ -1,4 +1,4 @@
-package ovh.look.game;
+package ovh.look.game.server;
 
 import java.io.IOException;
 import java.util.*;
@@ -36,7 +36,7 @@ public class GameServerManager {
     public static GameServerManager getInstance() {
         return GameServerManagerHolder.INSTANCE;
     }
-   
+
     public static void setEventLoop(EventLoop loop) {
         eventLoop = loop;
     }
@@ -129,7 +129,7 @@ public class GameServerManager {
                 gameServerPidToConnector.put(pid, connector);
                 connector.connect();
                 runningPorts.add(connector.getPort());
-                
+
                 Log.info("Game Server[PID:" + pid + "], running: " + gameServerPidToProcess.size() + ", in queue: " + gameServerStartPidQueue.size());
             }
         } catch (IOException e) {
