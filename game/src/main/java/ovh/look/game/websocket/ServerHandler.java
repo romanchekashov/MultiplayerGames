@@ -18,7 +18,6 @@ public class ServerHandler implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
-        var client = broadSock.setGameClientCommunicationWebSocket(session);
         return
                 session
                         .receive()
@@ -27,7 +26,7 @@ public class ServerHandler implements WebSocketHandler {
                         })
                         .map(WebSocketMessage::getPayloadAsText)
                         .doOnNext(message -> {
-                            broadSock.toServer(message, client);
+                            broadSock.toServer(message, session);
                             logger.info("Server -> received from client id=[{}]: [{}]", session.getId(), message);
                         })
 //                .filter(message -> newClient.get())

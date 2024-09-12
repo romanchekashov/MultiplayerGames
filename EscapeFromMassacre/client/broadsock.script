@@ -58,7 +58,7 @@ local function js_listener(self, message_id, message)
 		end
 	elseif message_id == CONNECTOR_MSG_IDS.RELIABLE_CONNECTION_READY then
 		hasReliableConnection = true
-		sendToReliableConnection("CONNECT_ME")
+		sendToReliableConnection("CONNECT_ME." .. message)
 	elseif message_id == CONNECTOR_MSG_IDS.FAST_UNRELIABLE_CONNECTION_READY then
 		hasFastUnreliableConnection = true
 	end

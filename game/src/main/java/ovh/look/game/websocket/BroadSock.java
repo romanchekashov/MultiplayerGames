@@ -44,9 +44,19 @@ public class BroadSock {
         return !clients.isEmpty();
     }
 
-    public static Client getClientByWs(Object ws) {
+    public static Client getClientByWs(WebSocketSession ws) {
         for (Client client : clients) {
-            if (client.getReliableWS().equals(ws)) {
+            if (client.getReliableWS() != null
+                    && client.getReliableWS().getId().equals(ws.getId())) {
+                return client;
+            }
+        }
+        return null;
+    }
+
+    public static Client getClientByUid(int uid) {
+        for (Client client : clients) {
+            if (client.getUid() == uid) {
                 return client;
             }
         }
@@ -66,19 +76,26 @@ public class BroadSock {
     /*
      * Client connect/disconnect
      */
-    public Client handleClientConnected(WebSocketSession session) {
+    public Client handleClientConnected(WebSocketSession session, int uid) {
         Client client = getClientByWs(session);
-
-        uidSequence += 1;
-
         if (client == null) {
-            client = new Client(uidSequence, null, session, null);
-            clients.add(client);
+            if (uid <= 0) {
+                uidSequence += 1;
+                client = new Client(uidSequence, null, session, null);
+                clients.add(client);
+            } else {
+                client = getClientByUid(uid);
+                if (client == null) {
+                    uidSequence += 1;
+                    client = new Client(uidSequence, null, session, null);
+                    clients.add(client);
+                } else {
+                    client.setReliableWS(session);
+                }
+            }
         }
 
-        if (client.getReliableWS() == null) {
-            client.setReliableWS(session);
-        }
+        client.setStatus(ClientStatus.ONLINE);
 
         Log.info(String.format("client connected: %s, clients = %d", client, clients.size()));
 
@@ -90,9 +107,10 @@ public class BroadSock {
         if (clients.isEmpty()) return;
 
         Client client = getClientByWs(session);
-        clients.remove(client);
-
-        rooms.removePlayer(client);
+        client.setStatus(ClientStatus.OFFLINE);
+        client.setReliableWS(null);
+//        clients.remove(client);
+//        rooms.removePlayer(client);
 
         reliableConnection.sendMessageAll(rooms.toString());
 
@@ -100,7 +118,7 @@ public class BroadSock {
 
         if (clients.isEmpty()) {
             // Log.info(f'clients = {len(clients)}: Need stop game server')
-        } else if (client.getUid() != null) {
+        } else if (client.getUid() > 0) {
             toGameServer(GameServerMessages.DISCONNECT.getValue(), client);
         }
     }
@@ -120,8 +138,8 @@ public class BroadSock {
         return room;
     }
 
-    public Client setGameClientCommunicationWebSocket(WebSocketSession websocket) {
-        Client client = handleClientConnected(websocket);
+    public Client setGameClientCommunicationWebSocket(WebSocketSession websocket, int uid) {
+        Client client = handleClientConnected(websocket, uid);
         reliableConnection.sendMessageAll(rooms.toString());
         return client;
     }
@@ -147,12 +165,26 @@ public class BroadSock {
     /*
      * Send messages to server and client
      */
-    public void toServer(String msg, Client client) {
-        Log.info("TO-SERVER: " + msg + ", client: " + client.getUsername());
+    public void toServer(String msg, WebSocketSession session) {
+        Client client = getClientByWs(session);
+        Log.info("TO-SERVER: " + msg + ", client: " + (client != null ? client.getUsername() : null));
 
         boolean sendToServer = true;
 
         if (msg.contains(GameServerMessages.CONNECT_ME.getValue())) {
+            String[] parts = msg.split("\\.");
+            int uid = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            if (client != null && client.getUid() != uid) {
+//                client = setGameClientCommunicationWebSocket(session, uid);
+            } else {
+                client = getClientByUid(uid);
+                if (client == null) {
+                    client = setGameClientCommunicationWebSocket(session, uid);
+                } else {
+                    client.setReliableWS(session);
+                    client.setStatus(ClientStatus.ONLINE);
+                }
+            }
             reliableConnection.sendMsgTo(client, client.getUid() + ".CONNECT_SELF." + client.getUsername());
             reliableConnection.sendMessageOthers(client.getUid() + ".CONNECT_OTHER", client.getUid());
             sendUsernames();

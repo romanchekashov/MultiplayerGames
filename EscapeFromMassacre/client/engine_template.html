@@ -285,7 +285,9 @@
 		}
 
 
-		let uidBoundToFastUnreliableConnection = false, playerUid = 0, uidBoundToWtIntervalKey;
+		let uidBoundToFastUnreliableConnection = false;
+		let uidBoundToWtIntervalKey;
+		let playerUid = +(sessionStorage.getItem('playerUid') ?? 0);
 
 		function onMsgFromWebTransport(text) {
 			if (text === 'PING') {
@@ -324,7 +326,7 @@
 				// Connection opened
 				socket.addEventListener("open", (event) => {
 					log('[WS reliable]: Connection ready.');
-					JsToDef.send("RELIABLE_CONNECTION_READY", "");
+					JsToDef.send("RELIABLE_CONNECTION_READY", playerUid || "");
 				});
 
 				// Listen for messages
@@ -333,7 +335,9 @@
 					addToEventLog(event.data);
 					if (event.data.includes('CONNECT_SELF')) {
 						// WebTransport should be associated with websocket(by sending msg or smth)
-						playerUid = +event.data.split('.')[0];
+						let sUid = event.data.split('.')[0];
+						sessionStorage.setItem('playerUid', sUid);
+						playerUid = +sUid;
 						await webTransportСonnect();
 					}
 				});

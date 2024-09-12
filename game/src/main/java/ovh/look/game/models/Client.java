@@ -6,13 +6,14 @@ import lombok.Data;
 
 @Data
 public class Client {
-    private Integer uid;
+    private int uid;
     private Object unreliableFastWT;
     private WebSocketSession reliableWS;
     private PlayerType type;
     private String username;
+    private ClientStatus status = ClientStatus.OFFLINE;
 
-    public Client(Integer uid, Object unreliableFastWT, WebSocketSession reliableWS, PlayerType type) {
+    public Client(int uid, Object unreliableFastWT, WebSocketSession reliableWS, PlayerType type) {
         this.uid = uid;
         this.unreliableFastWT = unreliableFastWT;
         this.reliableWS = reliableWS;
