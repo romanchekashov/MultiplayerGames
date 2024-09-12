@@ -7,6 +7,7 @@ fi
 
 echo "${PLATFORM}"
 
+# https://github.com/defold/defold/commit/691478c02875b80e76da65d2f5756394e7a906b1
 # {"version": "1.2.89", "sha1": "5ca3dd134cc960c35ecefe12f6dc81a48f212d40"}
 SHA1=$(curl -s http://d.defold.com/stable/info.json | sed 's/.*sha1": "\(.*\)".*/\1/')
 echo "Using Defold dmengine_headless version ${SHA1}"

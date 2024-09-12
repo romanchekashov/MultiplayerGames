@@ -1,11 +1,11 @@
 [project]
 title = Escape from Massacre
 custom_resources =
-dependencies#0 = https://github.com/defold/extension-websocket/archive/refs/tags/3.1.0.zip
+dependencies#0 = https://github.com/defold/extension-websocket/archive/refs/tags/4.0.0.zip
 dependencies#1 = https://github.com/heroiclabs/nakama-defold/archive/refs/tags/3.1.0.zip
 dependencies#2 = https://github.com/britzl/defold-input/archive/master.zip
 dependencies#3 = https://github.com/britzl/broadsock/archive/1.1.1.zip
-dependencies#4 = https://github.com/AGulev/jstodef/archive/refs/tags/2.0.0.zip
+dependencies#4 = https://github.com/AGulev/jstodef/archive/refs/tags/3.0.0.zip
 dependencies#5 = https://github.com/britzl/ludobits/archive/1.2.zip
 dependencies#6 = https://github.com/Insality/druid/archive/refs/tags/0.11.0.zip
 dependencies#7 = https://github.com/subsoap/defsave/archive/master.zip

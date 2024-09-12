@@ -1,6 +1,15 @@
 ### How to run headless defold engine
 #### Update versions for bob.jar and dmengine_headless
-1. Run `./download.sh`
+1. Run `./download.sh` https://github.com/defold/defold/releases
+```shell
+# Defold version: 1.9.1
+SHA1=691478c02875b80e76da65d2f5756394e7a906b1
+# http://d.defold.com/archive/691478c02875b80e76da65d2f5756394e7a906b1/bob/bob.jar
+# http://d.defold.com/archive/691478c02875b80e76da65d2f5756394e7a906b1/engine/x86_64-macos/dmengine_headless
+# http://d.defold.com/archive/691478c02875b80e76da65d2f5756394e7a906b1/engine/x86_64-linux/dmengine_headless
+chmod +x dmengine_headless_x86_64_macos
+chmod +x dmengine_headless_x86_64_linux
+```
 2. If smth will not downloaded just use direct links from download.sh
 3. Make headless runner executable with chmod +x dmengine_headless`
 4. Update `dmengine_headless_x86_64_macos` and `dmengine_headless_x86_64_linux` in `/build_server`
