@@ -59,12 +59,6 @@ class GameServerConnector {
             }
         } catch (IOException e) {
             Log.severe("Error handling client: " + e.getMessage());
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (IOException e) {
-                Log.severe("Error closing client socket: " + e.getMessage());
-            }
         }
     }
 
