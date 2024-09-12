@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import lombok.Data;
+import ovh.look.game.GameServerManager;
 
 @Data
 public class Room {
@@ -87,7 +88,7 @@ public class Room {
     }
 
     public void endGame() {
-        terminateGameServer(this.gameServer.getPid());
+        GameServerManager.getInstance().terminateGameServer(this.gameServer.getPid());
         for (Integer cUid : this.familyUids.keySet()) {
             this.familyUids.get(cUid).put("ready", false);
         }
@@ -193,11 +194,6 @@ public class Room {
 
     // Placeholder methods for missing implementations
     private int getUidFromMsg(String msg) {
-        // Implement the logic to extract UID from the message
-        return 0;
-    }
-
-    private void terminateGameServer(int pid) {
-        // Implement the logic to terminate the game server
+        return Integer.parseInt(msg.substring(0, msg.indexOf('.')));
     }
 }
