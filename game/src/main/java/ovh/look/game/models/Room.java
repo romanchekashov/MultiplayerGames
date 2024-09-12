@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import lombok.Data;
-import ovh.look.game.server.GameServerManager;
 
 @Data
 public class Room {
@@ -54,11 +53,11 @@ public class Room {
         Log.info("TO-CLIENT: " + msg);
 
         try {
-            if (GameServerMessages.GOD.equals(msg)) {
+            if (msg.contains(GameServerMessages.GOD.getValue())) {
                 this.reliableConnection.sendMessageAll(msg);
-            } else if (GameServerMessages.GO.equals(msg)) {
+            } else if (msg.contains(GameServerMessages.GO.getValue())) {
                 this.fastUnreliableConnection.sendMessageAll(msg);
-            } else if (GameServerMessages.CONNECT_SELF.equals(msg)) {
+            } else if (msg.contains(GameServerMessages.CONNECT_SELF.getValue())) {
                 int uid = getUidFromMsg(msg);
                 for (Client client : this.clients) {
                     if (client.getUid() == uid) {
@@ -67,11 +66,11 @@ public class Room {
                         break;
                     }
                 }
-            } else if (GameServerMessages.CONNECT_OTHER.equals(msg)) {
+            } else if (msg.contains(GameServerMessages.CONNECT_OTHER.getValue())) {
                 this.reliableConnection.sendMessageOthers(msg, getUidFromMsg(msg));
-            } else if (GameServerMessages.DISCONNECT.equals(msg)) {
+            } else if (msg.contains(GameServerMessages.DISCONNECT.getValue())) {
                 this.reliableConnection.sendMessageAll(msg);
-            } else if (GameServerMessages.GAME_OVER.equals(msg)) {
+            } else if (msg.contains(GameServerMessages.GAME_OVER.getValue())) {
                 this.reliableConnection.sendMessageAll(msg);
                 this.endGame();
             } else {
@@ -88,7 +87,6 @@ public class Room {
     }
 
     public void endGame() {
-        GameServerManager.getInstance().terminateGameServer(this.gameServer.getPid());
         for (Integer cUid : this.familyUids.keySet()) {
             this.familyUids.get(cUid).put("ready", false);
         }

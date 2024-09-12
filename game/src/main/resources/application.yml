@@ -7,6 +7,9 @@ server:
 spring:
   application:
     name: game
+  config:
+    #    import: optional:secret.properties
+    import: optional:file:.env.local[.properties]
 
 logging:
   level:

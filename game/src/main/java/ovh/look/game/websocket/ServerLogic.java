@@ -8,42 +8,41 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import ovh.look.game.BroadSock;
 
 public class ServerLogic {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final AtomicBoolean newClient;
+    private final BroadSock broadSock;
 
-    public ServerLogic() {
-        newClient = new AtomicBoolean(true);
+    public ServerLogic(BroadSock broadSock) {
+        this.broadSock = broadSock;
     }
 
     public Mono<Void> doLogic(WebSocketSession session, long interval) {
-        var client = BroadSock.getInstance().setGameClientCommunicationWebSocket(session);
+        var client = broadSock.setGameClientCommunicationWebSocket(session);
         return
             session
                 .receive()
                 .doOnNext(message -> {
-                    if (newClient.get()) {
                         logger.info("Server -> client connected id=[{}]", session.getId());
-                    }
                 })
                 .map(WebSocketMessage::getPayloadAsText)
                 .doOnNext(message -> {
-                    BroadSock.getInstance().toServer(message, client);
+                    broadSock.toServer(message, client);
                     logger.info("Server -> received from client id=[{}]: [{}]", session.getId(), message);
                 })
-                .filter(message -> newClient.get())
-                .doOnNext(message -> newClient.set(false))
+//                .filter(message -> newClient.get())
+//                .doOnNext(message -> newClient.set(false))
+                    .doOnError(throwable -> {
+                        throwable.printStackTrace();
+                        logger.error("Server -> error: [{}]", throwable.getMessage());
+                    })
                 // .flatMap(message -> sendAtInterval(session, interval))
                 .doFinally(signalType -> {
                     System.out.println(signalType);
                     // Handle client disconnection
-                    BroadSock.getInstance().handleClientDisconnected(session);
+                    broadSock.handleClientDisconnected(session);
                     logger.info("Server -> client disconnected id=[{}]", session.getId());
                 })
                 .then();

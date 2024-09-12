@@ -1,18 +1,17 @@
-package ovh.look.game;
+package ovh.look.game.websocket;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.socket.WebSocketSession;
+import ovh.look.game.models.*;
+import ovh.look.game.server.IGameServerManager;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
-import org.springframework.web.reactive.socket.WebSocketSession;
-
-import ovh.look.game.models.*;
-import ovh.look.game.server.GameServerManager;
-
+@Service
 public class BroadSock {
 
     private static final Logger Log = Logger.getLogger(BroadSock.class.getName());
@@ -24,21 +23,17 @@ public class BroadSock {
     private static FastUnreliableConnection fastUnreliableConnection = new FastUnreliableConnection(reliableConnection);
     private static Rooms rooms = new Rooms();
 
-    private static class BroadSockHolder {
-        private static final BroadSock INSTANCE = new BroadSock();
-    }
-
-    private BroadSock() {
-    }
-
-    public static BroadSock getInstance() {
-        return BroadSockHolder.INSTANCE;
-    }
-
     static {
         for (int i = 1; i <= 10; i++) {
             rooms.add(new Room("Room " + i));
         }
+    }
+
+    private final IGameServerManager gameServerManager;
+
+    public BroadSock(IGameServerManager gameServerManager) {
+        this.gameServerManager = gameServerManager;
+        gameServerManager.terminateGameServer(0); // TODO: maybe bottleneck
     }
 
     public static int getNextUidSequence() {
@@ -113,10 +108,9 @@ public class BroadSock {
     /*
      * Set client/server connection
      */
-    public Room setGameServerCommunication(InputStream reader, OutputStream writer, int pid) {
-        GameServer gameServer = new GameServer(reader, writer, pid);
+    public Room setGameServerCommunication(GameServer gameServer) {
         Room room = gameServerStarRoomQueue.poll();
-        Log.fine(pid + " " + room);
+        Log.info(gameServer.getPid() + " " + room);
         if (room != null) {
             room.setGameServer(gameServer);
             for (Client client : room.getClients()) {
@@ -154,17 +148,17 @@ public class BroadSock {
      * Send messages to server and client
      */
     public void toServer(String msg, Client client) {
-        Log.fine("TO-SERVER: " + msg + ", client: " + client);
+        Log.info("TO-SERVER: " + msg + ", client: " + client.getUsername());
 
         boolean sendToServer = true;
 
-        if (GameServerMessages.CONNECT_ME.equals(msg)) {
+        if (msg.contains(GameServerMessages.CONNECT_ME.getValue())) {
             reliableConnection.sendMsgTo(client, client.getUid() + ".CONNECT_SELF." + client.getUsername());
             reliableConnection.sendMessageOthers(client.getUid() + ".CONNECT_OTHER", client.getUid());
             sendUsernames();
         }
 
-        if (ClientGameMessages.GET_USERNAMES.equals(msg)) {
+        if (msg.contains(ClientGameMessages.GET_USERNAMES.getValue())) {
             sendUsernames();
         }
 
@@ -177,19 +171,22 @@ public class BroadSock {
             PlayerType playerType = parts[2].equals("family") ? PlayerType.FAMILY : PlayerType.SURVIVOR;
             rooms.addPlayer(roomName, playerType, client);
             sendToServer = false;
-        } else if (ClientGameMessages.PLAYER_READY.equals(msg)) {
+        } else if (msg.contains(ClientGameMessages.PLAYER_READY.getValue())) {
             String[] parts = msg.split("\\.");
             rooms.playerReady(parts[1], client);
             Room room = rooms.getRoomByClientUid(client.getUid());
             if (room != null && room.canStartGame()) {
                 gameServerStarRoomQueue.add(room);
-                GameServerManager.getInstance().startGameServer();
+                gameServerManager.startGameServer(gameServer -> {
+                    var gameServerRoom = setGameServerCommunication(gameServer);
+                    gameServer.setRoom(gameServerRoom);
+                });
             }
             sendToServer = false;
-        } else if (ClientGameMessages.SET_PLAYER_USERNAME.equals(msg)) {
+        } else if (msg.contains(ClientGameMessages.SET_PLAYER_USERNAME.getValue())) {
             client.setUsername(msg.substring(27));
             sendUsernames();
-        } else if (ClientGameMessages.LEAVE_ROOM.equals(msg)) {
+        } else if (msg.contains(ClientGameMessages.LEAVE_ROOM.getValue())) {
             rooms.removePlayer(client);
             sendToServer = false;
         }
@@ -204,7 +201,7 @@ public class BroadSock {
     private void toGameServer(String msg, Client client) {
         msg = client.getUid() + "." + msg;
         Room room = rooms.getRoomByClientUid(client.getUid());
-        if (room.getGameServer() != null) {
+        if (room != null && room.getGameServer() != null) {
             room.getGameServer().write(msg);
         }
     }

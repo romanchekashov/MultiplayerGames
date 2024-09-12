@@ -1,7 +1,7 @@
 package ovh.look.game.server;
 
-public interface IGameServerManager {
-    void startGameServer();
+import ovh.look.game.models.GameServer;
 
-    void terminateGameServer(int pid);
+public interface IGameServerManager extends TerminateGameServer {
+    void startGameServer(SetGameServerCommunication setGameServerCommunication);
 }

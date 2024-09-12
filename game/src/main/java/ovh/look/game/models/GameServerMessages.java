@@ -13,11 +13,11 @@ public enum GameServerMessages {
     GAME_OVER("GAME_OVER");
 
     public final String value;
-    
+
     private GameServerMessages(String value) {
         this.value = value;
     }
-    
+
     public String getValue() {
         return value;
     }

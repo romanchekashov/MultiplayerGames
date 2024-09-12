@@ -21,8 +21,8 @@ public class ServerConfiguration {
     private long sendInterval;
 
     @Bean
-    public ServerHandler serverHandler() {
-        return new ServerHandler(sendInterval);
+    public ServerHandler serverHandler(BroadSock broadSock) {
+        return new ServerHandler(broadSock);
     }
 
     @Bean

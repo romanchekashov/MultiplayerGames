@@ -14,6 +14,7 @@ public class GameServer {
     private Object reader; // Replace with appropriate type
     private OutputStream writer;
     private int pid;
+    private Room room;
 
     public GameServer(Object reader, OutputStream writer, int pid) {
         this.reader = reader;

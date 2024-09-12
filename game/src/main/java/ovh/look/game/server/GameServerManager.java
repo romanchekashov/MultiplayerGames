@@ -7,7 +7,11 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import io.netty.channel.EventLoop;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import ovh.look.game.models.GameServer;
 
+@Service
 public class GameServerManager implements IGameServerManager {
     private static final Logger Log = Logger.getLogger(GameServerManager.class.getName());
     private static final int GAME_SERVER_STOP_TIMEOUT = 10;
@@ -25,26 +29,20 @@ public class GameServerManager implements IGameServerManager {
     private static final boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
     private static final boolean isWin = System.getProperty("os.name").toLowerCase().contains("win");
 
+    private final String startGameServerShellScript;
 
-    private static class GameServerManagerHolder {
-        private static final GameServerManager INSTANCE = new GameServerManager();
-    }
-
-    private GameServerManager() {
-    }
-
-    public static IGameServerManager getInstance() {
-        return GameServerManagerHolder.INSTANCE;
+    private GameServerManager(@Value("${START_GAME_SERVER_SHELL_SCRIPT}") String startGameServerShellScript) {
+        this.startGameServerShellScript = startGameServerShellScript;
     }
 
     @Override
-    public void startGameServer() {
+    public void startGameServer(SetGameServerCommunication setGameServerCommunication) {
         gameStopNeeded = false;
         List<ProcessHandle> processList = findGameProcess();
         int size = processList.size();
 
         if (size < MAX_ROOMS) {
-            startGameServerProcess();
+            startGameServerProcess(setGameServerCommunication);
         } else {
             Log.info("MAX " + size + " Game Server Processes like " + processList.get(0).info().command().orElse("") + " already running.");
         }
@@ -119,16 +117,17 @@ public class GameServerManager implements IGameServerManager {
         terminateGameServer(pid);
     }
 
-    private void startGameServerProcess() {
-        Log.info("Game Server starting...");
+    private void startGameServerProcess(SetGameServerCommunication setGameServerCommunication) {
+        Log.info("Game Server starting... " + startGameServerShellScript);
         try {
-            Process process = new ProcessBuilder(System.getenv("START_GAME_SERVER_SHELL_SCRIPT")).start();
+            Process process = new ProcessBuilder(startGameServerShellScript).start();
             int pid = (int) process.pid();
+            Log.info("Game Server started: " + pid);
             if (!gameServerPidToProcess.containsKey(pid)) {
                 gameServerPidToProcess.put(pid, process);
                 gameServerStartPidQueue.add(pid);
 
-                var connector = new GameServerConnector("127.0.0.1", getAvailablePort(), pid);
+                var connector = new GameServerConnector("127.0.0.1", getAvailablePort(), pid, this, setGameServerCommunication);
                 gameServerPidToConnector.put(pid, connector);
                 connector.connect();
                 runningPorts.add(connector.getPort());
@@ -141,7 +140,7 @@ public class GameServerManager implements IGameServerManager {
     }
 
     private int getAvailablePort() {
-        int port = 5002;
+        int port = 5001;
         while (runningPorts.contains(port)) {
             port++;
         }
