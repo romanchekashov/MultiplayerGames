@@ -211,6 +211,8 @@ function final(self)
 	local go_id = go.get_id()
 
 	if not self.remote then
+		MainState.SOUND.loop_run.stop()
+		self.sound_run_playing = false
 		msg.post(".", "release_input_focus")
 		msg.post("#camera", "release_camera_focus")
 		msg.post("/broadsock", "unregister_gameobject", { id = go_id, killer_uid = self.killer_uid })
