@@ -238,7 +238,7 @@
 	</script>
 
 	<script type='text/javascript'>
-		let noLogs = false;
+		let noLogs = true;
 		function enableLogs(enable) {
 			noLogs = !enable;
 		}
@@ -338,7 +338,7 @@
 						let sUid = event.data.split('.')[0];
 						sessionStorage.setItem('playerUid', sUid);
 						playerUid = +sUid;
-						await webTransportСonnect();
+						// await webTransportСonnect();
 					}
 				});
 			}

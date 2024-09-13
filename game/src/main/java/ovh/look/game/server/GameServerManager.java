@@ -141,9 +141,9 @@ public class GameServerManager implements IGameServerManager {
 
     private int getAvailablePort() {
         int port = 5002;
-        while (runningPorts.contains(port)) {
-            port++;
-        }
+//        while (runningPorts.contains(port)) {
+//            port++;
+//        }
         return port;
     }
 }

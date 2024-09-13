@@ -16,21 +16,28 @@ public class GameServer {
     private OutputStream writer;
     private int pid;
     private Room room;
+    private boolean socketClosed = false;
+    private long writeMsgCount = 1;
 
     public GameServer(InputStream reader, OutputStream writer, int pid) {
         this.reader = reader;
         this.writer = writer;
         this.pid = pid;
+        socketClosed = false;
         Log.info("SERVER connected: " + this);
     }
 
     public void write(String msg) {
+        Log.info(String.format("SERVER write[%d]: %s", writeMsgCount++, msg));
+        if (socketClosed) return;
+
         byte[] outData = streamEncode(msg);
         try {
             writer.write(outData);
             writer.flush();
         } catch (IOException e) {
             Log.severe("Error writing data: " + e.getMessage());
+            socketClosed = true;
         }
     }
 

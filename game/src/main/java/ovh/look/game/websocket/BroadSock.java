@@ -108,9 +108,9 @@ public class BroadSock {
 
         Client client = getClientByWs(session);
         client.setStatus(ClientStatus.OFFLINE);
-        client.setReliableWS(null);
-//        clients.remove(client);
-//        rooms.removePlayer(client);
+//        client.setReliableWS(null);
+        clients.remove(client);
+        rooms.removePlayer(client);
 
         reliableConnection.sendMessageAll(rooms.toString());
 
@@ -167,7 +167,8 @@ public class BroadSock {
      */
     public void toServer(String msg, WebSocketSession session) {
         Client client = getClientByWs(session);
-        Log.info("TO-SERVER: " + msg + ", client: " + (client != null ? client.getUsername() : null));
+        if (!msg.contains(GameServerMessages.GO.getValue()))
+            Log.info("TO-SERVER: " + msg + ", client: " + (client != null ? client.getUsername() : null));
 
         boolean sendToServer = true;
 

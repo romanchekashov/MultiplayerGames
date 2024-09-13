@@ -19,7 +19,7 @@ public class ReliableConnection {
     }
 
     public void sendMsgTo(Client client, String msg) {
-        Log.info("sendMsgTo from " + msg + " to " + client);
+         Log.info("sendMsgTo from " + msg + " to " + client.getUsername());
         if (client.getReliableWS() != null) {
             try {
                 if (msg.contains(GameServerMessages.GO.getValue())) {

@@ -3,6 +3,7 @@ package ovh.look.game.server;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import lombok.Getter;
@@ -20,6 +21,9 @@ class GameServerConnector {
     private GameServer gameServer;
     @Getter
     private SetGameServerCommunication setGameServerCommunication;
+    private String prevMsg = "";
+    private int prevMsgCounter = 0;
+    private long inMsgCount = 0;
 
     public GameServerConnector(String host, int port, int pid,
                                TerminateGameServer terminateGameServer,
@@ -32,6 +36,7 @@ class GameServerConnector {
     }
 
     public void handleClient(Socket clientSocket) {
+        inMsgCount = 1;
         try (InputStream input = clientSocket.getInputStream();
              OutputStream output = clientSocket.getOutputStream()) {
 
@@ -43,16 +48,31 @@ class GameServerConnector {
                 Log.info("Bytes read: " + bytesRead);
                 if (bytesRead == -1) break;
 
+                // Convert the 4 bytes to an integer representing the size of the message
                 int size = ByteBuffer.wrap(lengthBuffer).getInt();
+
+                // Read the exact number of bytes as specified by the size
                 byte[] messageBuffer = new byte[size];
                 bytesRead = input.read(messageBuffer);
                 Log.info("Bytes read2: " + bytesRead);
                 if (bytesRead == -1) break;
 
-                String msg = new String(messageBuffer, "UTF-8");
-                gameServer.getRoom().toGameClient(msg);
-                if (msg.contains(GameServerMessages.GAME_OVER.getValue())) {
-                    terminateGameServer.terminateGameServer(pid);
+                // Decode the message bytes to a UTF-8 string
+                String msg = new String(messageBuffer, StandardCharsets.UTF_8);
+                System.out.println(String.format("Received message[%d]: %s", inMsgCount++, msg));
+
+                var isMsgEqual = msg.equals(prevMsg);
+                if (!isMsgEqual || prevMsgCounter++ < 2) {
+                    if (!isMsgEqual) {
+                        prevMsgCounter = 0;
+                        prevMsg = msg;
+                    }
+
+                    gameServer.getRoom().toGameClient(msg);
+                    if (msg.contains(GameServerMessages.GAME_OVER.getValue())) {
+                        Log.info(msg);
+                        new Thread(() -> terminateGameServer.terminateGameServer(pid)).start();
+                    }
                 }
 
                 output.flush();

@@ -25,6 +25,7 @@ public class Room {
     private List<Client> clients;
     private ReliableConnection reliableConnection;
     private FastUnreliableConnection fastUnreliableConnection;
+    private long toClientCounter = 1;
 
     public Room(String name) {
         this.name = name;
@@ -50,7 +51,7 @@ public class Room {
     }
 
     public void toGameClient(String msg) {
-        Log.info("TO-CLIENT: " + msg);
+        Log.info(String.format("TO-CLIENT[%d]: %s", toClientCounter++, msg));
 
         try {
             if (msg.contains(GameServerMessages.GOD.getValue())) {
@@ -71,6 +72,7 @@ public class Room {
             } else if (msg.contains(GameServerMessages.DISCONNECT.getValue())) {
                 this.reliableConnection.sendMessageAll(msg);
             } else if (msg.contains(GameServerMessages.GAME_OVER.getValue())) {
+                Log.info("GAME OVER: " + msg);
                 this.reliableConnection.sendMessageAll(msg);
                 this.endGame();
             } else {

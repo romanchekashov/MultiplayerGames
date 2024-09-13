@@ -21,13 +21,13 @@ public class ServerHandler implements WebSocketHandler {
         return
                 session
                         .receive()
-                        .doOnNext(message -> {
-                            logger.info("Server -> client connected id=[{}]", session.getId());
-                        })
+//                        .doOnNext(message -> {
+//                            logger.info("Server -> client connected id=[{}]", session.getId());
+//                        })
                         .map(WebSocketMessage::getPayloadAsText)
                         .doOnNext(message -> {
                             broadSock.toServer(message, session);
-                            logger.info("Server -> received from client id=[{}]: [{}]", session.getId(), message);
+//                            logger.info("Server -> received from client id=[{}]: [{}]", session.getId(), message);
                         })
 //                .filter(message -> newClient.get())
 //                .doOnNext(message -> newClient.set(false))
