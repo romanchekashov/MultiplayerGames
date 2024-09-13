@@ -76,8 +76,8 @@ end
 
 local function onBtnJoin(self)
 	if not MainState.players:has(MainState.player.uid) then
-		log("menu_gui: create_player")
-		MSG.BROADSOCK:create_player()
+		--log("menu_gui: create_player")
+		--MSG.BROADSOCK:create_player()
 		--msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type})
 	end
 
@@ -145,6 +145,8 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("update_timer") then
 		local nodeId = gui.get_node("timer")
 		gui.set_text(nodeId, seconds_to_string(message.time))
+	elseif message_id == hash("game_start") then
+		onBtnJoin(self)
 	elseif message_id == hash("game_over") then
 		--msg.post("/spawner-player#script", "remove_player")
 		MainState.pause = true

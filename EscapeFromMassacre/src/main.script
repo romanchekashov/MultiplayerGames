@@ -84,6 +84,7 @@ function on_message(self, message_id, message, sender)
 			self.current_screen = collectionfactory.create("#collectionfactory-game", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})
 			print("GAME", #self.current_screen)
+			MSG.BROADSOCK:create_player()
 			MainState.currentGameState = MainState.GAME_STATES.RUNNING
 		end
 
