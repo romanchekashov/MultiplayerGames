@@ -51,6 +51,7 @@ public class Room {
     }
 
     public void toGameClient(String msg) {
+//        Log.info(String.format("TO-CLIENT[%d]: %s", toClientCounter++, msg.substring(0, Math.min(msg.length(), 50))));
         Log.info(String.format("TO-CLIENT[%d]: %s", toClientCounter++, msg));
 
         try {

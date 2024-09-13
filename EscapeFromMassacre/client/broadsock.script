@@ -31,7 +31,7 @@ local msgs_with_data = {
 
 local function sendToReliableConnection(msg)
 	if html5 and hasReliableConnection then
-		log("sendToReliableConnection", msg)
+		log("[sendToReliableConnection]", msg)
 		html5.run("WebSocketReliableConnectionSendData('".. msg .."')")
 	end
 end
@@ -39,7 +39,7 @@ end
 -- UDP connection doesn't guaranty delivery!
 local function sendToUnreliableAndFastConnection(msg)
 	if html5 and hasFastUnreliableConnection then
-		log("sendToUnreliableAndFastConnection", msg)
+		log("[sendToUnreliableAndFastConnection]", msg)
 		html5.run("WebTransportSendData('".. msg .."')")
 	else
 		sendToReliableConnection(msg)

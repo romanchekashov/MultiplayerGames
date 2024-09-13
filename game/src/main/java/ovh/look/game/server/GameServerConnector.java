@@ -36,7 +36,7 @@ class GameServerConnector {
     }
 
     public void handleClient(Socket clientSocket) {
-        inMsgCount = 1;
+        inMsgCount = 0;
         try (InputStream input = clientSocket.getInputStream();
              OutputStream output = clientSocket.getOutputStream()) {
 
@@ -44,22 +44,30 @@ class GameServerConnector {
             setGameServerCommunication.setGameServerCommunication(gameServer);
             byte[] lengthBuffer = new byte[4];
             while (true) {
-                int bytesRead = input.read(lengthBuffer);
-                Log.info("Bytes read: " + bytesRead);
-                if (bytesRead == -1) break;
+                int bytesReadForLength = input.read(lengthBuffer);
+//                Log.info("Bytes read: " + bytesReadForLength);
+                if (bytesReadForLength == -1) break;
 
                 // Convert the 4 bytes to an integer representing the size of the message
                 int size = ByteBuffer.wrap(lengthBuffer).getInt();
 
                 // Read the exact number of bytes as specified by the size
                 byte[] messageBuffer = new byte[size];
-                bytesRead = input.read(messageBuffer);
-                Log.info("Bytes read2: " + bytesRead);
+                int bytesRead = input.read(messageBuffer);
                 if (bytesRead == -1) break;
+
+                // TODO Maybe fix in game server code then size is too large then bytesRead!!!
+                if (bytesRead != size) {
+                    Log.info(String.format("[WARNING!!!]: Bytes read: %d, size: %d", bytesRead, size));
+                    continue;
+                }
 
                 // Decode the message bytes to a UTF-8 string
                 String msg = new String(messageBuffer, StandardCharsets.UTF_8);
-                System.out.println(String.format("Received message[%d]: %s", inMsgCount++, msg));
+                inMsgCount++;
+                if (size > 10000) {
+                    System.out.println(String.format("Received message[%d]: %s", inMsgCount, msg));
+                }
 
                 var isMsgEqual = msg.equals(prevMsg);
                 if (!isMsgEqual || prevMsgCounter++ < 2) {
@@ -75,7 +83,7 @@ class GameServerConnector {
                     }
                 }
 
-                output.flush();
+//                output.flush();
             }
         } catch (IOException e) {
             Log.severe("Error handling client: " + e.getMessage());

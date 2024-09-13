@@ -15,7 +15,8 @@ local M = {}
 local MSG_IDS = multiplayer.MSG_IDS
 local CLIENT_MSG_IDS = multiplayer.CLIENT_MSG_IDS
 
-M.TCP_SEND_CHUNK_SIZE = 255
+--M.TCP_SEND_CHUNK_SIZE = 255
+M.TCP_SEND_CHUNK_SIZE = 1024
 
 local clients = {}
 local clients_map = {}
@@ -198,6 +199,14 @@ function M.sendGameOver()
 		sw.number(client.score)
 		sw.number(client.ws_latency)
 	end
+	M.send(sw.tostring())
+end
+
+function M.sendGameTime(value)
+	local sw = stream.writer()
+	sw.number(-1)
+	sw.string(MSG_IDS.GAME_TIME)
+	sw.string(tostring(value))
 	M.send(sw.tostring())
 end
 

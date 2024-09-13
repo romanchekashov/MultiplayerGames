@@ -8,6 +8,12 @@ local debugUtils = require "src.utils.debug-utils"
 local MSG = require "src.utils.messages"
 local druid = require("druid.druid")
 local timer_component = require("druid.extended.timer")
+local log = debugUtils.createLog("[menu.gui_script]").log
+local function seconds_to_string(seconds)
+	local minutes = math.floor(seconds / 60)
+	local remaining_seconds = seconds % 60
+	return string.format("%02d:%02d", minutes, remaining_seconds)
+end
 
 local function set_pause(pause)
 	print("set_pause", pause)
@@ -70,6 +76,7 @@ end
 
 local function onBtnJoin(self)
 	if not MainState.players:has(MainState.player.uid) then
+		log("menu_gui: create_player")
 		MSG.BROADSOCK:create_player()
 		--msg.post("spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type})
 	end
@@ -94,12 +101,13 @@ function init(self)
 
 	self.druid = druid.new(self)
 	register_druid_extended_components(self)
-	setup_timer(self)
+	--setup_timer(self)
 
 	self.playersTextNodes = {}
 	self.update_stats_timeframe = UPDATE_STATS_INTERVAL
 	msg.post("gui#game-over", "hide")
 
+	log("menu_gui: init")
 	onBtnJoin(self)
 end
 
@@ -134,6 +142,9 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("player_exit") then
 		print("player_exit")
 		onBtnExit(self)
+	elseif message_id == hash("update_timer") then
+		local nodeId = gui.get_node("timer")
+		gui.set_text(nodeId, seconds_to_string(message.time))
 	elseif message_id == hash("game_over") then
 		--msg.post("/spawner-player#script", "remove_player")
 		MainState.pause = true

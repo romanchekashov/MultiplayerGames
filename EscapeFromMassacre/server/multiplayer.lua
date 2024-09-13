@@ -15,7 +15,8 @@ local M = {
         CONNECT_ME = "CONNECT_ME",
         GAME_PRE_START = "GAME_PRE_START",
         GAME_START = "GAME_START",
-        GAME_OVER = "GAME_OVER"
+        GAME_OVER = "GAME_OVER",
+        GAME_TIME = "GAME_TIME"
     }
 }
 

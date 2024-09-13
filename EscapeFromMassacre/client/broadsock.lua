@@ -7,7 +7,7 @@ local MSG = require "src.utils.messages"
 
 
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
-local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._500_MILISECONDS)
+local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES.ONE_SECOND)
 
 local M = {}
 local MSG_IDS = multiplayer.MSG_IDS
@@ -150,14 +150,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- @param data
 	function instance.send(data)
 		if connection.connected then
-			-- log("send", #data, "data:", data)
+			--log("send", #data, "data:", data)
 			sendToUnreliableAndFastConnection(data)
 			-- server_nakama.send_player_move(stream.number_to_int32(#data) .. data)
 		end
 	end
 
 	function instance.on_data(data, data_length)
-		log("on_data: data:", data_length, data)
+		--log("on_data: data:", data_length, data)
 		local sr = stream.reader(data, data_length)
 		local from_uid = sr.number()
 		local msg_id = sr.string()
@@ -286,6 +286,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		elseif msg_id == MSG_IDS.DISCONNECT then
 			log("DISCONNECT")
 			remove_client(from_uid)
+		elseif msg_id == MSG_IDS.GAME_TIME then
+			log("SERVER TIMER GAME_TIME: " .. data)
+			msg.post("/gui#menu", "update_timer", {time = sr.number()})
 		elseif msg_id == MSG_IDS.GAME_OVER then
 			log("SERVER TIMER GAME_OVER")
 			MainState.players:for_each(function (v)

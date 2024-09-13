@@ -28,6 +28,7 @@ public class GameServer {
     }
 
     public void write(String msg) {
+//        Log.info(String.format("SERVER write[%d]: %s", writeMsgCount++, msg.substring(0, Math.min(msg.length(), 50))));
         Log.info(String.format("SERVER write[%d]: %s", writeMsgCount++, msg));
         if (socketClosed) return;
 

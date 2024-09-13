@@ -19,12 +19,12 @@ public class ReliableConnection {
     }
 
     public void sendMsgTo(Client client, String msg) {
-         Log.info("sendMsgTo from " + msg + " to " + client.getUsername());
         if (client.getReliableWS() != null) {
             try {
                 if (msg.contains(GameServerMessages.GO.getValue())) {
                     msg += "." + getWsLatencyInMs(client.getReliableWS());
                 }
+                Log.info(String.format("sendMsgTo to %s: %s", client.getUsername(), msg.substring(0, Math.min(msg.length(), 50))));
                 WebSocketMessage webSocketMessage = client.getReliableWS().textMessage(msg);
                 client.getReliableWS().send(Mono.just(webSocketMessage)).subscribe();
             } catch (Exception e) {
@@ -42,7 +42,7 @@ public class ReliableConnection {
     public void sendMessageOthers(String msg, int cUid) {
         for (Client client : clients) {
             if (client.getUid() != cUid) {
-                Log.info("sendMessageOthers from " + msg + " to " + client);
+                Log.info("sendMessageOthers to " + client);
                 sendMsgTo(client, msg);
             }
         }
