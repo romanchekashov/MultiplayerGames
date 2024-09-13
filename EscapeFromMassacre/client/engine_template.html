@@ -330,12 +330,17 @@
 				});
 
 				// Listen for messages
-				socket.addEventListener("message", async (event) => {
-					log("[WS reliable]: Message from server: ", event.data);
-					addToEventLog(event.data);
-					if (event.data.includes('CONNECT_SELF')) {
+				socket.addEventListener("message", async ({data}) => {
+					if (data === 'WS_PING') { // measure latency
+						socket.send('WS_PONG');
+						return;
+					}
+
+					log("[WS reliable]: Message from server: ", data);
+					addToEventLog(data);
+					if (data.includes('CONNECT_SELF')) {
 						// WebTransport should be associated with websocket(by sending msg or smth)
-						let sUid = event.data.split('.')[0];
+						let sUid = data.split('.')[0];
 						sessionStorage.setItem('playerUid', sUid);
 						playerUid = +sUid;
 						// await webTransportСonnect();

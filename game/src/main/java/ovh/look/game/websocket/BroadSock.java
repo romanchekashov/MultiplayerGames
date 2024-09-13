@@ -1,10 +1,14 @@
 package ovh.look.game.websocket;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import ovh.look.game.models.*;
 import ovh.look.game.server.IGameServerManager;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -167,6 +171,22 @@ public class BroadSock {
      */
     public void toServer(String msg, WebSocketSession session) {
         Client client = getClientByWs(session);
+        if (client != null) {
+            Duration latency = Duration.between(client.getLastWsLatencyCheck(), Instant.now());
+            if (latency.toSeconds() > 5) {
+                WebSocketMessage webSocketMessage = client.getReliableWS().textMessage("WS_PING");
+                client.setWsPingSentTime(Instant.now());
+                client.getReliableWS().send(Mono.just(webSocketMessage)).subscribe();
+            }
+        }
+        if (msg.equals("WS_PONG")) {
+            Duration latency = Duration.between(client.getWsPingSentTime(), Instant.now());
+            client.setWsLatency((int) latency.toMillis());
+            client.setLastWsLatencyCheck(Instant.now());
+//            System.out.println("Latency: " + latency.toMillis() + " ms");
+            return;
+        }
+
         if (!msg.contains(GameServerMessages.GO.getValue()))
             Log.info("TO-SERVER: " + msg + ", client: " + (client != null ? client.getUsername() : null));
 

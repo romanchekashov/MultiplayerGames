@@ -22,7 +22,7 @@ public class ReliableConnection {
         if (client.getReliableWS() != null) {
             try {
                 if (msg.contains(GameServerMessages.GO.getValue())) {
-                    msg += "." + getWsLatencyInMs(client.getReliableWS());
+                    msg += "." + getWsLatencyInMs(client);
                 }
                 Log.info(String.format("sendMsgTo to %s: %s", client.getUsername(), msg.substring(0, Math.min(msg.length(), 50))));
                 WebSocketMessage webSocketMessage = client.getReliableWS().textMessage(msg);
@@ -49,8 +49,8 @@ public class ReliableConnection {
     }
 
     // Placeholder method for getWsLatencyInMs
-    private int getWsLatencyInMs(Object reliableWS) {
+    private int getWsLatencyInMs(Client client) {
         // Implement the logic to get WebSocket latency in milliseconds
-        return 0; // Example implementation
+        return client.getWsLatency(); // Example implementation
     }
 }
