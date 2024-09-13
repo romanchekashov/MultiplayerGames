@@ -20,8 +20,11 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == hash("add_player") then
 		-- start position outside screen edge
-		local player_id = factory.create("#factory-player", message.pos, nil, {
-			remote = false,
+		--local pos = vmath.vector3(400, 400, 0)
+		local pos = message.pos
+		--local pos = random_position()
+		local player_id = factory.create("#factory-player", pos, nil, {
+			remote = message.remote,
 			uid = message.uid,
 			map_level = MainState.MAP_LEVELS.HOUSE,
 			player_type = message.player_type})

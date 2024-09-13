@@ -187,11 +187,12 @@ function init(self)
 	end
 
 	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
-	log("player joined: " .. self.username)
+	log("player joined: " .. self.username .. " remote: " .. tostring(self.remote))
 
 	if not self.remote then
+		log("remote = " .. tostring(self.remote))
 		msg.post(".", "acquire_input_focus")
-		msg.post("camera", "acquire_camera_focus")
+		msg.post("#camera", "acquire_camera_focus")
 		msg.post("/broadsock", "register_gameobject", { id = go_id, type = MainState.FACTORY_TYPES.player })
 		input.acquire()
 		msg.post("/virtual_gamepad", "register")
@@ -211,7 +212,7 @@ function final(self)
 
 	if not self.remote then
 		msg.post(".", "release_input_focus")
-		msg.post("camera", "release_camera_focus")
+		msg.post("#camera", "release_camera_focus")
 		msg.post("/broadsock", "unregister_gameobject", { id = go_id, killer_uid = self.killer_uid })
 		input.release()
 		msg.post("/virtual_gamepad", "unregister")

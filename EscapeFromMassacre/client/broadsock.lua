@@ -269,7 +269,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		elseif msg_id == MSG.BASE_MSG_IDS.RELIABLE_GOD then
 			msg.post("/factory#fuze", MSG.FUZE_FACTORY.pick_fuze.name, {color = sr.number()})
 		elseif msg_id == MSG_IDS.PLAYER_CREATE_POS then
-			msg.post("/spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type, pos = sr.vector3()})
+			local remote = MainState.player.uid ~= from_uid
+			log("PLAYER_CREATE_POS: remote = " .. tostring(remote))
+			msg.post("/spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type, pos = sr.vector3(), remote = remote})
 		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")
 			add_client(from_uid)
