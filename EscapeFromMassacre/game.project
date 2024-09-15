@@ -1,6 +1,6 @@
 [project]
-title = Escape from Massacre
-custom_resources =
+title = EscapeFromMassacre
+custom_resources = 
 dependencies#0 = https://github.com/defold/extension-websocket/archive/refs/tags/4.0.0.zip
 dependencies#1 = https://github.com/heroiclabs/nakama-defold/archive/refs/tags/3.1.0.zip
 dependencies#2 = https://github.com/britzl/defold-input/archive/master.zip
@@ -64,5 +64,5 @@ max_component_count = 64
 
 [html5]
 htmlfile = /client/engine_template.html
-archive_location_suffix = ?v=0.2.0
+archive_location_suffix = ?v=0.2.2
 

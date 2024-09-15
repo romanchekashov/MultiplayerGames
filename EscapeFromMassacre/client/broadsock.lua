@@ -7,7 +7,7 @@ local MSG = require "src.utils.messages"
 
 
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
-local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES.ONE_SECOND)
+local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._100_MILISECONDS)
 
 local M = {}
 local MSG_IDS = multiplayer.MSG_IDS

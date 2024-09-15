@@ -336,9 +336,9 @@ end
 -- and read from connected client sockets.
 function M.update(dt)
 	if connection.connected then
-		if rateLimiter(dt) then
-			return
-		end
+		--if rateLimiter(dt) then
+		--	return
+		--end
 		count = count + 1
 		--log("update", connection.connected, "count", tostring(count))
 		-- send("HELLO")
