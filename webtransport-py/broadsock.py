@@ -4,7 +4,7 @@ from typing import List, Dict
 from app_logs import getLogger
 from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, PLAYER_TYPE_SURVIVOR, Room, Rooms, ClientGameMessages, GameServerMessages
 
-from app_msg.game_server import start_game_server, GameServer
+from app_msg.game_server import start_game_server, GameServer, MAX_ROOMS
 
 Log = getLogger(__name__)
 
@@ -15,7 +15,7 @@ clients: List[Client] = []
 reliable_connection = ReliableConnection(clients)
 fast_unreliable_connection = FastUnreliableConnection(reliable_connection)
 rooms = Rooms()
-for i in range(1, 11):
+for i in range(1, MAX_ROOMS + 1):
     rooms.add(Room(f'Room {i}'))
 
 def get_next_uid_sequence() -> int:

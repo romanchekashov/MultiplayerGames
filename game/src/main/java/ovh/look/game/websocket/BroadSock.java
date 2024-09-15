@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import ovh.look.game.models.*;
+import ovh.look.game.server.GameServerManager;
 import ovh.look.game.server.IGameServerManager;
 import reactor.core.publisher.Mono;
 
@@ -28,8 +29,8 @@ public class BroadSock {
     private static Rooms rooms = new Rooms();
 
     static {
-        for (int i = 1; i <= 10; i++) {
-            rooms.add(new Room("Room " + i));
+        for (int i = 0; i < GameServerManager.MAX_ROOMS; i++) {
+            rooms.add(new Room("Room " + (i + 1)));
         }
     }
 

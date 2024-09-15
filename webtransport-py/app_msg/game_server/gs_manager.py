@@ -27,7 +27,7 @@ class GameServer:
 
 GAME_SERVER_STOP_TIMEOUT = 10
 GAME_SERVER_START_TIMEOUT = 1
-MAX_ROOMS = 10
+MAX_ROOMS = 5
 event_loop = None
 gameStopNeeded = False
 gameServerStopCallbackFn = None
