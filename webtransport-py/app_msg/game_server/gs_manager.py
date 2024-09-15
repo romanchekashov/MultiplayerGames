@@ -43,6 +43,14 @@ def set_event_loop(loop):
     event_loop = loop
 
 def get_gspid() -> int:
+    running_game_process_list = findGameProcess()
+
+    for process in running_game_process_list:
+        if process.pid not in game_server_pid_to_process.keys():
+            game_server_pid_to_process[process.pid] = process
+            game_server_start_pid_queue.put(process.pid)
+            Log.info(f'Game Server[PID:{process.pid}], running: {len(game_server_pid_to_process)}, in queue: {game_server_start_pid_queue.qsize()}')
+
     return game_server_start_pid_queue.get()
 
 # ps aux | grep 'dmengine_headless'
@@ -52,16 +60,20 @@ def findGameProcess() -> List[Any]:
     if isLinux:
         for process in psutil.process_iter():
             cmdline = process.cmdline()
-            if len(cmdline) > 0 and 'dmengine_headless' in cmdline[0]:
-                arr.append(process)
+            Log.info(f'cmdline: {cmdline}, process: {process}')
+            for cmd in cmdline:
+                if 'dmengine_headless' in cmd:
+                    arr.append(process)
+                    break
     else:
         for process in psutil.process_iter():
+            Log.info(f'process: {process.name()}')
             if 'dmengine_headless' in process.name():
                 arr.append(process)
         # children = process.children()
         # for p in children:
         #     Log.info(f'child: [pid: {p.pid}] {p.name()}')
-    Log.info(f'Found {len(arr)} GS processes')
+    Log.info(f'Found {len(arr)} GS processes on {platform} isLinux: {isLinux}')
     return arr
 
 async def terminate_process_by_pid(pid):
@@ -82,16 +94,16 @@ def terminate_process(process):
 
 def terminate_game_server(pid = None):
     global gameServerStopCallbackFn
-    Log.info(f'terminate_game_server {pid}')
     processList = findGameProcess()
+    Log.info(f'terminate_game_server: Looking for {pid} in {processList}')
     if pid is None:
         Log.info(f'Found {len(processList)} game servers to terminate.')
         for process in processList:
             terminate_process(process)
     else:
         for process in processList:
-            Log.info(process)
-            if (process.pid == (pid + 1)) and (game_server_pid_to_process[pid] is not None):
+            Log.info(f'checking {process}')
+            if (process.pid == pid) and (game_server_pid_to_process[pid] is not None):
                 terminate_process(process)
                 del game_server_pid_to_process[pid]
 
@@ -119,12 +131,7 @@ async def _start_game_server():
     # create as a subprocess using create_subprocess_shell
     process = await asyncio.create_subprocess_shell(os.environ['START_GAME_SERVER_SHELL_SCRIPT'])
     # report the details of the subprocess
-    # print(f'subprocess: {process}, {process.pid}')
-    if process.pid not in game_server_pid_to_process.keys():
-        game_server_pid_to_process[process.pid] = process
-        game_server_start_pid_queue.put(process.pid)
-        Log.info(f'Game Server[PID:{process.pid}], running: {len(game_server_pid_to_process)}, in queue: {game_server_start_pid_queue.qsize()}')
-    # await asyncio.sleep(3)
+    Log.info(f'subprocess: {process}, {process.pid}')
     # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
     # Popen(os.environ['START_GAME_SERVER_SHELL_SCRIPT'], shell=True)
 
