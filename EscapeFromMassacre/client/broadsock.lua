@@ -287,10 +287,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			log("DISCONNECT")
 			remove_client(from_uid)
 		elseif msg_id == MSG_IDS.GAME_TIME then
-			log("SERVER TIMER GAME_TIME: " .. data)
+			log("SERVER: TIMER GAME_TIME: " .. data)
 			msg.post("/gui#menu", "update_timer", {time = sr.number()})
 		elseif msg_id == MSG_IDS.GAME_OVER then
-			log("SERVER TIMER GAME_OVER")
+			log("SERVER: TIMER GAME_OVER")
 			MainState.players:for_each(function (v)
 				MainState.game_over_players:put(v.uid, v)
 			end)
@@ -307,11 +307,17 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			remove_client(uid)
 			msg.post("/gui#menu", "game_over")
 			msg.post("/spawner-player#script", "remove_player", {uid = uid})
+		elseif msg_id == MSG_IDS.PLAYER_LEAVE_ROOM then
+			log("SERVER: PLAYER_LEAVE_ROOM", from_uid)
+			local remote = MainState.player.uid ~= from_uid
+			if not remote then
+				msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.LOBBY})
+			end
 		elseif msg_id == MSG_IDS.GAME_PRE_START then
-			log("SERVER GAME_PRE_START")
+			log("SERVER: GAME_PRE_START")
 			msg.post("/gui#rooms", "game_pre_start")
 		elseif msg_id == MSG_IDS.GAME_START then
-			log("SERVER TIMER GAME_START")
+			log("SERVER: TIMER GAME_START")
 			msg.post("/gui#rooms", "game_start")
 		else
 			log("CUSTOM MESSAGE", msg_id)

@@ -260,6 +260,11 @@ local function on_data(data, data_length)
 					 .string(MSG_IDS.PLAYER_CREATE_POS)
 					 .vector3(Utils.random_position())
 					 .tostring())
+	elseif msg_id == CLIENT_MSG_IDS.LEAVE_ROOM then
+		M.send(stream.writer()
+					 .number(from_uid)
+					 .string(MSG_IDS.PLAYER_LEAVE_ROOM)
+					 .tostring())
 	elseif msg_id == MSG_IDS.CONNECT_ME then
 		 M.handle_client_connected(from_uid, sr.number())
 	elseif msg_id == MSG_IDS.DISCONNECT then

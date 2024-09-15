@@ -325,7 +325,7 @@
 
 				// Connection opened
 				socket.addEventListener("open", (event) => {
-					log('[WS reliable]: Connection ready.');
+					log('[WS reliable]: Connection ready. ', event);
 					JsToDef.send("RELIABLE_CONNECTION_READY", playerUid || "");
 				});
 
@@ -345,6 +345,10 @@
 						playerUid = +sUid;
 						// await webTransportСonnect();
 					}
+				});
+
+				socket.addEventListener("error", (event) => {
+					log('[WS reliable]: Error occurred: ', event);
 				});
 			}
 

@@ -1,9 +1,13 @@
 from typing import List, Dict
 
+import queue
+
 from app_models import get_uid_from_msg
 from app_logs import getLogger
 from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, GameServerMessages
 from app_msg.game_server import GameServer, terminate_game_server
+
+from app_msg.game_server import start_game_server, GameServer, MAX_ROOMS
 
 Log = getLogger(__name__)
 
@@ -24,6 +28,11 @@ class Room:
         self.reliable_connection = ReliableConnection(self.clients)
         self.fast_unreliable_connection = FastUnreliableConnection(self.reliable_connection)
 
+    def get_client_by_uid(self, uid: int) -> Client:
+        for c in self.clients:
+            if c.uid == uid:
+                return c
+
     def add_client(self, client: Client):
         self.clients.append(client)
         self.reliable_connection.clients = self.clients
@@ -35,8 +44,6 @@ class Room:
         self.fast_unreliable_connection.clients = self.clients
 
     async def to_game_client(self, msg):
-        Log.info(f'TO-CLIENT: {msg}')
-
         if GameServerMessages.GOD in msg:
             # await self.reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
             await self.reliable_connection.send_message_all(msg)
@@ -54,9 +61,6 @@ class Room:
             await self.reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
         elif GameServerMessages.DISCONNECT in msg:
             await self.reliable_connection.send_message_all(msg)
-        elif GameServerMessages.GAME_OVER in msg:
-            await self.reliable_connection.send_message_all(msg)
-            self.end_game()
         else:
             await self.reliable_connection.send_message_all(msg)
 
@@ -72,7 +76,7 @@ class Room:
         for c_uid in self.survivor_uids.keys():
             self.survivor_uids[c_uid]['ready'] = False
 
-    def players_len(self):
+    def players_len(self) -> int:
         return len(self.family_uids) + len(self.survivor_uids)
 
     def has_player(self, c_uid) -> bool:
@@ -144,8 +148,37 @@ class Room:
 
 class Rooms:
     def __init__(self):
+        self.game_server_star_room_queue = queue.Queue()
         self.list: List[Room] = []
         self.client_to_room: Dict[int, Room] = dict()
+
+        for i in range(1, MAX_ROOMS + 1):
+            self.add(Room(f'Room {i}'))
+
+    async def to_room_client(self, room, msg):
+        Log.info(f'TO-CLIENT: {msg}')
+
+        await room.to_game_client(msg)
+
+        if GameServerMessages.PLAYER_LEAVE_ROOM in msg:
+            uid = get_uid_from_msg(msg)
+            client = room.get_client_by_uid(uid)
+            self.remove_player(client)
+            if room.players_len() == 0:
+                room.end_game()
+        elif GameServerMessages.GAME_OVER in msg:
+            room.end_game()
+
+    def set_game_server_communication(self, reader, writer, pid) -> Room:
+        game_server = GameServer(reader, writer, pid)
+        room: Room = self.game_server_star_room_queue.get()
+        Log.debug(f'{pid} {room}')
+        if room != None:
+            room.set_game_server(game_server)
+            for client in room.clients:
+                game_server.write(f'{client.uid}.CONNECT_ME.{client.type}')
+
+        return room
 
     def add(self, room: Room):
         self.list.append(room)
@@ -158,7 +191,8 @@ class Rooms:
         room = self.get_room_by_client_uid(client.uid)
         if client.uid in self.client_to_room.keys():
             del self.client_to_room[client.uid]
-        room.remove_player(client)
+        if room is not None:
+            room.remove_player(client)
 
     def add_player(self, room_name: str, type: 0 | 1, client: Client):
         if client.uid in self.client_to_room.keys():
@@ -170,11 +204,16 @@ class Rooms:
             else:
                 room.remove_player(client)
 
-    def player_ready(self, room_name: str, client: Client):
+    async def player_ready(self, room_name: str, client: Client):
         for room in self.list:
             if room.name == room_name:
                 room.player_ready(client.uid)
                 break
+
+        room = self.get_room_by_client_uid(client.uid)
+        if room is not None and room.can_start_game():
+            self.game_server_star_room_queue.put(room)
+            await start_game_server()
 
     def remove_room_by_player(self, c_uid: int):
         for room in self.list:

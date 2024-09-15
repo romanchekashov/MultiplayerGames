@@ -3,14 +3,14 @@ import struct
 import asyncio
 
 from app_msg.game_server import get_gspid
-from broadsock import set_game_server_communication
+from broadsock import rooms
 
 from app_logs import getLogger
 
 Log = getLogger(__name__)
 
 async def handle_client(reader, writer):
-    room = set_game_server_communication(reader, writer, get_gspid())
+    room = rooms.set_game_server_communication(reader, writer, get_gspid())
     request = None
     while request != 'quit':
             # request = (await reader.read(255)).decode('utf8')
@@ -19,7 +19,7 @@ async def handle_client(reader, writer):
             in_bytes = await reader.readexactly(size)
             in_msg = in_bytes.decode('utf8')
 
-            await room.to_game_client(in_msg)
+            await rooms.to_room_client(room, in_msg)
             await writer.drain()
         # try:
         # except Exception as e:

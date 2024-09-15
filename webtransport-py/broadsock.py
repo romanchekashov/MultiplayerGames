@@ -1,22 +1,15 @@
-import queue
-
 from typing import List, Dict
 from app_logs import getLogger
-from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, PLAYER_TYPE_SURVIVOR, Room, Rooms, ClientGameMessages, GameServerMessages
-
-from app_msg.game_server import start_game_server, GameServer, MAX_ROOMS
+from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, PLAYER_TYPE_SURVIVOR, Rooms, ClientGameMessages, GameServerMessages
 
 Log = getLogger(__name__)
 
 
-game_server_star_room_queue = queue.Queue()
 uid_sequence = 0
 clients: List[Client] = []
 reliable_connection = ReliableConnection(clients)
 fast_unreliable_connection = FastUnreliableConnection(reliable_connection)
 rooms = Rooms()
-for i in range(1, MAX_ROOMS + 1):
-    rooms.add(Room(f'Room {i}'))
 
 def get_next_uid_sequence() -> int:
     global uid_sequence
@@ -85,17 +78,6 @@ async def handle_client_disconnected(websocket):
 """
 Set client/server connection
 """
-def set_game_server_communication(reader, writer, pid) -> Room:
-    game_server = GameServer(reader, writer, pid)
-    room: Room = game_server_star_room_queue.get()
-    Log.debug(f'{pid} {room}')
-    if room != None:
-        room.set_game_server(game_server)
-        for client in room.clients:
-            game_server.write(f'{client.uid}.CONNECT_ME.{client.type}')
-
-    return room
-
 async def set_game_client_communication_websocket(websocket) -> Client:
     client = handle_client_connected(websocket)
     await reliable_connection.send_message_all(f'{rooms}')
@@ -147,19 +129,12 @@ async def to_server(msg, client: Client):
         send_to_server = False
     elif ClientGameMessages.PLAYER_READY in msg:
         parts = msg.split('.')
-        rooms.player_ready(parts[1], client)
-        room = rooms.get_room_by_client_uid(client.uid)
-        if room is not None and room.can_start_game():
-            game_server_star_room_queue.put(room)
-            await start_game_server()
+        await rooms.player_ready(parts[1], client)
         send_to_server = False
     elif ClientGameMessages.SET_PLAYER_USERNAME in msg:
         client.set_username(msg[27:])
         await send_usernames()
         return
-    elif ClientGameMessages.LEAVE_ROOM in msg:
-        rooms.remove_player(client)
-        send_to_server = False
 
     if send_to_server:
         to_game_server(msg, client)
@@ -170,5 +145,5 @@ def to_game_server(msg, client: Client):
     msg = f'{client.uid}.{msg}'
 
     room = rooms.get_room_by_client_uid(client.uid)
-    if room.game_server is not None:
+    if room is not None and room.game_server is not None:
         room.game_server.write(msg)
