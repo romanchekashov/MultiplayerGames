@@ -1,19 +1,25 @@
+local debugUtils = require "src.utils.debug-utils"
+local isProd = debugUtils.isProd
 local bg_music = {"default:/music#rooms_intro", "default:/music#rooms_intro2"}
 
 function init(self)
 	-- Add initialization code here
 	-- Learn more: https://defold.com/manuals/script/
 	-- Remove this function if not needed
-    --math.randomseed(os.time())
-    --self.index = math.random(1, 2)
-    --msg.post(bg_music[self.index], "play_sound")
+    if isProd then
+        math.randomseed(os.time())
+        self.index = math.random(1, 2)
+        msg.post(bg_music[self.index], "play_sound")
+    end
 end
 
 function final(self)
 	-- Add finalization code here
 	-- Learn more: https://defold.com/manuals/script/
 	-- Remove this function if not needed
-    --msg.post(bg_music[self.index], "stop_sound")
+    if isProd then
+        msg.post(bg_music[self.index], "stop_sound")
+    end
 end
 
 function update(self, dt)

@@ -8,6 +8,7 @@ print = function(...)
 end
 
 local M = {}
+M.isProd = false
 local isDebug = false
 local isTest = false
 
@@ -113,8 +114,8 @@ function M.createLog(prefix)
     local instance = {}
     local _prefix = prefix or "LOG"
     local prev_msgs = collections.createSet()
-    -- You need to use local arg = {...} to assign function parameters to a table or 
-    -- use select(i, ...) to get i-th parameter from the list and 
+    -- You need to use local arg = {...} to assign function parameters to a table or
+    -- use select(i, ...) to get i-th parameter from the list and
     -- select('#', ...) to get the number of parameters.
     function instance.log(...)
         if not isDebug then
@@ -123,11 +124,11 @@ function M.createLog(prefix)
         -- local msg = select(1, ...)
         local arg = {...}
         local msg = ""
-        
+
         for i=1,#arg do
             msg = msg .. tostring(arg[i])
         end
-        
+
         if not prev_msgs:has(msg) then
             print(_prefix, ...)
             prev_msgs:add(msg)
