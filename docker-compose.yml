@@ -3,7 +3,8 @@ volumes:
   data:
 services:
   escape_from_massacre:
-    platform: linux/x86_64
+    platform: linux/amd64 #Required for Mac M1 PRO
+#    platform: linux/x86_64
     container_name: escape_from_massacre
     build:
       context: .

@@ -24,16 +24,18 @@ function M.create(socket, on_data)
 		local received_data = ""
 		while #received_data < bytes do
 			local data, err, partial = socket:receive(bytes - #received_data)
-			-- log(data)
+			 --log("receive", bytes, data, err, partial)
 			if data then
 				received_data = received_data .. data
 			elseif err == "closed" then
 				connected = false
+				log("receive: closed: received_data", received_data, connected, err)
 				error(err)
 			elseif err == "timeout" then
 				if partial then
 					received_data = received_data .. partial
 				end
+				log("receive: timeout: received_data", received_data, connected, err)
 				coroutine.yield()
 			end
 		end

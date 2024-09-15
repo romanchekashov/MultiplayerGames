@@ -15,8 +15,8 @@ local M = {}
 local MSG_IDS = multiplayer.MSG_IDS
 local CLIENT_MSG_IDS = multiplayer.CLIENT_MSG_IDS
 
---M.TCP_SEND_CHUNK_SIZE = 255
-M.TCP_SEND_CHUNK_SIZE = 1024
+M.TCP_SEND_CHUNK_SIZE = 255
+--M.TCP_SEND_CHUNK_SIZE = 1024
 
 local clients = {}
 local clients_map = {}
@@ -183,6 +183,8 @@ function M.send(data)
 	if connection.connected then
 		log("send", #data, "data:", data)
 		connection.writer.add(number_to_int32(#data) .. data)
+	else
+		log("send - not connected")
 	end
 end
 
@@ -209,14 +211,15 @@ function M.sendGameTime(value)
 	sw.string(tostring(value))
 	M.send(sw.tostring())
 end
+local count = 0
 
 local function on_data(data, data_length)
-	log("on_data", #data, "data:", data, table.tostring(M.clients or {}))
+	log("on_data", #data, "data_length", data_length, "data:", data, table.tostring(M.clients or {}))
 
 	local sr = stream.reader(data, data_length)
 	local from_uid = sr.number()
 	local msg_id = sr.string()
-	log("on_data from:", from_uid, "msg_id:", msg_id)
+	log("on_data from:", from_uid, "msg_id:", msg_id, "count", tostring(count))
 
 	if msg_id == MSG_IDS.GO then
 		-- M.send_message_others(data, from_uid)
@@ -225,30 +228,30 @@ local function on_data(data, data_length)
 		-- end
 		M.send(data)
 
-		local player_map_level = sr.number()
-		local player_type = sr.number()
-		local player = clients_map[from_uid]
-		if player ~= nil then
-			player.map_level = player_map_level
-			player.type = player_type
-		end
-
-		local count = sr.number()
-		--log("remote GO", tostring(count))
-		for _=1,count do
-			local gouid = sr.string()
-			local type = sr.string()
-
-			local pos = sr.vector3()
-			local rot = sr.quat()
-			local scale = sr.vector3()
-		end
-
-		if player ~= nil then
-			player.health = sr.number()
-			player.score = sr.number()
-			player.ws_latency = sr.number()
-		end
+		--local player_map_level = sr.number()
+		--local player_type = sr.number()
+		--local player = clients_map[from_uid]
+		--if player ~= nil then
+		--	player.map_level = player_map_level
+		--	player.type = player_type
+		--end
+		--
+		--local count = sr.number()
+		----log("remote GO", tostring(count))
+		--for _=1,count do
+		--	local gouid = sr.string()
+		--	local type = sr.string()
+		--
+		--	local pos = sr.vector3()
+		--	local rot = sr.quat()
+		--	local scale = sr.vector3()
+		--end
+		--
+		--if player ~= nil then
+		--	player.health = sr.number()
+		--	player.score = sr.number()
+		--	player.ws_latency = sr.number()
+		--end
 	elseif msg_id == MSG_IDS.GOD then
 		M.send(data)
 	elseif msg_id == CLIENT_MSG_IDS.CREATE_PLAYER then
@@ -276,6 +279,8 @@ function M.start(port)
 		connection.socket = socket.tcp()
 		assert(connection.socket:connect(server_ip, server_port))
 		assert(connection.socket:settimeout(0))
+		--assert(connection.socket:settimeout(5, 'b'))
+		--assert(connection.socket:settimeout(10, 't'))
 		connection.socket_table = { connection.socket }
 		connection.writer = tcp_writer.create(connection.socket, M.TCP_SEND_CHUNK_SIZE)
 		connection.reader = tcp_reader.create(connection.socket, on_data)
@@ -329,6 +334,8 @@ function M.update(dt)
 		if rateLimiter(dt) then
 			return
 		end
+		count = count + 1
+		--log("update", connection.connected, "count", tostring(count))
 		-- send("HELLO")
 		-- log("update - sending game objects", instance.gameobject_count())
 		-- local sw = stream.writer()
@@ -350,10 +357,10 @@ function M.update(dt)
 		local receivet, sendt = socket.select(connection.socket_table, connection.socket_table, 0)
 
 		if sendt[connection.socket] then
-			-- log("ready to send")
-			if not connection.writer.empty() then
-				-- log("update - sending from writer")
-			end
+			 --log("ready to send", tostring(count))
+			--if not connection.writer.empty() then
+			--	 log("update - sending from writer", tostring(count))
+			--end
 			local ok, err = connection.writer.send()
 			if not ok and err == "closed" then
 				M.stop()
@@ -364,8 +371,9 @@ function M.update(dt)
 		end
 
 		if receivet[connection.socket] then
-			-- log("update - receiving from reader")
+			 --log("update - receiving from reader", tostring(count))
 			local ok, err = connection.reader.receive()
+			--log("update - received from reader", tostring(count), ok, err)
 			if not ok then
 				M.stop()
 				-- instance.destroy()
@@ -374,7 +382,7 @@ function M.update(dt)
 			end
 		end
 	else
-		log("not connected")
+		log("not connected", "count", tostring(count))
 	end
 end
 

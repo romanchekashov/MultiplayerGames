@@ -1,6 +1,7 @@
 [project]
 title = Escape from Massacre
 custom_resources =
+write_log = 1
 dependencies#0 = https://github.com/defold/extension-websocket/archive/refs/tags/4.0.0.zip
 dependencies#1 = https://github.com/heroiclabs/nakama-defold/archive/refs/tags/3.1.0.zip
 dependencies#2 = https://github.com/britzl/defold-input/archive/master.zip

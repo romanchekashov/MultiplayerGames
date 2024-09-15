@@ -1,4 +1,8 @@
-### How to run headless defold engine
+How to run headless defold engine
+---
+
+> Headless Defold engine does not work properly on MacOS. Run it on Ubuntu or inside Docker container built for `platform: linux/amd64`!
+
 #### Update versions for bob.jar and dmengine_headless
 1. Run `./download.sh` https://github.com/defold/defold/releases
 ```shell

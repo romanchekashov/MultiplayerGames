@@ -19,6 +19,7 @@ M.TIMES = {
 M.CPU_USAGE = {
 	LESS_THEN_2_PERCENT = M.TIMES.ONE_SECOND,
 	LESS_THEN_3_PERCENT = M.TIMES._500_MILISECONDS,
+	LESS_THEN_3_5_PERCENT = M.TIMES._200_MILISECONDS,
 	LESS_THEN_4_PERCENT = M.TIMES._100_MILISECONDS,
 	ABOUT_5_PERCENT = M.TIMES._30_MILISECONDS,
 	ABOUT_20_PERCENT = M.TIMES._25_MILISECONDS,
@@ -32,6 +33,7 @@ M.CPU_USAGE = {
 function M.create_sleep_fn(sleepTime)
     return function()
         if sleepTime > 0 then
+			--socket.select(nil, nil, tonumber(sleepTime))
             os.execute("sleep " .. tonumber(sleepTime))
         end
     end

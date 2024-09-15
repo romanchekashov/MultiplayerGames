@@ -35,7 +35,7 @@ class GameServerConnector {
         this.setGameServerCommunication = setGameServerCommunication;
     }
 
-    public void handleClient(Socket clientSocket) {
+    public void handleClient(Socket clientSocket) throws IOException {
         inMsgCount = 0;
         try (InputStream input = clientSocket.getInputStream();
              OutputStream output = clientSocket.getOutputStream()) {
@@ -53,14 +53,18 @@ class GameServerConnector {
 
                 // Read the exact number of bytes as specified by the size
                 byte[] messageBuffer = new byte[size];
-                int bytesRead = input.read(messageBuffer);
-                if (bytesRead == -1) break;
+                for (int i = 0; i < size; i++) {
+                    messageBuffer[i] = (byte) input.read();
+                }
+                if (messageBuffer[messageBuffer.length - 1] == -1) break;
+//                int bytesRead = input.read(messageBuffer);
+//                if (bytesRead == -1) break;
 
                 // TODO Maybe fix in game server code then size is too large then bytesRead!!!
-                if (bytesRead != size) {
-                    Log.info(String.format("[WARNING!!!]: Bytes read: %d, size: %d", bytesRead, size));
-                    continue;
-                }
+//                if (bytesRead != size) {
+//                    Log.info(String.format("[WARNING!!!]: Bytes read: %d, size: %d", bytesRead, size));
+//                    continue;
+//                }
 
                 // Decode the message bytes to a UTF-8 string
                 String msg = new String(messageBuffer, StandardCharsets.UTF_8);
@@ -85,8 +89,12 @@ class GameServerConnector {
 
 //                output.flush();
             }
-        } catch (IOException e) {
-            Log.severe("Error handling client: " + e.getMessage());
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                Log.severe("Error closing client socket: " + e.getMessage());
+            }
         }
     }
 
@@ -94,12 +102,24 @@ class GameServerConnector {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             Log.info("Server is listening on port " + port);
 
-            // Accept incoming client connections
-            Socket clientSocket = serverSocket.accept();
-            Log.info("New client connected");
+            try {
+                // Accept incoming client connections
+                Socket clientSocket = serverSocket.accept();
+                Log.info("New client connected");
 
-            // Handle the client in a separate method
-            handleClient(clientSocket);
+                // Set timeout to 5000 milliseconds (5 seconds)
+//                clientSocket.setSoTimeout(5000);
+
+                // Handle the client in a separate method
+                handleClient(clientSocket);
+            } catch (SocketTimeoutException e) {
+                Log.warning("Read operation timed out: " + e.getMessage());
+//                Socket clientSocket = serverSocket.accept();
+//                Log.info("New client connected 2");
+//                handleClient(clientSocket);
+            } catch (IOException e) {
+                Log.severe("Error handling client: " + e.getMessage());
+            }
         } catch (IOException e) {
             Log.severe("Server error: " + e.getMessage());
         }
