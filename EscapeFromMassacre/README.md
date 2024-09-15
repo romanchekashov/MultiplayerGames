@@ -46,3 +46,24 @@ http://britzl.github.io/publicexamples/rotate_and_move/index.html
 Arrows or WASD to move/turn
 Mouse to turn
 Left mouse button/Space to fire.
+
+## References
+- [Defold Manual](https://defold.com/manuals/introduction/)
+- [GitHub: Public Defold Examples](https://github.com/britzl/publicexamples)
+- [API reference](https://defold.com/ref/stable/socket/)
+- [GitHub: Defold-Input](https://github.com/britzl/defold-input/)
+- [GitHub: Druid - powerful Defold component UI framework](https://github.com/Insality/druid)
+
+### Performance optimization 
+- [Headless build consumes 100% cpu: Native extension with sleep (C/C++)](https://github.com/defold/defold/issues/8029#issuecomment-2066647682)
+- [Making an accurate Sleep() function](https://blat-blatnik.github.io/computerBear/making-accurate-sleep-function/)
+
+### Networking
+- [Socket connections](https://defold.com/manuals/socket-connections/)
+- [official LuaSocket documentation](https://lunarmodules.github.io/luasocket/)
+- [GitHub: DefNet library](https://github.com/britzl/defnet/)
+  - Peer to peer discovery
+  - TCP socket server/client
+  - UDP client
+  - HTTP server
+  - [GitHub: Defold websocket extension](https://github.com/defold/extension-websocket)
