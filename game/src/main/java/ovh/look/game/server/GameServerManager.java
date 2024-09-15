@@ -16,7 +16,7 @@ public class GameServerManager implements IGameServerManager {
     private static final Logger Log = Logger.getLogger(GameServerManager.class.getName());
     private static final int GAME_SERVER_STOP_TIMEOUT = 10;
     private static final int GAME_SERVER_START_TIMEOUT = 1;
-    public static final int MAX_ROOMS = 5;
+    public static final int MAX_ROOMS = 1;
     private static EventLoop eventLoop = null;
     private static boolean gameStopNeeded = false;
     private static Runnable gameServerStopCallbackFn = null;
