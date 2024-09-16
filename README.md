@@ -1,5 +1,9 @@
-# Multiplayer games
-##
+Multiplayer games
+---
+
+### Authoritive server
+- Client sends inputs (keys pressed) to server
+- Server calculates game state and sends it to all clients
 
 ### System design overview:
 1. Game Server
@@ -80,4 +84,26 @@ docker-compose --env-file .env.local down          # stop Dockers
 - [mkcert is a simple tool for making locally-trusted development certificates](https://github.com/FiloSottile/mkcert)
 - [localhost-ssl-certificate.md](https://gist.github.com/ethicka/27c36c975a5c2cbbd1874bc78bab61c4)
 - https://github.com/GoogleChrome/samples
-- 
+
+### References Papers:
+- [GitHub: A Curated List of Multiplayer Game Network Programming Resources](https://github.com/ThusSpokeNomad/GameNetworkingResources)
+- [YouTube Playlist: Rollback Netcode in Godot](https://youtube.com/playlist?list=PLCBLMvLIundBXwTa6gwlOUNc29_9btoir&si=2YQN2EW5xAbOrU1d)
+- [Fast-Paced Multiplayer (Part I): Client-Server Game Architecture](https://www.gabrielgambetta.com/client-server-game-architecture.html)
+- [Gaffer On Games](https://gafferongames.com/)
+- [Доклад про мультиплеер от Destiny](https://www.gdcvault.com/play/1022246/Shared-World-Shooter-Destiny-s)
+- [Доклад про latency в Call of Duty](https://gdcvault.com/play/1023220/Fighting-Latency-on-Call-of)
+- [YouTube: GDC Networking Scripted Weapons and Abilities in Overwatch](https://www.youtube.com/watch?v=odSBJ49rzDo)
+- [YouTube: Replay Technology in Overwatch: Kill Cam, Gameplay, and Highlights](https://www.youtube.com/watch?v=W4oZq4tn57w)
+- [YouTube: Networking Scripted Weapons and Abilities in Overwatch](https://www.youtube.com/watch?v=ScyZjcjTlA4)
+- [YouTube: Как устроен сетевой код в играх | Неткод, мультиплеер, геймдев | Podlodka Podcast #377](https://youtu.be/Hf1_0RCrw7o?si=PcQQfhb0syLi-LSM)
+- [Статьи Михаила на Хабре про сетевой код](https://habr.com/ru/users/marsermd/publications/articles/)
+- [interpolation and extrapolation on the client to smooth movement](https://www.google.com/search?q=interpolation+and+extrapolation+on+the+client+to+smooth+movement&oq=interpolation+and+extrapolation+on+the+client+to+smooth+movement&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRiPAtIBCDU2OTlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8)
+
+### References from Godot Engine:
+- [YouTube Playlist: Dedicated Multiplayer](https://youtube.com/playlist?list=PLZ-54sd-DMAKU8Neo5KsVmq8KtoDkfi4s&si=diFKwNYeEH_FNBYd)
+- [YouTube: Add Multiplayer to your Godot Game!](https://youtu.be/V4a_J38XdHk?si=9ZJCS1iRwI4bBTK7)
+- [YouTube: Export and Run a Godot Dedicated Server](https://www.youtube.com/watch?v=jgJuX04cq7k)
+- [YouTube: Godot Multiplayer Lag Compensation with Netfox](https://youtu.be/GqHTNmRspjU?si=EzmM4nZoJ2KWfsJA)
+- [GitHub: Netfox Addons for building multiplayer games with Godot](https://github.com/foxssake/netfox/discussions)
+- [GitHub: A Simple Godot 4 Online Multiplayer FPS Prototype](https://github.com/devloglogan/MultiplayerFPSTutorial)
+- [Multiplayer in Godot 4.0: Scene Replication](https://godotengine.org/article/multiplayer-in-godot-4-0-scene-replication/)
