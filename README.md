@@ -2,8 +2,17 @@ Multiplayer games
 ---
 
 ### Authoritive server
-- Client sends inputs (keys pressed) to server
-- Server calculates game state and sends it to all clients
+- Client sends inputs, keys pressed (commands) to server (prefer: UDP but care about reliability)
+  - Each UDP packet contains new commands and replicates previous commands (so, even if some packets are lost, the server should be able to process all the client commands)
+  - Client sends inputs with a timestamp (to calculate latency)
+  - Server acknowledges client about received commands so client can remove them from the buffer
+  - Client-Side Prediction: Client predicts the game state based on the commands it sends to the server. So client can move or take an action instantly!
+  - Received game state confirms that the client predicted it correctly. But if client made miss-prediction, it's state will be corrected and user may see that!
+- Server calculates game state(whole world state (snapshot) should be sent in 1 UDP packet: use [delta compression](./docs/delta_compression.md)) and sends it to all clients (prefer: UDP)
+  - Because everything inside 1 UDP packet there is no problem with packet loss
+  - Client interpolate between snapshots to smooth movement (minimum 2 snapshots are needed to interpolate)
+  - Server has current (present) state! But clients see previous (past) state!
+  - Server has a Snapshot Buffer to store latest snapshots (0ms, 50ms, 100ms, 150ms, 200ms, 250ms) in order to improve Hit detection accuracy! For example: User hits an object in frame 42. Server takes 2 latest snapshots (0ms, 50ms) and make same as client interpolation to frame 42 and process a hit detection at that frame! So user can hit the target which they actually see.
 
 ### System design overview:
 1. Game Server
