@@ -8,6 +8,14 @@ function M.createList()
 			table.insert(self.items, o)
 			self.length = self.length + 1
 		end,
+		-- index is 1-based
+		removeFirst = function (self)
+			if self.length == 0 then
+				return
+			end
+			table.remove(self.items, 1)
+			self.length = self.length - 1
+		end,
 		remove = function (self, index)
 			table.remove(self.items, index)
 			self.length = self.length - 1

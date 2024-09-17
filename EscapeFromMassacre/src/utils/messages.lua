@@ -1,4 +1,9 @@
+local debugUtils = require "src.utils.debug-utils"
 local stream = require "client.stream"
+local player_commands = require "client.player_commands"
+
+local log = debugUtils.createLog("[MESSAGES]").log
+local commands = player_commands.create()
 
 local M = {
     BASE_MSG_IDS = {
@@ -11,6 +16,7 @@ local M = {
         JOIN_ROOM = "NOT_GS_JOIN_ROOM",
         LEAVE_ROOM = "NOT_GS_LEAVE_ROOM",
         PLAYER_READY = "NOT_GS_PLAYER_READY",
+        PLAYER_COMMANDS = "NOT_GS_PLAYER_COMMANDS",
         START_GAME = "NOT_GS_START_GAME",
 
         CREATE_PLAYER = "CREATE_PLAYER",
@@ -74,6 +80,7 @@ M.BROADSOCK = {
         leave_room = hash("leave_room"),
         get_rooms = hash("get_rooms"),
         player_ready = hash("player_ready"),
+        player_commands = hash("player_commands"),
         get_usernames = hash("get_usernames"),
         set_player_username = hash("set_player_username"),
         create_player = hash("create_player"),
@@ -126,6 +133,11 @@ M.BROADSOCK = {
                          .number(data.player_uid)
                          .string(M.BASE_MSG_IDS.RELIABLE_GOD)
                          .number(data.fuze_color)
+        })
+    end,
+    send_command = function (self, data)
+        msg.post(self.URL, "player_commands", {
+            data = commands:build(data.player_uid, data)
         })
     end,
 }

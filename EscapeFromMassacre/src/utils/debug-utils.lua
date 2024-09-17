@@ -63,6 +63,10 @@ function table.tostring(tbl)
     return "{" .. table.concat(result, ",") .. "}"
 end
 
+local function is_table(var)
+    return type(var) == "table"
+end
+
 function M.isTest(is)
     if is ~= nil then
         isTest = is
@@ -85,14 +89,7 @@ function M.print(arguments)
     end
 end
 
-function M.printTable(tbl)
-    if not isDebug then
-        return
-    end
-
-    -- for _, line in ipairs(tbl) do
-    --     print(table.concat(line, ", "))
-    -- end
+function M.table_to_str(tbl)
     local line = "{"
     for index, data in ipairs(tbl) do
         line = line .. "[" .. index .. "] {"
@@ -107,7 +104,18 @@ function M.printTable(tbl)
         line = line .. "}"
     end
     line = line .. "}"
-    print(line)
+    return line
+end
+
+function M.printTable(tbl)
+    if not isDebug then
+        return
+    end
+
+    -- for _, line in ipairs(tbl) do
+    --     print(table.concat(line, ", "))
+    -- end
+    print(M.table_to_str(tbl))
 end
 
 function M.createLog(prefix)
@@ -126,7 +134,11 @@ function M.createLog(prefix)
         local msg = ""
 
         for i=1,#arg do
-            msg = msg .. tostring(arg[i])
+            local v = tostring(arg[i])
+            if is_table(arg[i]) then
+                v = M.table_to_str(arg[i])
+            end
+            msg = msg .. tostring(v)
         end
 
         if not prev_msgs:has(msg) then

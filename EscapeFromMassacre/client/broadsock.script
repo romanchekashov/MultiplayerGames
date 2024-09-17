@@ -28,6 +28,9 @@ local msgs_with_data = {
 	[MSG.BROADSOCK.msg_ids.send_reliable_go] = true,
 	[MSG.BROADSOCK.msg_ids.send_reliable_god] = true,
 }
+local udp_msgs_with_data = {
+	[MSG.BROADSOCK.msg_ids.player_commands] = true,
+}
 
 local function sendToReliableConnection(msg)
 	if html5 and hasReliableConnection then
@@ -139,6 +142,8 @@ function on_message(self, message_id, message, sender)
 				sendToReliableConnection(msgs[message_id])
 		elseif msgs_with_data[message_id] ~= nil then
 				sendToReliableConnection(message.data)
+		elseif udp_msgs_with_data[message_id] ~= nil then
+				sendToUnreliableAndFastConnection(message.data)
 		elseif message_id == hash("send_message") then
 			local sw = stream.writer()
 			for _,value in ipairs(message) do
