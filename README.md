@@ -47,7 +47,10 @@ java -jar bob.jar clean build --archive bundle --settings headless.settings --bo
 - https://github.com/aiortc/aioquic/issues/237
 - [Using WebTransport](https://developer.chrome.com/en/articles/webtransport/)
 - [ERR_METHOD_NOT_SUPPORTED, Opening handshake failed.](https://github.com/aiortc/aioquic/issues/237)
-- 
+
+### Lua language 5.1
+- [YouTube: Full Lua Programming Crash Course - Beginner to Advanced](https://www.youtube.com/watch?v=1srFmjt1Ib0)
+- [YouTube: Lua Tutorial](https://www.youtube.com/watch?v=iMacxZQMPXs)
 
 ### Python language 3.10
 - [venv — Creation of virtual environments](https://docs.python.org/3/library/venv.html)
@@ -95,18 +98,24 @@ docker-compose --env-file .env.local down          # stop Dockers
 - https://github.com/GoogleChrome/samples
 
 ### References Papers:
+- [Source Multiplayer Networking](https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking)
+- [Server In-game Protocol Design and Optimization: Footnotes](https://developer.valvesoftware.com/wiki/Latency_Compensating_Methods_in_Client/Server_In-game_Protocol_Design_and_Optimization#Footnotes)
 - [GitHub: A Curated List of Multiplayer Game Network Programming Resources](https://github.com/ThusSpokeNomad/GameNetworkingResources)
 - [YouTube Playlist: Rollback Netcode in Godot](https://youtube.com/playlist?list=PLCBLMvLIundBXwTa6gwlOUNc29_9btoir&si=2YQN2EW5xAbOrU1d)
 - [Fast-Paced Multiplayer (Part I): Client-Server Game Architecture](https://www.gabrielgambetta.com/client-server-game-architecture.html)
+- [Fast-Paced Multiplayer (Part II): Client-Side Prediction and Server Reconciliation](https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html)
 - [Gaffer On Games](https://gafferongames.com/)
 - [Доклад про мультиплеер от Destiny](https://www.gdcvault.com/play/1022246/Shared-World-Shooter-Destiny-s)
 - [Доклад про latency в Call of Duty](https://gdcvault.com/play/1023220/Fighting-Latency-on-Call-of)
 - [YouTube: GDC Networking Scripted Weapons and Abilities in Overwatch](https://www.youtube.com/watch?v=odSBJ49rzDo)
+- [YouTube: Overwatch Netcode 60Hz Test Results & More!](https://www.youtube.com/watch?v=H0zbpPCdhGk)
 - [YouTube: Replay Technology in Overwatch: Kill Cam, Gameplay, and Highlights](https://www.youtube.com/watch?v=W4oZq4tn57w)
 - [YouTube: Networking Scripted Weapons and Abilities in Overwatch](https://www.youtube.com/watch?v=ScyZjcjTlA4)
 - [YouTube: Как устроен сетевой код в играх | Неткод, мультиплеер, геймдев | Podlodka Podcast #377](https://youtu.be/Hf1_0RCrw7o?si=PcQQfhb0syLi-LSM)
 - [Статьи Михаила на Хабре про сетевой код](https://habr.com/ru/users/marsermd/publications/articles/)
 - [interpolation and extrapolation on the client to smooth movement](https://www.google.com/search?q=interpolation+and+extrapolation+on+the+client+to+smooth+movement&oq=interpolation+and+extrapolation+on+the+client+to+smooth+movement&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRiPAtIBCDU2OTlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8)
+- [Client-side prediction](https://en.wikipedia.org/wiki/Client-side_prediction)
+- https://en.wikipedia.org/wiki/Quake_(video_game)#QuakeWorld
 
 ### References from Godot Engine:
 - [YouTube Playlist: Dedicated Multiplayer](https://youtube.com/playlist?list=PLZ-54sd-DMAKU8Neo5KsVmq8KtoDkfi4s&si=diFKwNYeEH_FNBYd)
