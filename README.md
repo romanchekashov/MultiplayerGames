@@ -96,8 +96,17 @@ docker-compose --env-file .env.local down          # stop Dockers
 - [mkcert is a simple tool for making locally-trusted development certificates](https://github.com/FiloSottile/mkcert)
 - [localhost-ssl-certificate.md](https://gist.github.com/ethicka/27c36c975a5c2cbbd1874bc78bab61c4)
 - https://github.com/GoogleChrome/samples
+- [Photon Cloud Documentation: Realtime Intro](https://doc.photonengine.com/realtime/current/getting-started/realtime-intro/#)
+- [YouTube: Bringing you tutorials covering C#, Unity3D, and Photon SDK(Чел пишет фреймворк на PhotonServer)](https://www.youtube.com/@cjrgaming/videos)
+- [YouTube: В подкасте "Как делают игры" про сервера](https://www.youtube.com/watch?v=vYEebcnap-w)
+- [Простым языком об HTTP](https://habr.com/ru/articles/215117/)
+- [Как работает реляционная БД](https://habr.com/ru/companies/vk/articles/266811/)
+- [Архитектура сервера онлайн-игры на примере Skyforge](https://habr.com/ru/companies/vk/articles/220359/)
+- [Базы данных в онлайн-играх. От Аллодов Онлайн до Skyforge](https://habr.com/ru/companies/vk/articles/182088/)
 
 ### References Papers:
+- [Статьи Михаила на Хабре про сетевой код](https://habr.com/ru/users/marsermd/publications/articles/)
+- [YouTube: Как устроен сетевой код в играх | Неткод, мультиплеер, геймдев | Podlodka Podcast #377](https://youtu.be/Hf1_0RCrw7o?si=PcQQfhb0syLi-LSM)
 - [Source Multiplayer Networking](https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking)
 - [Server In-game Protocol Design and Optimization: Footnotes](https://developer.valvesoftware.com/wiki/Latency_Compensating_Methods_in_Client/Server_In-game_Protocol_Design_and_Optimization#Footnotes)
 - [GitHub: A Curated List of Multiplayer Game Network Programming Resources](https://github.com/ThusSpokeNomad/GameNetworkingResources)
@@ -111,11 +120,11 @@ docker-compose --env-file .env.local down          # stop Dockers
 - [YouTube: Overwatch Netcode 60Hz Test Results & More!](https://www.youtube.com/watch?v=H0zbpPCdhGk)
 - [YouTube: Replay Technology in Overwatch: Kill Cam, Gameplay, and Highlights](https://www.youtube.com/watch?v=W4oZq4tn57w)
 - [YouTube: Networking Scripted Weapons and Abilities in Overwatch](https://www.youtube.com/watch?v=ScyZjcjTlA4)
-- [YouTube: Как устроен сетевой код в играх | Неткод, мультиплеер, геймдев | Podlodka Podcast #377](https://youtu.be/Hf1_0RCrw7o?si=PcQQfhb0syLi-LSM)
-- [Статьи Михаила на Хабре про сетевой код](https://habr.com/ru/users/marsermd/publications/articles/)
 - [interpolation and extrapolation on the client to smooth movement](https://www.google.com/search?q=interpolation+and+extrapolation+on+the+client+to+smooth+movement&oq=interpolation+and+extrapolation+on+the+client+to+smooth+movement&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRiPAtIBCDU2OTlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8)
 - [Client-side prediction](https://en.wikipedia.org/wiki/Client-side_prediction)
 - https://en.wikipedia.org/wiki/Quake_(video_game)#QuakeWorld
+- [1500 Archers on a 28.8: Network Programming in Age of Empires and Beyond](https://www.gamedeveloper.com/programming/1500-archers-on-a-28-8-network-programming-in-age-of-empires-and-beyond)
+- [YouTube: Миллион пользователей онлайн в World of Tanks с инженерной точки зрения](https://www.youtube.com/watch?v=5y23xezgQKE)
 
 ### References from Godot Engine:
 - [YouTube Playlist: Dedicated Multiplayer](https://youtube.com/playlist?list=PLZ-54sd-DMAKU8Neo5KsVmq8KtoDkfi4s&si=diFKwNYeEH_FNBYd)
