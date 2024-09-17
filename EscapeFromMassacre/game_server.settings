@@ -26,7 +26,7 @@ variable_dt = 0
 vsync = 0
 swap_interval = 0
 frame_cap = 0
-update_frequency = 20
+update_frequency = 0
 
 [engine]
 fixed_update_frequency = 30
