@@ -12,7 +12,7 @@ local handle_client_connected = broadsock.handle_client_connected
 local handle_client_disconnected = broadsock.handle_client_disconnected
 local handle_client_message = broadsock.handle_client_message
 
-local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_4_BUT_IN_DOCKER_15_PERCENT)
+local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_3_BUT_IN_DOCKER_5_PERCENT_AT_MIN)
 
 function init(self)
 	debugUtils.debug(true)
