@@ -9,16 +9,24 @@ local function get_timestamp_in_ms()
     return socket.gettime() * 1000
 end
 
-local ActionIdMap = {
-    [ACTION_IDS.JOIN] = 1,
-    [ACTION_IDS.USE] = 2,
-    [ACTION_IDS.LEFT] = 3,
-    [ACTION_IDS.RIGHT] = 4,
-    [ACTION_IDS.UP] = 5,
-    [ACTION_IDS.DOWN] = 6
-}
-
-local M = {};
+local M = {
+    ActionIdToCode = {
+        [ACTION_IDS.JOIN] = 1,
+        [ACTION_IDS.USE] = 2,
+        [ACTION_IDS.LEFT] = 3,
+        [ACTION_IDS.RIGHT] = 4,
+        [ACTION_IDS.UP] = 5,
+        [ACTION_IDS.DOWN] = 6
+    },
+    CodeToActionId = {
+        [1] = ACTION_IDS.JOIN,
+        [2] = ACTION_IDS.USE,
+        [3] = ACTION_IDS.LEFT,
+        [4] = ACTION_IDS.RIGHT,
+        [5] = ACTION_IDS.UP,
+        [6] = ACTION_IDS.DOWN
+    }
+};
 
 function M.create()
     return {
@@ -30,7 +38,7 @@ function M.create()
             --log("build", data)
             log("commands.length", tostring(self.commands.length))
 
-            local num_action_id = ActionIdMap[data.action_id]
+            local num_action_id = M.ActionIdToCode[data.action_id]
             local num_action_state = 0
             if data.action.released then
                 num_action_state = 0
@@ -54,7 +62,7 @@ function M.create()
             end
 
             local sendData = stream.writer()
-                                   .number(player_uid)
+                                   --.number(player_uid)
                                    .string("NOT_GS_PLAYER_COMMANDS")
 
             self.commands:for_each(function (command)

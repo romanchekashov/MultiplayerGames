@@ -34,7 +34,10 @@ local function random_position_on_wall(self)
 end
 
 function init(self)
-	if not self.remote then
+	self.isServer = MainState.isServer
+	if self.isServer then
+		MainState.register_gameobject(0, go.get_id(), MainState.FACTORY_TYPES.zombie)
+	else
 		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = MainState.FACTORY_TYPES.zombie })
 	end
 
@@ -47,7 +50,9 @@ function init(self)
 end
 
 function final(self)
-	if not self.remote then
+	if self.isServer then
+		MainState.unregister_gameobject({ id = go.get_id() })
+	else
 		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
 	end
 end

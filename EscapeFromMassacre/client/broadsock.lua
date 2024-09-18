@@ -34,11 +34,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	local clients = {}
 	local client_count = 0
 
-	local gameobjects = {}
-	local gameobject_count = 0
 	local remote_gameobjects = {}
-
-	local factories = {}
 
 	local go_uid_sequence = 0
 
@@ -46,10 +42,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 	local connection = {}
 
-	local function add_client(uid_to_add)
-		log("add_client", uid_to_add)
+	local function add_game_object(uid_to_add)
+		log("add_game_object", uid_to_add)
 		clients[uid_to_add] = { uid = uid_to_add }
-		remote_gameobjects[uid_to_add] = {}
+		remote_gameobjects[uid_to_add] = {gouid = nil}
 		client_count = client_count + 1
 	end
 
@@ -76,12 +72,12 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- @param type Type of game object. Must match a known factory type
 	function instance.register_gameobject(id, type)
 		assert(id, "You must provide a game object id")
-		assert(type and factories[type], "You must provide a known game object type")
+		assert(type and MainState.factories[type], "You must provide a known game object type")
 		log("register_gameobject", id, type)
 		go_uid_sequence = go_uid_sequence + 1
 		local gouid = tostring(uid) .. "_" .. go_uid_sequence
-		gameobjects[gouid] = { id = id, type = type, gouid = gouid }
-		gameobject_count = gameobject_count + 1
+		MainState.gameobjects[gouid] = { id = id, type = type, gouid = gouid }
+		MainState.gameobject_count = MainState.gameobject_count + 1
 	end
 
 	--- Unregister a game object
@@ -95,8 +91,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		log("unregister_gameobject", id)
 		for gouid,gameobject in pairs(gameobjects) do
 			if gameobject.id == id then
-				gameobjects[gouid] = nil
-				gameobject_count = gameobject_count - 1
+				MainState.gameobjects[gouid] = nil
+				MainState.gameobject_count = MainState.gameobject_count - 1
 
 				local sw = stream.writer().string("GOD").string(gouid)
 				if killer_uid ~= nil then
@@ -112,7 +108,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	--- Get the number of registered game objects
 	-- @return count Game object count
 	function instance.gameobject_count()
-		return gameobject_count
+		return MainState.gameobject_count
 	end
 
 
@@ -125,7 +121,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		assert(url, "You must provide a factory URL")
 		assert(type, "You must provide a game object type")
 		log("register_factory", url, type)
-		factories[type] = url
+		MainState.factories[type] = url
 	end
 
 	--- Check if a specific factory type is registered or not
@@ -133,7 +129,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- @return True if registered, otherwise false
 	function instance.has_factory(type)
 		assert(type, "You must provide a game object type")
-		return factories[type] ~= nil
+		return MainState.factories[type] ~= nil
 	end
 
 
@@ -142,7 +138,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- @return Factory url or nil if it's not registered
 	function instance.get_factory_url(type)
 		assert(type, "You must provide a game object type")
-		return factories[type]
+		return MainState.factories[type]
 	end
 
 	--- Send data to the broadsock server
@@ -163,79 +159,171 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		local msg_id = sr.string()
 		log("on_data: from:", from_uid, "msg_id:", msg_id, "data:", data)
 
-		if msg_id == MSG_IDS.GO then
-			if not clients[from_uid] then
-				add_client(from_uid)
-				log("remote GO add_client", from_uid)
-			end
+		if msg_id == "GAME_STATE" and MainState.currentGameState == MainState.GAME_STATES.RUNNING then
+			MainState.currentGameState = sr.number()
+			MainState.gameTime = sr.number()
+			msg.post("/gui#menu", "update_timer", {time = MainState.gameTime})
+			sr.string() -- GATE
+			local gateState = sr.number()
+			MainState.isGateOpen = gateState == 1
 
-			local player_map_level = sr.number()
-			local player = MainState.players:get(from_uid)
-			if player ~= nil then
-				player.map_level = player_map_level
-			end
-			local enable = player_map_level == MainState.playerOnMapLevel
+			sr.string() -- FUZE_BOX_1
+			MainState.fuzeBoxColorToState[sr.number()] = sr.number()
+			sr.string() -- FUZE_BOX_2
+			MainState.fuzeBoxColorToState[sr.number()] = sr.number()
+			sr.string() -- FUZE_BOX_3
+			MainState.fuzeBoxColorToState[sr.number()] = sr.number()
+			sr.string() -- FUZE_BOX_4
+			MainState.fuzeBoxColorToState[sr.number()] = sr.number()
 
-			local player_type = sr.number()
+			sr.string() -- FUZE_1
+			local color = sr.number()
+			MainState.fuzesColorToState[color] = sr.number()
+			MainState.fuzeToPlayerUid[color] = sr.number()
+			sr.string() -- FUZE_2
+			color = sr.number()
+			MainState.fuzesColorToState[color] = sr.number()
+			MainState.fuzeToPlayerUid[color] = sr.number()
+			sr.string() -- FUZE_3
+			color = sr.number()
+			MainState.fuzesColorToState[color] = sr.number()
+			MainState.fuzeToPlayerUid[color] = sr.number()
+			sr.string() -- FUZE_4
+			color = sr.number()
+			MainState.fuzesColorToState[color] = sr.number()
+			MainState.fuzeToPlayerUid[color] = sr.number()
 
-			local remote_gameobjects_for_user = remote_gameobjects[from_uid]
-			local count = sr.number()
-			log("remote GO", tostring(count))
-			for _=1,count do
-				local gouid = sr.string()
-				local type = sr.string()
+			local name = sr.string() -- GO
+			local enable = false
+
+			while name == "GO" do
+				local object_type = sr.string()
+				local uid = sr.string()
 
 				local pos = sr.vector3()
 				local rot = sr.quat()
 				local scale = sr.vector3()
 
-				if from_uid ~= uid then
-					if not remote_gameobjects_for_user[gouid] then
-						local factory_url = factories[type]
-						if factory_url then
-							log("GO create obj", from_uid, tostring(type))
-							local factory_data = {remote = true, uid = from_uid}
-							if type == FACTORY_TYPE_PLAYER then
-								factory_data.player_type = player_type
-							end
-							local id = factory.create(factory_url, pos, rot, factory_data, scale)
-							--assert(id, factory_url .. " should return non nil id")
-							remote_gameobjects_for_user[gouid] = { id = id, type = type }
-							if enable then
-								msg.post(id, "enable")
-							else
-								msg.post(id, "disable")
-							end
-						end
-					else
-						local id = remote_gameobjects_for_user[gouid].id
+				if MainState.FACTORY_TYPES.player == object_type and MainState.player.uid == uid then
+					local player_map_level = sr.number()
+					MainState.playerOnMapLevel = player_map_level
+					enable = player_map_level == MainState.playerOnMapLevel
+				end
+
+				if not clients[uid] then
+					add_game_object(uid)
+					log("remote GO add_game_object", uid)
+				end
+
+				local game_object = remote_gameobjects[uid]
+
+				if game_object.gouid == nil then
+					local factory_url = MainState.factories[object_type]
+					if factory_url then
+						log("GO create obj", uid, tostring(object_type), factory_url)
+
+						local factory_data = {remote = true, uid = uid}
+
+						--if object_type == FACTORY_TYPE_PLAYER then
+						--	factory_data.player_type = player_type
+						--end
+
+						local id = factory.create(factory_url, pos, rot, factory_data, scale)
+						--assert(id, factory_url .. " should return non nil id")
+						game_object.gouid = { id = id, type = object_type }
+
 						if enable then
 							msg.post(id, "enable")
-							local ok, err = pcall(function()
-								go.set_position(pos, id)
-								go.set_rotation(rot, id)
-								go.set_scale(scale, id)
-							end)
 						else
 							msg.post(id, "disable")
 						end
 					end
+				else
+					local id = game_object.gouid.id
+					if enable then
+						msg.post(id, "enable")
+						local ok, err = pcall(function()
+							go.set_position(pos, id)
+							go.set_rotation(rot, id)
+							go.set_scale(scale, id)
+						end)
+					else
+						msg.post(id, "disable")
+					end
 				end
-			end
 
-			local new_health = sr.number()
-			local new_score = sr.number()
-			if from_uid ~= uid and player ~= nil then
-				if player.health ~= new_health then
-					msg.post(player.go_id, "update_health", {uid = player.uid, health = new_health})
-					player.health = new_health
+				if MainState.FACTORY_TYPES.player == object_type then
+
+					--local player_type = sr.number()
+					--local player_map_level = sr.number()
+					--local player = MainState.players:get(from_uid)
+					--if player ~= nil then
+					--	player.map_level = player_map_level
+					--end
+					--
+					--local enable = player_map_level == MainState.playerOnMapLevel
+					--
+					--local remote_gameobjects_for_user = remote_gameobjects[from_uid]
+					--local count = sr.number()
+					--log("remote GO", tostring(count))
+					--for _=1,count do
+					--	local gouid = sr.string()
+					--	local type = sr.string()
+					--
+					--	local pos = sr.vector3()
+					--	local rot = sr.quat()
+					--	local scale = sr.vector3()
+					--
+					--	if from_uid ~= uid then
+					--		if not remote_gameobjects_for_user[gouid] then
+					--			local factory_url = factories[type]
+					--			if factory_url then
+					--				log("GO create obj", from_uid, tostring(type))
+					--				local factory_data = {remote = true, uid = from_uid}
+					--				if type == FACTORY_TYPE_PLAYER then
+					--					factory_data.player_type = player_type
+					--				end
+					--				local id = factory.create(factory_url, pos, rot, factory_data, scale)
+					--				--assert(id, factory_url .. " should return non nil id")
+					--				remote_gameobjects_for_user[gouid] = { id = id, type = type }
+					--				if enable then
+					--					msg.post(id, "enable")
+					--				else
+					--					msg.post(id, "disable")
+					--				end
+					--			end
+					--		else
+					--			local id = remote_gameobjects_for_user[gouid].id
+					--			if enable then
+					--				msg.post(id, "enable")
+					--				local ok, err = pcall(function()
+					--					go.set_position(pos, id)
+					--					go.set_rotation(rot, id)
+					--					go.set_scale(scale, id)
+					--				end)
+					--			else
+					--				msg.post(id, "disable")
+					--			end
+					--		end
+					--	end
+					--end
+					--
+					--local new_health = sr.number()
+					--local new_score = sr.number()
+					--if from_uid ~= uid and player ~= nil then
+					--	if player.health ~= new_health then
+					--		msg.post(player.go_id, "update_health", {uid = player.uid, health = new_health})
+					--		player.health = new_health
+					--	end
+					--	if player.score ~= new_score then
+					--		msg.post(player.go_id, "update_score", {uid = player.uid, score = new_score})
+					--		player.score = new_score
+					--	end
+					--end
+					--MainState.playerUidToWsLatency[from_uid] = sr.number()
 				end
-				if player.score ~= new_score then
-					msg.post(player.go_id, "update_score", {uid = player.uid, score = new_score})
-					player.score = new_score
-				end
+				name = sr.string()
 			end
-			MainState.playerUidToWsLatency[from_uid] = sr.number()
 		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")
 			if clients[from_uid] and from_uid ~= uid then
@@ -274,10 +362,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			msg.post("/spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type, pos = sr.vector3(), remote = remote})
 		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")
-			add_client(from_uid)
+			add_game_object(from_uid)
 		elseif msg_id == MSG_IDS.CONNECT_SELF then
 			log("CONNECT_SELF")
-			add_client(from_uid)
+			add_game_object(from_uid)
 			uid = from_uid
 			on_connected()
 			MainState.player.uid = uid
@@ -344,8 +432,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			sw.string("GO")
 			sw.number(MainState.playerOnMapLevel)
 			sw.number(MainState.player.type)
-			sw.number(gameobject_count)
-			for gouid,gameobject in pairs(gameobjects) do
+			sw.number(MainState.gameobject_count)
+			for gouid,gameobject in pairs(MainState.gameobjects) do
 				local pos = go.get_position(gameobject.id)
 				local rot = go.get_rotation(gameobject.id)
 				local scale = go.get_scale(gameobject.id)

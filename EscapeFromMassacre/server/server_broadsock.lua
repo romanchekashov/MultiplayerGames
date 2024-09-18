@@ -2,6 +2,7 @@ local socket = require "builtins.scripts.socket"
 local tcp_writer = require "server.tcp_writer"
 local tcp_reader = require "server.tcp_reader"
 local stream = require "client.stream"
+local multiplayer_input = require "server.multiplayer_input"
 local multiplayer = require "server.multiplayer"
 local debugUtils = require "src.utils.debug-utils"
 local performance_utils = require "server.performance_utils"
@@ -11,7 +12,10 @@ local Utils = require "src.utils.utils"
 local log = debugUtils.createLog("[BROADSOCK SERVER]").log
 local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._20_MILISECONDS)
 
-local M = {}
+local M = {
+	go_uid_sequence = 0,
+	factories = {}
+}
 local MSG_IDS = multiplayer.MSG_IDS
 local CLIENT_MSG_IDS = multiplayer.CLIENT_MSG_IDS
 
@@ -155,6 +159,12 @@ end
 function M.handle_client_connected(uid, player_type)
 	local client = create_client(uid, player_type)
 	add_client(client)
+	msg.post("/spawner-player#script", "add_player", {
+		uid = uid,
+		player_type = player_type,
+		pos = Utils.random_position(),
+		remote = true
+	})
 	--local pos = Utils.random_position()
 
 	--local _other = stream.writer()
@@ -175,7 +185,42 @@ function M.handle_client_connected(uid, player_type)
 	return client
 end
 
+function M.register_gameobject(id, type)
+	assert(id, "You must provide a game object id")
+	assert(type and factories[type], "You must provide a known game object type")
+	log("register_gameobject", id, type)
+	M.go_uid_sequence = M.go_uid_sequence + 1
+	local gouid = tostring(uid) .. "_" .. M.go_uid_sequence
+	MainState.gameobjects[gouid] = { id = id, type = type, gouid = gouid }
+	MainState.gameobject_count = MainState.gameobject_count + 1
+end
 
+function M.unregister_gameobject(message)
+	local id = message.id
+	local killer_uid = message.killer_uid
+	log("unregister_gameobject", id)
+	for gouid,gameobject in pairs(MainState.gameobjects) do
+		if gameobject.id == id then
+			MainState.gameobjects[gouid] = nil
+			MainState.gameobject_count = MainState.gameobject_count - 1
+
+			local sw = stream.writer().string("GOD").string(gouid)
+			if killer_uid ~= nil then
+				sw.string(killer_uid)
+			end
+			M.send(sw.tostring())
+			return
+		end
+	end
+	error("Unable to find game object")
+end
+
+function M.register_factory(url, type)
+	assert(url, "You must provide a factory URL")
+	assert(type, "You must provide a game object type")
+	log("register_factory", url, type)
+	M.factories[type] = url
+end
 --- Send data to the broadsock server
 -- Note: The data will actually not be sent until update() is called
 -- @param data
@@ -204,13 +249,6 @@ function M.sendGameOver()
 	M.send(sw.tostring())
 end
 
-function M.sendGameTime(value)
-	local sw = stream.writer()
-	sw.number(-1)
-	sw.string(MSG_IDS.GAME_TIME)
-	sw.string(tostring(value))
-	M.send(sw.tostring())
-end
 local count = 0
 
 local function on_data(data, data_length)
@@ -254,12 +292,14 @@ local function on_data(data, data_length)
 		--end
 	elseif msg_id == MSG_IDS.GOD then
 		M.send(data)
-	elseif msg_id == CLIENT_MSG_IDS.CREATE_PLAYER then
-		M.send(stream.writer()
-					 .number(from_uid)
-					 .string(MSG_IDS.PLAYER_CREATE_POS)
-					 .vector3(Utils.random_position())
-					 .tostring())
+	elseif msg_id == CLIENT_MSG_IDS.PLAYER_COMMANDS then
+		multiplayer_input:consumeCommands(from_uid, sr)
+	--elseif msg_id == CLIENT_MSG_IDS.CREATE_PLAYER then
+	--	M.send(stream.writer()
+	--				 .number(from_uid)
+	--				 .string(MSG_IDS.PLAYER_CREATE_POS)
+	--				 .vector3(Utils.random_position())
+	--				 .tostring())
 	elseif msg_id == CLIENT_MSG_IDS.LEAVE_ROOM then
 		M.send(stream.writer()
 					 .number(from_uid)
@@ -312,7 +352,7 @@ function M.start(port)
 					 .number(MainState.FUZE.YELLOW)
 					 .vector3(Utils.random_position())
 					 .tostring())
-		msg.post("/gui#gui", "game_start")
+		msg.post("/server-gui#server-gui", "game_start")
 	end)
 
 	return true
@@ -340,23 +380,8 @@ function M.update(dt)
 		--	return
 		--end
 		count = count + 1
-		--log("update", connection.connected, "count", tostring(count))
-		-- send("HELLO")
-		-- log("update - sending game objects", instance.gameobject_count())
-		-- local sw = stream.writer()
-		-- sw.string("GO")
-		-- sw.number(gameobject_count)
-		-- for gouid,gameobject in pairs(gameobjects) do
-		-- 	local pos = go.get_position(gameobject.id)
-		-- 	local rot = go.get_rotation(gameobject.id)
-		-- 	local scale = go.get_scale(gameobject.id)
-		-- 	sw.string(gouid)
-		-- 	sw.string(gameobject.type)
-		-- 	sw.vector3(pos)
-		-- 	sw.quat(rot)
-		-- 	sw.vector3(scale)
-		-- end
-		-- instance.send(sw.tostring())
+
+		M.send(MainState:tostring())
 
 		-- check if the socket is ready for reading and/or writing
 		local receivet, sendt = socket.select(connection.socket_table, connection.socket_table, 0)

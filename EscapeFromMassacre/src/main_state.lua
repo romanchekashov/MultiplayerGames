@@ -2,8 +2,33 @@ local Collections = require "src.utils.collections"
 local MSG = require "src.utils.messages"
 local utils = require "src.utils.utils"
 local stream = require "client.stream"
+local debugUtils = require "src.utils.debug-utils"
+local log = debugUtils.createLog("[MAIN_STATE]").log
+
+local PLAYER_STATUS = {
+    DISCONNECTED = 0,
+    CONNECTED = 1,
+    READY = 2,
+    PLAYING = 3,
+    DEAD = 4
+}
 
 local M = {
+    factories = {},
+    gameobjects = {},
+    gameobject_count = 0,
+    go_uid_sequence = 0,
+    gameTime = 0,
+    isGateOpen = false,
+
+    fuzeBoxIdsToColor = {},
+    fuzeBoxColorToState = {},
+
+    fuzesIdToColor = {},
+    fuzesColorToState = {},
+    fuzeToPlayerUid = {},
+    fixedFuzeBoxCount = 0,
+
     pause = true,
     players = Collections.createMap(),
     game_over_players = Collections.createMap(),
@@ -29,6 +54,7 @@ local M = {
     GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
     GAME_TIMEOUT_IN_SEC = 60 * 1,
+    PLAYER_STATUS = PLAYER_STATUS,
     PLAYER_TYPE = {
         SURVIVOR = 0,
         FAMILY = 1
@@ -99,23 +125,34 @@ local M = {
         BLUE = 3,
         YELLOW = 4,
     },
-    playerSlots = {},
-    fuzesIdToColor = {},
-    fuzeBoxIdsToColor = {},
-    fuzeToPlayerUid = {},
-    fixedFuzeBoxCount = 0
+    playerSlots = {}
 }
 
 M.player = {
     uid = 0,
     username = "N/A",
     type = M.PLAYER_TYPE.SURVIVOR,
-    room = nil
+    room = nil,
+    status = PLAYER_STATUS.CONNECTED
 }
 
+M.gameTime = M.GAME_TIMEOUT_IN_SEC
 M.currentGameState = M.GAME_STATES.LOBBY
-
 M.playerOnMapLevel = M.MAP_LEVELS.HOUSE
+M.fuzeBoxColorToState = {
+    [M.FUZE.RED] = 0,
+    [M.FUZE.GREEN] = 0,
+    [M.FUZE.BLUE] = 0,
+    [M.FUZE.YELLOW] = 0
+}
+M.fuzesColorToState = {
+    [M.FUZE.RED] = 0,
+    [M.FUZE.GREEN] = 0,
+    [M.FUZE.BLUE] = 0,
+    [M.FUZE.YELLOW] = 0
+}
+
+M.isServer = false
 
 function M.increasePlayerScore(killer_uid)
 	if killer_uid ~= nil and killer_uid ~= "" then
@@ -295,6 +332,116 @@ function M.setUsernames(str)
     end)
     M.uid_to_username = map
 	msg.post("/gui#rooms", MSG.ROOMS.RECIEVE_USERNAMES.name)
+end
+
+function M.register_gameobject(uid, go_id, type)
+    assert(go_id, "You must provide a game object id")
+    assert(type and M.factories[type], "You must provide a known game object type")
+    log("register_gameobject", go_id, type)
+    M.go_uid_sequence = M.go_uid_sequence + 1
+    local gouid = tostring(uid) .. "_" .. M.go_uid_sequence
+    M.gameobjects[gouid] = { id = go_id, type = type, gouid = gouid, player_uid = uid }
+    M.gameobject_count = M.gameobject_count + 1
+end
+
+function M.unregister_gameobject(message)
+    local id = message.id
+    --local killer_uid = message.killer_uid
+    log("unregister_gameobject", id)
+    for gouid,gameobject in pairs(M.gameobjects) do
+        if gameobject.id == id then
+            M.gameobjects[gouid] = nil
+            M.gameobject_count = M.gameobject_count - 1
+
+            --local sw = stream.writer().string("GOD").string(gouid)
+            --if killer_uid ~= nil then
+            --    sw.string(killer_uid)
+            --end
+            --instance.send(sw.tostring())
+            return
+        end
+    end
+    error("Unable to find game object")
+end
+function M.register_factory(obj)
+    assert(obj.url, "You must provide a factory URL")
+    assert(obj.type, "You must provide a game object type")
+    log("register_factory", obj.url, obj.type)
+    M.factories[obj.type] = obj.url
+end
+function M.has_factory(type)
+    assert(type, "You must provide a game object type")
+    return M.factories[type] ~= nil
+end
+function M.get_factory_url(type)
+    assert(type, "You must provide a game object type")
+    return M.factories[type]
+end
+function M.tostring(self)
+    local sw = stream.writer()
+    sw.number(-1)
+    sw.string("GAME_STATE")
+    sw.number(self.currentGameState)
+    sw.string(tostring(self.gameTime))
+    sw.string("GATE")
+    sw.number(0) -- 0 - closed, 1 - opened
+    -- fuze boxes
+    sw.string("FUZE_BOX_1")
+    sw.number(1) -- 1: red, 2: green, 3: blue, 4: yellow
+    sw.number(0) -- 0: broken, 1: working
+    sw.string("FUZE_BOX_2")
+    sw.number(2)
+    sw.number(0)
+    sw.string("FUZE_BOX_3")
+    sw.number(3)
+    sw.number(0)
+    sw.string("FUZE_BOX_4")
+    sw.number(4)
+    sw.number(0)
+    -- fuzes
+    sw.string("FUZE_1")
+    sw.number(1) -- 1: red, 2: green, 3: blue, 4: yellow
+    --sw.vector3(pos)
+    sw.number(0) -- 0: not used, 1: used
+    sw.number(123) -- player with uid 123 has a red fuze
+    sw.string("FUZE_2")
+    sw.number(2)
+    --sw.vector3(pos)
+    sw.number(0)
+    sw.number(0) -- fuze is on the ground
+    sw.string("FUZE_3")
+    sw.number(3)
+    --sw.vector3(pos)
+    sw.number(0)
+    sw.number(0)
+    sw.string("FUZE_4")
+    sw.number(4)
+    --sw.vector3(pos)
+    sw.number(0)
+    sw.number(0)
+    -- game objects
+    for gouid, v in pairs(self.gameobjects) do
+        sw.string("GO")
+        sw.string(v.type)
+        sw.string(gouid)
+
+        local pos = go.get_position(v.id)
+        local rot = go.get_rotation(v.id)
+        local scale = go.get_scale(v.id)
+        sw.vector3(pos)
+        sw.quat(rot)
+        sw.vector3(scale)
+
+        if M.FACTORY_TYPES.player == v.type then
+            sw.number(v.playerOnMapLevel)
+            sw.number(v and v.health or 100)
+            sw.number(v and v.score or 0)
+            --sw.number(0) -- 0: disconnected, 1: connected
+        end
+        -- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
+    end
+
+    return sw.tostring()
 end
 
 return M

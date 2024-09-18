@@ -60,15 +60,15 @@ def findGameProcess() -> List[Any]:
     if isLinux:
         for process in psutil.process_iter():
             cmdline = process.cmdline()
-            Log.info(f'cmdline: {cmdline}, process: {process}')
             for cmd in cmdline:
                 if 'dmengine_headless' in cmd:
+                    Log.info(f'cmdline: {cmdline}, process: {process}')
                     arr.append(process)
                     break
     else:
         for process in psutil.process_iter():
-            Log.info(f'process: {process.name()}')
             if 'dmengine_headless' in process.name():
+                Log.info(f'process: {process.name()}')
                 arr.append(process)
         # children = process.children()
         # for p in children:

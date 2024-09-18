@@ -26,11 +26,11 @@ function init(self)
 	math.randomseed(os.time())
 
 	MSG.BROADSOCK:connect({ ip = "127.0.0.1", port = 5001 })
-	MSG.BROADSOCK:register_factory({ url = "/spawner-player#factory-player", type = FACTORY_TYPES.player })
-	MSG.BROADSOCK:register_factory({ url = "/spawner-zombie#factory-zombie", type = FACTORY_TYPES.zombie })
-	MSG.BROADSOCK:register_factory({ url = "/spawner-bullet#factory-bullet", type = FACTORY_TYPES.bullet })
-	MSG.BROADSOCK:register_factory({ url = "/factory#factory-fuze", type = FACTORY_TYPES.fuze })
-	MSG.BROADSOCK:register_factory({ url = "/factory#factory-fuze-box", type = FACTORY_TYPES.fuze_box })
+	MainState.register_factory({ url = "/spawner-player#factory-player", type = FACTORY_TYPES.player })
+	MainState.register_factory({ url = "/spawner-zombie#factory-zombie", type = FACTORY_TYPES.zombie })
+	MainState.register_factory({ url = "/spawner-bullet#factory-bullet", type = FACTORY_TYPES.bullet })
+	MainState.register_factory({ url = "/factory#factory-fuze", type = FACTORY_TYPES.fuze })
+	MainState.register_factory({ url = "/factory#factory-fuze-box", type = FACTORY_TYPES.fuze_box })
 
 	self.screen_pos = vmath.vector3(0, 0, 0)
 	self.next_screen = nil

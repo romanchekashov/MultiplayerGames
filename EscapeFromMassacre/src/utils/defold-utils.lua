@@ -1,4 +1,6 @@
 local utils = require "src.utils.utils"
+local Collections = require "src.utils.collections"
+
 
 local M = {
 	getAngle = function (action)
@@ -6,8 +8,25 @@ local M = {
 		local from = vmath.vector3(action.x, action.y, 0)
 		return math.atan2(to.x - from.x, from.y - to.y)
 	end,
+    collectionIds = Collections.createList(),
     CURRENT_COLLECTION_IDS = {},
-    COLLECTION_URLS = {}
+    CURRENT_COLLECTION_IDS_2 = {},
+    COLLECTION_URLS = {},
+    getCollectionId = function (self, key)
+        local result = self.CURRENT_COLLECTION_IDS[key]
+
+        if result ~= nil then
+            return result
+        end
+
+        self.collectionIds:for_each(function (ids)
+            if ids[key] ~= nil then
+                result = ids[key]
+            end
+        end)
+        print("getCollectionId", key, result)
+        return result
+    end
 }
 
 -- https://forum.defold.com/t/collection-factory/73020/6
@@ -27,8 +46,13 @@ msg.post = function(url, ...)
     if M.COLLECTION_URLS[url] == nil then
         local res = utils.split(url, "#")
         -- print(url, res[1], #res > 1 and res[2] or nil, M.CURRENT_COLLECTION_IDS[res[1]])
-        if M.CURRENT_COLLECTION_IDS[res[1]] ~= nil then
-            M.COLLECTION_URLS[url] = msg.url("default", M.CURRENT_COLLECTION_IDS[res[1]], #res > 1 and res[2] or nil)
+        local collectionId = M.CURRENT_COLLECTION_IDS[res[1]]
+        if collectionId == nil then
+            collectionId = M.CURRENT_COLLECTION_IDS_2[res[1]]
+        end
+        print("msg.post", url, collectionId)
+        if collectionId ~= nil then
+            M.COLLECTION_URLS[url] = msg.url("default", collectionId, #res > 1 and res[2] or nil)
         end
     end
 
@@ -44,19 +68,36 @@ factory.create = function(url, ...)
     if M.COLLECTION_URLS[url] == nil then
         local res = utils.split(url, "#")
         -- print(url, res[1], #res > 1 and res[2] or nil, M.CURRENT_COLLECTION_IDS[res[1]])
-        if M.CURRENT_COLLECTION_IDS[res[1]] ~= nil then
-            M.COLLECTION_URLS[url] = msg.url("default", M.CURRENT_COLLECTION_IDS[res[1]], #res > 1 and res[2] or nil)
+        local collectionId = M.CURRENT_COLLECTION_IDS[res[1]]
+        if collectionId == nil then
+            collectionId = M.CURRENT_COLLECTION_IDS_2[res[1]]
+        end
+        print("factory.create", url, collectionId)
+        if collectionId ~= nil then
+            M.COLLECTION_URLS[url] = msg.url("default", collectionId, #res > 1 and res[2] or nil)
         end
     end
 
     return old_factory_create(M.COLLECTION_URLS[url] or url, ...)
 end
 
+local function tablelength(T)
+    local count = 0
+    for _ in pairs(T) do count = count + 1 end
+    return count
+end
+
 function M.SET_CURRENT_COLLECTION_IDS(ids)
+    M.collectionIds:add(ids)
+    --if tablelength(M.CURRENT_COLLECTION_IDS) > 0 then
+    --    M.CURRENT_COLLECTION_IDS_2 = ids
+    --else
+    --    M.CURRENT_COLLECTION_IDS = ids
+    --end
     M.CURRENT_COLLECTION_IDS = ids
     M.COLLECTION_URLS = {}
     for key, value in pairs(ids) do
-        print(key, value)
+        print("CURRENT_COLLECTION_IDS", key, value)
     end
 end
 

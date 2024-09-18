@@ -2,10 +2,14 @@ go.property("port", 5000)
 msg.post("@system:", "set_vsync", { swap_interval = 0 })
 
 local debugUtils = require "src.utils.debug-utils"
+local defold_utils = require "src.utils.defold-utils"
 local broadsock = require "server.server_broadsock"
 local performance_utils = require "server.performance_utils"
+local MainState = require "src.main_state"
+local MSG = require "src.utils.messages"
 
 local log = debugUtils.createLog("[ESCAPE_SERVER]").log
+local FACTORY_TYPES = MainState.FACTORY_TYPES
 
 local broadsock_update = broadsock.update
 local handle_client_connected = broadsock.handle_client_connected
@@ -15,11 +19,23 @@ local handle_client_message = broadsock.handle_client_message
 local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_4_BUT_IN_DOCKER_10_PERCENT_AT_MIN)
 
 function init(self)
+	MainState.isServer = true
 	debugUtils.debug(true)
 
 	msg.post("@system:", "set_vsync", { swap_interval = 0 })
 
 	math.randomseed(os.time())
+
+	MainState.register_factory({ url = "/spawner-player#factory-player", type = FACTORY_TYPES.player })
+	MainState.register_factory({ url = "/spawner-zombie#factory-zombie", type = FACTORY_TYPES.zombie })
+	MainState.register_factory({ url = "/spawner-bullet#factory-bullet", type = FACTORY_TYPES.bullet })
+	MainState.register_factory({ url = "/factory#factory-fuze", type = FACTORY_TYPES.fuze })
+	MainState.register_factory({ url = "/factory#factory-fuze-box", type = FACTORY_TYPES.fuze_box })
+
+	self.broadsock = broadsock
+	self.screen_pos = vmath.vector3(0, 0, 0)
+	self.current_screen = collectionfactory.create("#collectionfactory-game-server", self.screen_pos)
+	defold_utils.SET_CURRENT_COLLECTION_IDS(self.current_screen)
 
 	log("[GAME SERVER] started", self.port)
 
@@ -38,8 +54,18 @@ function final(self)
 end
 
 function update(self, dt)
-	local current_time = os.date("%Y-%m-%d %H:%M:%S")
-	log(current_time, "update", dt)
+	--local current_time = os.date("%Y-%m-%d %H:%M:%S")
+	--log(current_time, "update", dt)
 	sleep()
 	broadsock_update(dt)
+end
+
+function on_message(self, message_id, message, sender)
+	--if message_id == MSG.BROADSOCK.msg_ids.register_gameobject then
+	--	self.broadsock.register_gameobject(message.id, message.type)
+	--elseif message_id == MSG.BROADSOCK.msg_ids.unregister_gameobject then
+	--	self.broadsock.unregister_gameobject(message)
+	--elseif message_id == MSG.BROADSOCK.msg_ids.register_factory then
+	--	self.broadsock.register_factory(message.url, message.type)
+	--end
 end

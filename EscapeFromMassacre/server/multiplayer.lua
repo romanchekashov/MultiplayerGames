@@ -2,6 +2,7 @@ local M = {
     CLIENT_MSG_IDS = {
         CREATE_PLAYER = "CREATE_PLAYER",
         LEAVE_ROOM = "NOT_GS_LEAVE_ROOM",
+        PLAYER_COMMANDS = "NOT_GS_PLAYER_COMMANDS",
     },
     MSG_IDS = {
         GO = "GO",

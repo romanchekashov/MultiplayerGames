@@ -24,19 +24,23 @@ end
 
 function init(self)
 	local id = go.get_id()
-	if not self.remote then
+	self.isServer = MainState.isServer
+	if self.isServer then
+		MainState.register_gameobject(0, id, MainState.FACTORY_TYPES.fuze)
+	else
 		msg.post("/broadsock", "register_gameobject", { id = id, type = MainState.FACTORY_TYPES.fuze })
 	end
 
 	enable(self)
-	MainState.fuzesIdToColor[go.get_id()] = self.color
+	MainState.fuzesIdToColor[id] = self.color
 	print("[FUZE] created", self.color)
 end
 
 function final(self)
-	local id = go.get_id()
-	if not self.remote then
-		msg.post("/broadsock", "unregister_gameobject", { id = id })
+	if self.isServer then
+		MainState.unregister_gameobject({ id = go.get_id() })
+	else
+		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
 	end
 end
 

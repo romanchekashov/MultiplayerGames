@@ -13,7 +13,7 @@ end
 local function setup_timer(self)
     self.timer = self.druid:new_timer("timer", MainState.GAME_TIMEOUT_IN_SEC, 0, empty_callback)
     self.timer.on_tick:subscribe(function(self, value)
-        broadsock.sendGameTime(value)
+        MainState.gameTime = value
     end)
 end
 

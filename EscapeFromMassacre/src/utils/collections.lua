@@ -20,6 +20,12 @@ function M.createList()
 			table.remove(self.items, index)
 			self.length = self.length - 1
 		end,
+		getLast = function (self)
+			if self.length == 0 then
+				return
+			end
+			return self.items[self.length]
+		end,
 		for_each = function (self, fn)
 			for k, v in pairs(self.items) do
 				fn(v)

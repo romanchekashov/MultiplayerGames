@@ -5,6 +5,7 @@ local defoldUtils = require "src.utils.defold-utils"
 local ACTION_IDS = require "src.utils.actions"
 local device = require "src.utils.device"
 local MSG = require "src.utils.messages"
+local multiplayer_input = require "server.multiplayer_input"
 
 local isGamepadLeftStickActionId = ACTION_IDS.isGamepadLeftStickActionId
 local isGamepadRightStickActionId = ACTION_IDS.isGamepadRightStickActionId
@@ -63,19 +64,36 @@ local function get_rotation(touch)
 end
 
 local function input_controls(self)
-	if input.is_pressed(ACTION_IDS.LEFT) then
-		self.velocity.x = -PLAYER_SPEED
-	elseif input.is_pressed(ACTION_IDS.RIGHT) then
-		self.velocity.x = PLAYER_SPEED
+	if self.isServer then
+		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.LEFT) then
+			self.velocity.x = -PLAYER_SPEED
+		elseif multiplayer_input:is_pressed(self.uid, ACTION_IDS.RIGHT) then
+			self.velocity.x = PLAYER_SPEED
+		else
+			self.velocity.x = 0
+		end
+		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.UP) then
+			self.velocity.y = PLAYER_SPEED
+		elseif multiplayer_input:is_pressed(self.uid, ACTION_IDS.DOWN) then
+			self.velocity.y = -PLAYER_SPEED
+		else
+			self.velocity.y = 0
+		end
 	else
-		self.velocity.x = 0
-	end
-	if input.is_pressed(ACTION_IDS.UP) then
-		self.velocity.y = PLAYER_SPEED
-	elseif input.is_pressed(ACTION_IDS.DOWN) then
-		self.velocity.y = -PLAYER_SPEED
-	else
-		self.velocity.y = 0
+		if input.is_pressed(ACTION_IDS.LEFT) then
+			self.velocity.x = -PLAYER_SPEED
+		elseif input.is_pressed(ACTION_IDS.RIGHT) then
+			self.velocity.x = PLAYER_SPEED
+		else
+			self.velocity.x = 0
+		end
+		if input.is_pressed(ACTION_IDS.UP) then
+			self.velocity.y = PLAYER_SPEED
+		elseif input.is_pressed(ACTION_IDS.DOWN) then
+			self.velocity.y = -PLAYER_SPEED
+		else
+			self.velocity.y = 0
+		end
 	end
 end
 
@@ -87,7 +105,7 @@ local function trigger(self, action)
 		if socket.gettime() - self.pressed_time < 0.2 and self.fire_cooldown < 0 then
 			local rotation = go.get_rotation()
 			local position = go.get_position() + vmath.rotate(rotation, vmath.vector3(10, 30, 0))
-			msg.post("/spawner-bullet#script", "add_bullet", {pos = position, rot = rotation})
+			msg.post("/spawner-bullet#script", "add_bullet", {pos = position, rot = rotation, uid = self.uid})
 			self.fire_cooldown = FIRE_COOLDOWN
 		end
 	end
@@ -149,6 +167,7 @@ end
 function init(self)
 	local go_id = go.get_id()
 
+	self.isServer = MainState.isServer
 	self.stairs_change_cooldown = -1
 	self.move = 0		-- direction of movement (0 = standing still, 1 = forward, -1 = backward)
 	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)
@@ -189,11 +208,16 @@ function init(self)
 	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
 	log("player joined: " .. self.username .. " remote: " .. tostring(self.remote))
 
-	if not self.remote then
+	if self.isServer then
+		MainState.register_gameobject(self.uid, go_id, MainState.FACTORY_TYPES.player)
+	else
+		msg.post("/broadsock", "register_gameobject", { id = go_id, type = MainState.FACTORY_TYPES.player })
+	end
+
+	if not self.remote and not self.isServer then
 		log("remote = " .. tostring(self.remote))
 		msg.post(".", "acquire_input_focus")
 		msg.post("#camera", "acquire_camera_focus")
-		msg.post("/broadsock", "register_gameobject", { id = go_id, type = MainState.FACTORY_TYPES.player })
 		input.acquire()
 		msg.post("/virtual_gamepad", "register")
 
@@ -210,12 +234,17 @@ end
 function final(self)
 	local go_id = go.get_id()
 
-	if not self.remote then
+	if self.isServer then
+		MainState.unregister_gameobject({ id = go_id })
+	else
+		msg.post("/broadsock", "unregister_gameobject", { id = go_id, killer_uid = self.killer_uid })
+	end
+
+	if not self.remote and not self.isServer then
 		MainState.SOUND.loop_run.stop()
 		self.sound_run_playing = false
 		msg.post(".", "release_input_focus")
 		msg.post("#camera", "release_camera_focus")
-		msg.post("/broadsock", "unregister_gameobject", { id = go_id, killer_uid = self.killer_uid })
 		input.release()
 		msg.post("/virtual_gamepad", "unregister")
 	end
@@ -230,7 +259,10 @@ function final(self)
 end
 
 function update(self, dt)
-	if self.remote then
+	--if self.remote then
+	--	return
+	--end
+	if not self.isServer then
 		return
 	end
 
@@ -278,7 +310,7 @@ function update(self, dt)
 end
 
 function on_input(self, action_id, action)
-	if self.remote then
+	if self.remote or self.isServer then
 		return
 	end
 	-- print(action_id, action.value, action.pressed, action.released, "left stick", self.virtualGamepadLeftStickTouchNum)
@@ -434,7 +466,10 @@ function on_message(self, message_id, message, sender)
 		end
 	end
 
-	if self.remote then
+	--if self.remote then
+	--	return
+	--end
+	if not self.isServer then
 		return
 	end
 
