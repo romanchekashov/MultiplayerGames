@@ -163,7 +163,7 @@ function M.handle_client_connected(uid, player_type)
 		uid = uid,
 		player_type = player_type,
 		pos = Utils.random_position(),
-		remote = true
+		remote = false
 	})
 	--local pos = Utils.random_position()
 
@@ -339,6 +339,7 @@ function M.start(port)
 
 	M.send(MSG_IDS.GAME_PRE_START)
 	timer.delay(MainState.GAME_START_TIMEOUT_IN_SEC, false, function ()
+		MainState.currentGameState = MainState.GAME_STATES.RUNNING
 		M.send(MSG_IDS.GAME_START)
 		M.send(stream.writer()
 					 .number(-1)

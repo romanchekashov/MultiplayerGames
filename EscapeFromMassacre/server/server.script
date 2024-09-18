@@ -35,7 +35,7 @@ function init(self)
 	self.broadsock = broadsock
 	self.screen_pos = vmath.vector3(0, 0, 0)
 	self.current_screen = collectionfactory.create("#collectionfactory-game-server", self.screen_pos)
-	defold_utils.SET_CURRENT_COLLECTION_IDS(self.current_screen)
+	defold_utils.SET_CURRENT_COLLECTION_IDS("default", self.current_screen)
 
 	log("[GAME SERVER] started", self.port)
 

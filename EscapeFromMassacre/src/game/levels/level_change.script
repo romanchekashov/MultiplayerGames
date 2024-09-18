@@ -31,7 +31,7 @@ function on_message(self, message_id, message, sender)
 		if message.map_level == MainState.MAP_LEVELS.BASEMENT then
 			MainState.playerOnMapLevel = MainState.MAP_LEVELS.BASEMENT
 			self.current_screen = collectionfactory.create("#collectionfactory-basement", self.screen_pos)
-			defold_utils.SET_CURRENT_COLLECTION_IDS(self.current_screen)
+			--defold_utils.SET_CURRENT_COLLECTION_IDS("default", self.current_screen)
 			msg.post("@render:", "clear_color", {color = assets.COLORS.RED})
 
 			msg.post("/gate-main", "disable")
@@ -39,7 +39,7 @@ function on_message(self, message_id, message, sender)
 		elseif message.map_level == MainState.MAP_LEVELS.HOUSE then
 			MainState.playerOnMapLevel = MainState.MAP_LEVELS.HOUSE
 			self.current_screen = collectionfactory.create("#collectionfactory-house", self.screen_pos)
-			defold_utils.SET_CURRENT_COLLECTION_IDS(self.current_screen)
+			--defold_utils.SET_CURRENT_COLLECTION_IDS("default", self.current_screen)
 			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})
 
 			if MainState.fixedFuzeBoxCount == 4 then

@@ -159,170 +159,188 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		local msg_id = sr.string()
 		log("on_data: from:", from_uid, "msg_id:", msg_id, "data:", data)
 
-		if msg_id == "GAME_STATE" and MainState.currentGameState == MainState.GAME_STATES.RUNNING then
+		if msg_id == "GAME_STATE" then
 			MainState.currentGameState = sr.number()
-			MainState.gameTime = sr.number()
-			msg.post("/gui#menu", "update_timer", {time = MainState.gameTime})
-			sr.string() -- GATE
-			local gateState = sr.number()
-			MainState.isGateOpen = gateState == 1
 
-			sr.string() -- FUZE_BOX_1
-			MainState.fuzeBoxColorToState[sr.number()] = sr.number()
-			sr.string() -- FUZE_BOX_2
-			MainState.fuzeBoxColorToState[sr.number()] = sr.number()
-			sr.string() -- FUZE_BOX_3
-			MainState.fuzeBoxColorToState[sr.number()] = sr.number()
-			sr.string() -- FUZE_BOX_4
-			MainState.fuzeBoxColorToState[sr.number()] = sr.number()
-
-			sr.string() -- FUZE_1
-			local color = sr.number()
-			MainState.fuzesColorToState[color] = sr.number()
-			MainState.fuzeToPlayerUid[color] = sr.number()
-			sr.string() -- FUZE_2
-			color = sr.number()
-			MainState.fuzesColorToState[color] = sr.number()
-			MainState.fuzeToPlayerUid[color] = sr.number()
-			sr.string() -- FUZE_3
-			color = sr.number()
-			MainState.fuzesColorToState[color] = sr.number()
-			MainState.fuzeToPlayerUid[color] = sr.number()
-			sr.string() -- FUZE_4
-			color = sr.number()
-			MainState.fuzesColorToState[color] = sr.number()
-			MainState.fuzeToPlayerUid[color] = sr.number()
-
-			local name = sr.string() -- GO
-			local enable = false
-
-			while name == "GO" do
-				local object_type = sr.string()
-				local uid = sr.string()
-
-				local pos = sr.vector3()
-				local rot = sr.quat()
-				local scale = sr.vector3()
-
-				if MainState.FACTORY_TYPES.player == object_type and MainState.player.uid == uid then
-					local player_map_level = sr.number()
-					MainState.playerOnMapLevel = player_map_level
-					enable = player_map_level == MainState.playerOnMapLevel
+			if MainState.currentGameState == MainState.GAME_STATES.RUNNING then
+				local newTime = sr.number()
+				if MainState.gameTime ~= newTime then
+					MainState.gameTime = newTime
+					log("SERVER: GAME_STATE: MainState.gameTime = " .. tostring(newTime))
+					msg.post("/gui#menu", "update_timer", {time = newTime})
 				end
+				sr.string() -- GATE
+				local gateState = sr.number()
+				MainState.isGateOpen = gateState == 1
 
-				if not clients[uid] then
-					add_game_object(uid)
-					log("remote GO add_game_object", uid)
-				end
+				sr.string() -- FUZE_BOX_1
+				MainState.fuzeBoxColorToState[sr.number()] = sr.number()
+				sr.string() -- FUZE_BOX_2
+				MainState.fuzeBoxColorToState[sr.number()] = sr.number()
+				sr.string() -- FUZE_BOX_3
+				MainState.fuzeBoxColorToState[sr.number()] = sr.number()
+				sr.string() -- FUZE_BOX_4
+				MainState.fuzeBoxColorToState[sr.number()] = sr.number()
 
-				local game_object = remote_gameobjects[uid]
+				sr.string() -- FUZE_1
+				local color = sr.number()
+				MainState.fuzesColorToState[color] = sr.number()
+				MainState.fuzeToPlayerUid[color] = sr.number()
+				sr.string() -- FUZE_2
+				color = sr.number()
+				MainState.fuzesColorToState[color] = sr.number()
+				MainState.fuzeToPlayerUid[color] = sr.number()
+				sr.string() -- FUZE_3
+				color = sr.number()
+				MainState.fuzesColorToState[color] = sr.number()
+				MainState.fuzeToPlayerUid[color] = sr.number()
+				sr.string() -- FUZE_4
+				color = sr.number()
+				MainState.fuzesColorToState[color] = sr.number()
+				MainState.fuzeToPlayerUid[color] = sr.number()
 
-				if game_object.gouid == nil then
-					local factory_url = MainState.factories[object_type]
-					if factory_url then
-						log("GO create obj", uid, tostring(object_type), factory_url)
+				local name = sr.string() -- GO
+				local enable = true
 
-						local factory_data = {remote = true, uid = uid}
+				while name == "GO" do
+					local object_type = sr.string()
+					local uid = sr.number()
 
-						--if object_type == FACTORY_TYPE_PLAYER then
-						--	factory_data.player_type = player_type
-						--end
+					local pos = sr.vector3()
+					local rot = sr.quat()
+					local scale = sr.vector3()
+					local player_type
 
-						local id = factory.create(factory_url, pos, rot, factory_data, scale)
-						--assert(id, factory_url .. " should return non nil id")
-						game_object.gouid = { id = id, type = object_type }
+					if MainState.FACTORY_TYPES.player == object_type then
+						player_type = sr.number()
+						local player_map_level = sr.number()
+						sr.number()
+						sr.number()
 
+						if MainState.player.uid == uid then
+							MainState.playerOnMapLevel = player_map_level
+						end
+						--enable = player_map_level == MainState.playerOnMapLevel
+					end
+
+					if not clients[uid] then
+						add_game_object(uid)
+						log("remote GO add_game_object", uid)
+					end
+
+					local game_object = remote_gameobjects[uid]
+
+					if game_object.gouid == nil then
+						local factory_url = MainState.factories[object_type]
+						if factory_url then
+							local factory_data = {remote = MainState.player.uid ~= uid, uid = uid}
+							log("GO create obj", uid, MainState.player.uid, tostring(object_type), factory_url, "remote:", factory_data.remote)
+
+							if object_type == FACTORY_TYPE_PLAYER then
+								factory_data.player_type = player_type
+								factory_data.map_level = MainState.MAP_LEVELS.HOUSE
+								factory_data.health = 100
+								factory_data.score = 0
+								factory_data.ws_latency = -1
+							end
+
+							local id = factory.create(factory_url, pos, rot, factory_data, scale)
+							assert(id, factory_url .. " should return non nil id")
+							log("GO obj created", uid, tostring(object_type), id)
+							game_object.gouid = { id = id, type = object_type }
+
+							if enable then
+								msg.post(id, "enable")
+							else
+								msg.post(id, "disable")
+							end
+						end
+					else
+						local id = game_object.gouid.id
 						if enable then
 							msg.post(id, "enable")
+							local ok, err = pcall(function()
+								go.set_position(pos, id)
+								go.set_rotation(rot, id)
+								go.set_scale(scale, id)
+							end)
 						else
 							msg.post(id, "disable")
 						end
 					end
-				else
-					local id = game_object.gouid.id
-					if enable then
-						msg.post(id, "enable")
-						local ok, err = pcall(function()
-							go.set_position(pos, id)
-							go.set_rotation(rot, id)
-							go.set_scale(scale, id)
-						end)
-					else
-						msg.post(id, "disable")
+
+					if MainState.FACTORY_TYPES.player == object_type then
+
+						--local player_type = sr.number()
+						--local player_map_level = sr.number()
+						--local player = MainState.players:get(from_uid)
+						--if player ~= nil then
+						--	player.map_level = player_map_level
+						--end
+						--
+						--local enable = player_map_level == MainState.playerOnMapLevel
+						--
+						--local remote_gameobjects_for_user = remote_gameobjects[from_uid]
+						--local count = sr.number()
+						--log("remote GO", tostring(count))
+						--for _=1,count do
+						--	local gouid = sr.string()
+						--	local type = sr.string()
+						--
+						--	local pos = sr.vector3()
+						--	local rot = sr.quat()
+						--	local scale = sr.vector3()
+						--
+						--	if from_uid ~= uid then
+						--		if not remote_gameobjects_for_user[gouid] then
+						--			local factory_url = factories[type]
+						--			if factory_url then
+						--				log("GO create obj", from_uid, tostring(type))
+						--				local factory_data = {remote = true, uid = from_uid}
+						--				if type == FACTORY_TYPE_PLAYER then
+						--					factory_data.player_type = player_type
+						--				end
+						--				local id = factory.create(factory_url, pos, rot, factory_data, scale)
+						--				--assert(id, factory_url .. " should return non nil id")
+						--				remote_gameobjects_for_user[gouid] = { id = id, type = type }
+						--				if enable then
+						--					msg.post(id, "enable")
+						--				else
+						--					msg.post(id, "disable")
+						--				end
+						--			end
+						--		else
+						--			local id = remote_gameobjects_for_user[gouid].id
+						--			if enable then
+						--				msg.post(id, "enable")
+						--				local ok, err = pcall(function()
+						--					go.set_position(pos, id)
+						--					go.set_rotation(rot, id)
+						--					go.set_scale(scale, id)
+						--				end)
+						--			else
+						--				msg.post(id, "disable")
+						--			end
+						--		end
+						--	end
+						--end
+						--
+						--local new_health = sr.number()
+						--local new_score = sr.number()
+						--if from_uid ~= uid and player ~= nil then
+						--	if player.health ~= new_health then
+						--		msg.post(player.go_id, "update_health", {uid = player.uid, health = new_health})
+						--		player.health = new_health
+						--	end
+						--	if player.score ~= new_score then
+						--		msg.post(player.go_id, "update_score", {uid = player.uid, score = new_score})
+						--		player.score = new_score
+						--	end
+						--end
+						--MainState.playerUidToWsLatency[from_uid] = sr.number()
 					end
+					name = sr.string()
 				end
-
-				if MainState.FACTORY_TYPES.player == object_type then
-
-					--local player_type = sr.number()
-					--local player_map_level = sr.number()
-					--local player = MainState.players:get(from_uid)
-					--if player ~= nil then
-					--	player.map_level = player_map_level
-					--end
-					--
-					--local enable = player_map_level == MainState.playerOnMapLevel
-					--
-					--local remote_gameobjects_for_user = remote_gameobjects[from_uid]
-					--local count = sr.number()
-					--log("remote GO", tostring(count))
-					--for _=1,count do
-					--	local gouid = sr.string()
-					--	local type = sr.string()
-					--
-					--	local pos = sr.vector3()
-					--	local rot = sr.quat()
-					--	local scale = sr.vector3()
-					--
-					--	if from_uid ~= uid then
-					--		if not remote_gameobjects_for_user[gouid] then
-					--			local factory_url = factories[type]
-					--			if factory_url then
-					--				log("GO create obj", from_uid, tostring(type))
-					--				local factory_data = {remote = true, uid = from_uid}
-					--				if type == FACTORY_TYPE_PLAYER then
-					--					factory_data.player_type = player_type
-					--				end
-					--				local id = factory.create(factory_url, pos, rot, factory_data, scale)
-					--				--assert(id, factory_url .. " should return non nil id")
-					--				remote_gameobjects_for_user[gouid] = { id = id, type = type }
-					--				if enable then
-					--					msg.post(id, "enable")
-					--				else
-					--					msg.post(id, "disable")
-					--				end
-					--			end
-					--		else
-					--			local id = remote_gameobjects_for_user[gouid].id
-					--			if enable then
-					--				msg.post(id, "enable")
-					--				local ok, err = pcall(function()
-					--					go.set_position(pos, id)
-					--					go.set_rotation(rot, id)
-					--					go.set_scale(scale, id)
-					--				end)
-					--			else
-					--				msg.post(id, "disable")
-					--			end
-					--		end
-					--	end
-					--end
-					--
-					--local new_health = sr.number()
-					--local new_score = sr.number()
-					--if from_uid ~= uid and player ~= nil then
-					--	if player.health ~= new_health then
-					--		msg.post(player.go_id, "update_health", {uid = player.uid, health = new_health})
-					--		player.health = new_health
-					--	end
-					--	if player.score ~= new_score then
-					--		msg.post(player.go_id, "update_score", {uid = player.uid, score = new_score})
-					--		player.score = new_score
-					--	end
-					--end
-					--MainState.playerUidToWsLatency[from_uid] = sr.number()
-				end
-				name = sr.string()
 			end
 		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")

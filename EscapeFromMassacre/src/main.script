@@ -85,11 +85,11 @@ function on_message(self, message_id, message, sender)
 			self.current_screen = collectionfactory.create("#collectionfactory-game", self.screen_pos)
 			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})
 			print("GAME", #self.current_screen)
-			MSG.BROADSOCK:create_player()
+			--MSG.BROADSOCK:create_player()
 			MainState.currentGameState = MainState.GAME_STATES.RUNNING
 		end
 
 		self.map_level = message.map_level
-		defold_utils.SET_CURRENT_COLLECTION_IDS(self.current_screen)
+		defold_utils.SET_CURRENT_COLLECTION_IDS("default", self.current_screen)
 	end
 end

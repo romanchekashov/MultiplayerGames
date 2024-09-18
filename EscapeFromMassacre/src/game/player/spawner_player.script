@@ -11,6 +11,7 @@ local random_position = Utils.random_position
 -- end
 
 function init(self)
+	log("spawner_player init", msg.url())
     self.w = tonumber(sys.get_config("display.width")) - 300
     self.h = tonumber(sys.get_config("display.height")) - 200
 	-- print("w " .. self.w .. " h " .. self.h)

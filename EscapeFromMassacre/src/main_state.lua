@@ -17,7 +17,7 @@ local M = {
     factories = {},
     gameobjects = {},
     gameobject_count = 0,
-    go_uid_sequence = 0,
+    go_uid_sequence = 10000,
     gameTime = 0,
     isGateOpen = false,
 
@@ -338,8 +338,16 @@ function M.register_gameobject(uid, go_id, type)
     assert(go_id, "You must provide a game object id")
     assert(type and M.factories[type], "You must provide a known game object type")
     log("register_gameobject", go_id, type)
-    M.go_uid_sequence = M.go_uid_sequence + 1
-    local gouid = tostring(uid) .. "_" .. M.go_uid_sequence
+
+    local gouid
+
+    if type == M.FACTORY_TYPES.player then
+        gouid = uid
+    else
+        M.go_uid_sequence = M.go_uid_sequence + 1
+        gouid = M.go_uid_sequence
+    end
+
     M.gameobjects[gouid] = { id = go_id, type = type, gouid = gouid, player_uid = uid }
     M.gameobject_count = M.gameobject_count + 1
 end
@@ -423,7 +431,7 @@ function M.tostring(self)
     for gouid, v in pairs(self.gameobjects) do
         sw.string("GO")
         sw.string(v.type)
-        sw.string(gouid)
+        sw.number(tonumber(gouid))
 
         local pos = go.get_position(v.id)
         local rot = go.get_rotation(v.id)
@@ -433,7 +441,9 @@ function M.tostring(self)
         sw.vector3(scale)
 
         if M.FACTORY_TYPES.player == v.type then
-            sw.number(v.playerOnMapLevel)
+            local player = M.players:get(gouid)
+            sw.number(player and player.player_type or M.PLAYER_TYPE.FAMILY)
+            sw.number(v and v.playerOnMapLevel or M.MAP_LEVELS.HOUSE)
             sw.number(v and v.health or 100)
             sw.number(v and v.score or 0)
             --sw.number(0) -- 0: disconnected, 1: connected

@@ -8,6 +8,7 @@ local M = {
 		local from = vmath.vector3(action.x, action.y, 0)
 		return math.atan2(to.x - from.x, from.y - to.y)
 	end,
+    collectionNames = Collections.createList(),
     collectionIds = Collections.createList(),
     CURRENT_COLLECTION_IDS = {},
     CURRENT_COLLECTION_IDS_2 = {},
@@ -87,13 +88,14 @@ local function tablelength(T)
     return count
 end
 
-function M.SET_CURRENT_COLLECTION_IDS(ids)
+function M.SET_CURRENT_COLLECTION_IDS(collectionName, ids)
+    M.collectionNames:add(collectionName)
     M.collectionIds:add(ids)
-    --if tablelength(M.CURRENT_COLLECTION_IDS) > 0 then
-    --    M.CURRENT_COLLECTION_IDS_2 = ids
-    --else
-    --    M.CURRENT_COLLECTION_IDS = ids
-    --end
+    if tablelength(M.CURRENT_COLLECTION_IDS) > 0 then
+        M.CURRENT_COLLECTION_IDS_2 = ids
+    else
+        M.CURRENT_COLLECTION_IDS = ids
+    end
     M.CURRENT_COLLECTION_IDS = ids
     M.COLLECTION_URLS = {}
     for key, value in pairs(ids) do

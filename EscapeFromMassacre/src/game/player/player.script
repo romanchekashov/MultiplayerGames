@@ -80,20 +80,20 @@ local function input_controls(self)
 			self.velocity.y = 0
 		end
 	else
-		if input.is_pressed(ACTION_IDS.LEFT) then
-			self.velocity.x = -PLAYER_SPEED
-		elseif input.is_pressed(ACTION_IDS.RIGHT) then
-			self.velocity.x = PLAYER_SPEED
-		else
-			self.velocity.x = 0
-		end
-		if input.is_pressed(ACTION_IDS.UP) then
-			self.velocity.y = PLAYER_SPEED
-		elseif input.is_pressed(ACTION_IDS.DOWN) then
-			self.velocity.y = -PLAYER_SPEED
-		else
-			self.velocity.y = 0
-		end
+		--if input.is_pressed(ACTION_IDS.LEFT) then
+		--	self.velocity.x = -PLAYER_SPEED
+		--elseif input.is_pressed(ACTION_IDS.RIGHT) then
+		--	self.velocity.x = PLAYER_SPEED
+		--else
+		--	self.velocity.x = 0
+		--end
+		--if input.is_pressed(ACTION_IDS.UP) then
+		--	self.velocity.y = PLAYER_SPEED
+		--elseif input.is_pressed(ACTION_IDS.DOWN) then
+		--	self.velocity.y = -PLAYER_SPEED
+		--else
+		--	self.velocity.y = 0
+		--end
 	end
 end
 
@@ -217,7 +217,7 @@ function init(self)
 	if not self.remote and not self.isServer then
 		log("remote = " .. tostring(self.remote))
 		msg.post(".", "acquire_input_focus")
-		msg.post("#camera", "acquire_camera_focus")
+		msg.post("/camera", "acquire_camera_focus")
 		input.acquire()
 		msg.post("/virtual_gamepad", "register")
 
@@ -244,7 +244,7 @@ function final(self)
 		MainState.SOUND.loop_run.stop()
 		self.sound_run_playing = false
 		msg.post(".", "release_input_focus")
-		msg.post("#camera", "release_camera_focus")
+		msg.post("/camera", "release_camera_focus")
 		input.release()
 		msg.post("/virtual_gamepad", "unregister")
 	end
@@ -259,12 +259,12 @@ function final(self)
 end
 
 function update(self, dt)
-	--if self.remote then
-	--	return
-	--end
-	if not self.isServer then
+	if self.remote then
 		return
 	end
+	--if not self.isServer then
+	--	return
+	--end
 
 	if MainState.pause then
 		-- input_release_controls()
@@ -295,10 +295,11 @@ function update(self, dt)
 
 	input_controls(self)
 
-	-- update camera position
-	go.set_position(pos + vmath.vector3(-568, - 320, 0), "camera")
-
-	go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
+	if not self.isServer then
+		-- update camera position
+		go.set_position(pos + vmath.vector3(-568, - 320, 0), "camera")
+		go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
+	end
 
 	self.stairs_change_cooldown = self.stairs_change_cooldown - dt
 	self.fire_cooldown = self.fire_cooldown - dt

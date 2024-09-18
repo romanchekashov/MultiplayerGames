@@ -121,7 +121,7 @@ end
 
 function update(self, dt)
 	if self.client then
-		self.client.update(dt)
+		--self.client.update(dt)
 	end
 end
 
