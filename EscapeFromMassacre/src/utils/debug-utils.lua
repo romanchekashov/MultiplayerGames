@@ -12,6 +12,30 @@ M.isProd = false
 local isDebug = false
 local isTest = false
 
+function M.compareTables(t1, t2)
+    -- First, check if both are tables
+    if type(t1) ~= "table" or type(t2) ~= "table" then
+        return false
+    end
+
+    -- Check that both tables have the same keys and values
+    for key, value in pairs(t1) do
+        if t2[key] ~= value then
+            return false
+        end
+    end
+
+    -- Check if t2 has any extra keys that t1 doesn't have
+    for key, value in pairs(t2) do
+        if t1[key] ~= value then
+            return false
+        end
+    end
+
+    -- If all keys and values are equal, return true
+    return true
+end
+
 function table.shallow_copy(t)
     local t2 = {}
     for k,v in pairs(t) do

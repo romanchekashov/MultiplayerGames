@@ -81,6 +81,10 @@ function M.reader(str, str_length)
 		return tonumber(instance.string())
 	end
 
+	function instance.double()
+		return instance.number() / 1000
+	end
+
 	--- Read a Vector3 from the stream
 	-- @return The vector3
 	function instance.vector3()
@@ -162,6 +166,11 @@ function M.writer()
 	function instance.number(number)
 		local str = tostring(math.floor(number))
 		strings[#strings + 1] = str .. "."
+		return instance
+	end
+
+	function instance.double(number)
+		instance.number(number * 1000)
 		return instance
 	end
 

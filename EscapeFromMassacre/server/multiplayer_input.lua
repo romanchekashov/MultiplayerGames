@@ -9,19 +9,43 @@ local ACT_CODE = {
     LEFT = 3,
     RIGHT = 4,
     UP = 5,
-    DOWN = 6
+    DOWN = 6,
+    TOUCH = 7,
+    TOUCH_X = 8,
+    TOUCH_Y = 9
 }
 local M = {
     playerCommands = Collections.createMap(),
-    is_pressed = function (self, uid, action_id)
-        log("is_pressed", uid, action_id)
+    last_touch_x = 0,
+    last_touch_y = 0,
+    last_command = function (self, uid)
         local playerCommands = self.playerCommands:get(uid)
+        return playerCommands and playerCommands.commands and playerCommands.commands:getLast()
+    end,
+    touched = function (self, uid)
+        local last_command = self:last_command(uid)
 
-        if playerCommands == nil then
-            return false
+        if last_command == nil then
+            return nil
         end
 
-        local last_command = playerCommands.commands:getLast()
+        local x = last_command[ACT_CODE.TOUCH_X]
+        local y = last_command[ACT_CODE.TOUCH_Y]
+
+        if x == self.last_touch_x or y == self.last_touch_y then
+            return nil
+        end
+
+        self.last_touch_x = x
+        self.last_touch_y = y
+
+        log("touched", uid, x, y)
+
+        return {x = x, y = y}
+    end,
+    is_pressed = function (self, uid, action_id)
+        log("is_pressed", uid, action_id)
+        local last_command = self:last_command(uid)
 
         if last_command == nil then
             return false
@@ -48,7 +72,9 @@ local M = {
                 [ACT_CODE.LEFT] = streamReader.number(),
                 [ACT_CODE.RIGHT] = streamReader.number(),
                 [ACT_CODE.UP] = streamReader.number(),
-                [ACT_CODE.DOWN] = streamReader.number()
+                [ACT_CODE.DOWN] = streamReader.number(),
+                [ACT_CODE.TOUCH_X] = streamReader.double(),
+                [ACT_CODE.TOUCH_Y] = streamReader.double()
             }
 
             playerCommands.commands:add(command)

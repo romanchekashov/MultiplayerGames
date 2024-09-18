@@ -10,6 +10,9 @@ local ACTION_IDS = {
     RIGHT = hash("right"),
     UP = hash("up"),
     DOWN = hash("down"),
+    TOUCH = hash("touch"),
+    TOUCH_X = hash("touch_x"),
+    TOUCH_Y = hash("touch_y"),
 
     GAMEPAD = {
         CONNECTED = hash("gamepad_connected"),

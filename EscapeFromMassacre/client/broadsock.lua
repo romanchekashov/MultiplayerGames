@@ -89,7 +89,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		local id = message.id
 		local killer_uid = message.killer_uid
 		log("unregister_gameobject", id)
-		for gouid,gameobject in pairs(gameobjects) do
+		for gouid,gameobject in pairs(MainState.gameobjects) do
 			if gameobject.id == id then
 				MainState.gameobjects[gouid] = nil
 				MainState.gameobject_count = MainState.gameobject_count - 1
@@ -444,7 +444,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			if rateLimiter(dt) then
 				return
 			end
-			log("update - sending game objects", instance.gameobject_count(), "gameobjects.length:", #gameobjects)
+			log("update - sending game objects", instance.gameobject_count(), "gameobjects.length:", #MainState.gameobjects)
 			local player = MainState.players:get(uid)
 			local sw = stream.writer()
 			sw.string("GO")
