@@ -82,6 +82,8 @@ local function input_controls(self)
 		else
 			self.velocity.y = 0
 		end
+
+		log("input_controls", self.velocity.x, self.velocity.y)
 	else
 		--if input.is_pressed(ACTION_IDS.LEFT) then
 		--	self.velocity.x = -PLAYER_SPEED
@@ -476,39 +478,6 @@ function on_message(self, message_id, message, sender)
 		end
 	end
 
-	--if self.remote then
-	--	return
-	--end
-	if not self.isServer then
-		return
-	end
-
-	if message_id == hash("analog") then
-		-- print("analog: x", message.x, " - y", message.y, message.pressed, message.released)
-		-- self.speed.x = message.x * 200
-		-- self.speed.y = message.y * 200
-		if message.x < 0 then
-			self.velocity.x = -PLAYER_SPEED
-		elseif message.x > 0 then
-			self.velocity.x = PLAYER_SPEED
-		else
-			self.velocity.x = 0
-		end
-		if message.y > 0 then
-			self.velocity.y = PLAYER_SPEED
-		elseif message.y < 0 then
-			self.velocity.y = -PLAYER_SPEED
-		else
-			self.velocity.y = 0
-		end
-
-		if message.x ~= 0 or message.y ~= 0 then
-			--print(message.x, message.y, math.atan2(message.y, message.x), math.rad(-90))
-			--go.set_rotation(get_rotation(message))
-			go.set_rotation(vmath.quat_rotation_z(math.atan2(message.y, message.x) + rad_minus90))
-		end
-	end
-
 	if message_id == MSG_GROUPS.COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
 			-- print("I collided with", go.get_id(), message.other_id, message.other_group)
@@ -552,6 +521,11 @@ function on_message(self, message_id, message, sender)
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
 		if message.group == MSG_GROUPS.WALL then
+			log("contact_point_response", message.group, message.normal, message.distance)
+			if self.velocity.x ~= 0 and self.velocity.y ~= 0 then
+				--self.velocity.x, self.velocity.y = 0, 0
+				self.velocity.y = 0
+			end
 			go.set_position(go.get_position() + message.normal * message.distance)
 		end
 
@@ -563,6 +537,39 @@ function on_message(self, message_id, message, sender)
 				msg.post("/levels#change", "load_level", {map_level = MainState.MAP_LEVELS.HOUSE})
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			end
+		end
+	end
+
+	--if self.remote then
+	--	return
+	--end
+	if not self.isServer then
+		return
+	end
+
+	if message_id == hash("analog") then
+		-- print("analog: x", message.x, " - y", message.y, message.pressed, message.released)
+		-- self.speed.x = message.x * 200
+		-- self.speed.y = message.y * 200
+		if message.x < 0 then
+			self.velocity.x = -PLAYER_SPEED
+		elseif message.x > 0 then
+			self.velocity.x = PLAYER_SPEED
+		else
+			self.velocity.x = 0
+		end
+		if message.y > 0 then
+			self.velocity.y = PLAYER_SPEED
+		elseif message.y < 0 then
+			self.velocity.y = -PLAYER_SPEED
+		else
+			self.velocity.y = 0
+		end
+
+		if message.x ~= 0 or message.y ~= 0 then
+			--print(message.x, message.y, math.atan2(message.y, message.x), math.rad(-90))
+			--go.set_rotation(get_rotation(message))
+			go.set_rotation(vmath.quat_rotation_z(math.atan2(message.y, message.x) + rad_minus90))
 		end
 	end
 end
