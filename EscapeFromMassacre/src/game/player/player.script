@@ -522,6 +522,11 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
 		if message.group == MSG_GROUPS.WALL then
 			log("contact_point_response", message.group, message.normal, message.distance)
+			-- https://forum.defold.com/t/there-is-a-bug-with-collisions-in-my-game/77002/14
+			-- Some things I’d try to do:
+			-- 1. Put a limit to the velocity. Do not apply more force if your linear velocity is above a certain treshold
+			-- 2. Perhaps do some prediction using ray casts to know if you are about to collide (and do “something”)
+			-- 3. And apply an opposite force on collision to fight tunneling
 			if self.velocity.x ~= 0 and self.velocity.y ~= 0 then
 				--self.velocity.x, self.velocity.y = 0, 0
 				self.velocity.y = 0
