@@ -3,6 +3,14 @@ local player_commands = require "client.player_commands"
 local debugUtils = require "src.utils.debug-utils"
 local log = debugUtils.createLog("[MULTIPLAYER_INPUT]").log
 
+local ACT_CODE = {
+    JOIN = 1,
+    USE = 2,
+    LEFT = 3,
+    RIGHT = 4,
+    UP = 5,
+    DOWN = 6
+}
 local M = {
     playerCommands = Collections.createMap(),
     is_pressed = function (self, uid, action_id)
@@ -13,44 +21,44 @@ local M = {
             return false
         end
 
-        local last = playerCommands.commands:getLast()
+        local last_command = playerCommands.commands:getLast()
 
-        if last == nil then
+        if last_command == nil then
             return false
         end
 
-        local num_action_id = last.num_action_id
-        local num_action_state = last.num_action_state
-        local isPressed = num_action_id == player_commands.ActionIdToCode[action_id] and num_action_state == 1
-
-        log("is_pressed", isPressed, num_action_id, num_action_state, action_id)
+        local isPressed = last_command[player_commands.ActionIdToCode[action_id]] == 1
+        log("is_pressed", action_id, isPressed)
 
         return isPressed
     end,
     consumeCommands = function (self, from_uid, streamReader)
         local playerCommands = self.playerCommands:get(from_uid)
-        if playerCommands == nil then
-            self.playerCommands:put(from_uid, {commands = Collections.createList()})
-            playerCommands = self.playerCommands:get(from_uid)
+        self.playerCommands:put(from_uid, {commands = Collections.createList()})
+        playerCommands = self.playerCommands:get(from_uid)
+        --if playerCommands == nil then
+        --end
+
+        local t = streamReader.number()
+        while t > 0 do
+            local command = {
+                ts = streamReader.number(),
+                [ACT_CODE.JOIN] = streamReader.number(),
+                [ACT_CODE.USE] = streamReader.number(),
+                [ACT_CODE.LEFT] = streamReader.number(),
+                [ACT_CODE.RIGHT] = streamReader.number(),
+                [ACT_CODE.UP] = streamReader.number(),
+                [ACT_CODE.DOWN] = streamReader.number()
+            }
+
+            playerCommands.commands:add(command)
+
+            log("command", command.ts, command[ACT_CODE.JOIN], command[ACT_CODE.USE], command[ACT_CODE.LEFT], command[ACT_CODE.RIGHT], command[ACT_CODE.UP], command[ACT_CODE.DOWN])
+
+            t = t - 1
         end
 
-        local i
-        repeat
-            local ts = streamReader.number()
-            i = ts
-            if i == nil then
-                break
-            end
-
-            local num_action_id = streamReader.number()
-            local num_action_state = streamReader.number()
-
-            playerCommands.commands:add({
-                ts = ts,
-                num_action_id = num_action_id,
-                num_action_state = num_action_state
-            })
-        until i ~= nil
+        log("consumeCommands", from_uid, playerCommands.commands.length)
     end
 }
 

@@ -87,10 +87,10 @@ function M.createMap()
 			return false
 		end,
 		put = function (self, key, o)
-			if not self:has(key) then
-				self.items[key] = o
-				self.length = self.length + 1
-			end
+			--if not self:has(key) then
+			--end
+			self.items[key] = o
+			self.length = self.length + 1
 		end,
 		remove = function (self, key)
 			if self.items[key] ~= nil then

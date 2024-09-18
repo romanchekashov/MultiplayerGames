@@ -136,8 +136,13 @@ M.BROADSOCK = {
         })
     end,
     send_command = function (self, data)
+        local sendData = commands:build(data.player_uid, data)
+        if sendData == nil then
+            return
+        end
+
         msg.post(self.URL, "player_commands", {
-            data = commands:build(data.player_uid, data)
+            data = sendData
         })
     end,
 }

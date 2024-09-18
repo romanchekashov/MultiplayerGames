@@ -12,6 +12,14 @@ M.isProd = false
 local isDebug = false
 local isTest = false
 
+function table.shallow_copy(t)
+    local t2 = {}
+    for k,v in pairs(t) do
+        t2[k] = v
+    end
+    return t2
+end
+
 function string:split(inSplitPattern, outResults)
     if not outResults then
         outResults = {}

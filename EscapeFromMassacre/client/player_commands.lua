@@ -25,36 +25,50 @@ local M = {
         [4] = ACTION_IDS.RIGHT,
         [5] = ACTION_IDS.UP,
         [6] = ACTION_IDS.DOWN
+    },
+    ActionState = {
+        released = 0,
+        pressed = 1
     }
 };
 
 function M.create()
     return {
         commands = Collections.createList(),
-        MAX_COMMANDS_BUFFER_SIZE = 100,
-        last_num_action_id = -1,
-        last_num_action_state = -1,
+        MAX_COMMANDS_BUFFER_SIZE = 2,
         build = function (self, player_uid, data)
             --log("build", data)
             log("commands.length", tostring(self.commands.length))
+            local last_command = self.commands:getLast()
+            if last_command == nil then
+                last_command = {
+                    ts = get_timestamp_in_ms(),
+                    [M.ActionIdToCode[ACTION_IDS.JOIN]] = M.ActionState.released,
+                    [M.ActionIdToCode[ACTION_IDS.USE]] = M.ActionState.released,
+                    [M.ActionIdToCode[ACTION_IDS.LEFT]] = M.ActionState.released,
+                    [M.ActionIdToCode[ACTION_IDS.RIGHT]] = M.ActionState.released,
+                    [M.ActionIdToCode[ACTION_IDS.UP]] = M.ActionState.released,
+                    [M.ActionIdToCode[ACTION_IDS.DOWN]] = M.ActionState.released
+                }
+            end
 
             local num_action_id = M.ActionIdToCode[data.action_id]
-            local num_action_state = 0
-            if data.action.released then
-                num_action_state = 0
-            end
+            local num_action_state = last_command[num_action_id]
             if data.action.pressed then
                 num_action_state = 1
             end
+            if data.action.released then
+                num_action_state = 0
+            end
 
-            if self.last_num_action_id ~= num_action_id or self.last_num_action_state ~= num_action_state then
-                self.commands:add({
-                    ts = get_timestamp_in_ms(),
-                    num_action_id = num_action_id,
-                    num_action_state = num_action_state
-                })
-                self.last_num_action_id = num_action_id
-                self.last_num_action_state = num_action_state
+            if last_command[num_action_id] ~= num_action_state then
+                local copy = table.shallow_copy(last_command)
+                copy.ts = get_timestamp_in_ms()
+                copy[num_action_id] = num_action_state
+
+                self.commands:add(copy)
+            --else
+            --    return nil
             end
 
             if self.commands.length > self.MAX_COMMANDS_BUFFER_SIZE then
@@ -63,13 +77,17 @@ function M.create()
 
             local sendData = stream.writer()
                                    --.number(player_uid)
-                                   .string("NOT_GS_PLAYER_COMMANDS")
+                                   .string("NOT_GS_PLAYER_COMMANDS").number(self.commands.length)
 
             self.commands:for_each(function (command)
                 sendData = sendData
                         .number(command.ts)
-                        .number(command.num_action_id)
-                        .number(command.num_action_state)
+                        .number(command[M.ActionIdToCode[ACTION_IDS.JOIN]])
+                        .number(command[M.ActionIdToCode[ACTION_IDS.USE]])
+                        .number(command[M.ActionIdToCode[ACTION_IDS.LEFT]])
+                        .number(command[M.ActionIdToCode[ACTION_IDS.RIGHT]])
+                        .number(command[M.ActionIdToCode[ACTION_IDS.UP]])
+                        .number(command[M.ActionIdToCode[ACTION_IDS.DOWN]])
             end)
 
             return sendData.tostring()
