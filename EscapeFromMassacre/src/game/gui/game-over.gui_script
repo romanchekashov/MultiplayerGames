@@ -62,7 +62,7 @@ local function updateDataList(self)
 	local survivors = {}
 	local family = {}
 
-	MainState.game_over_players:for_each(function (player)
+	MainState.game_over_players:for_each(function (k, player)
 		if player.type == MainState.PLAYER_TYPE.SURVIVOR then
 			print("SURVIVOR", player.uid, player.type, player.username, player.score)
 			table.insert(survivors, player)

@@ -156,7 +156,7 @@ class Rooms:
             self.add(Room(f'Room {i}'))
 
     async def to_room_client(self, room, msg):
-        Log.info(f'TO-CLIENT: {msg}')
+        # Log.info(f'TO-CLIENT: {msg}')
 
         await room.to_game_client(msg)
 

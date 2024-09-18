@@ -64,44 +64,6 @@ local function get_rotation(self, touch)
 	return vmath.quat_rotation_z(angle)
 end
 
-local function input_controls(self)
-	if self.isServer then
-		self.touch = multiplayer_input:touched(self.uid)
-
-		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.LEFT) then
-			self.velocity.x = -PLAYER_SPEED
-		elseif multiplayer_input:is_pressed(self.uid, ACTION_IDS.RIGHT) then
-			self.velocity.x = PLAYER_SPEED
-		else
-			self.velocity.x = 0
-		end
-		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.UP) then
-			self.velocity.y = PLAYER_SPEED
-		elseif multiplayer_input:is_pressed(self.uid, ACTION_IDS.DOWN) then
-			self.velocity.y = -PLAYER_SPEED
-		else
-			self.velocity.y = 0
-		end
-
-		log("input_controls", self.velocity.x, self.velocity.y)
-	else
-		--if input.is_pressed(ACTION_IDS.LEFT) then
-		--	self.velocity.x = -PLAYER_SPEED
-		--elseif input.is_pressed(ACTION_IDS.RIGHT) then
-		--	self.velocity.x = PLAYER_SPEED
-		--else
-		--	self.velocity.x = 0
-		--end
-		--if input.is_pressed(ACTION_IDS.UP) then
-		--	self.velocity.y = PLAYER_SPEED
-		--elseif input.is_pressed(ACTION_IDS.DOWN) then
-		--	self.velocity.y = -PLAYER_SPEED
-		--else
-		--	self.velocity.y = 0
-		--end
-	end
-end
-
 local function trigger(self, action)
 	if action.pressed then
 		self.pressed_time = socket.gettime()
@@ -121,25 +83,26 @@ local function update_fuzes(player_uid)
 
 	local i = 1
 	local sprite_url
-	for key_fuze_color, p_uid in pairs(MainState.fuzeToPlayerUid) do
+	MainState.fuzeToPlayerUid:for_each(function(key_fuze_color, p_uid)
 		if p_uid == player_uid then
 			sprite_url = string.format("#sprite-fuze-%d", i)
 			msg.post(sprite_url, "enable")
 			sprite.play_flipbook(sprite_url, FUZE_COLOR_IMGS[key_fuze_color])
 			i = i + 1
 		end
-	end
+	end)
 end
 
 local function throw_fuzes(player_uid)
 	for i=1,#FUZE_COLOR_IMGS do msg.post(string.format("#sprite-fuze-%d", i), "disable") end
 
 	local pos = go.get_position()
-	for key_fuze_color, p_uid in pairs(MainState.fuzeToPlayerUid) do
+	MainState.fuzeToPlayerUid:for_each(function(key_fuze_color, p_uid)
 		if p_uid == player_uid then
 			pos.x = pos.x + 30
 			pos.y = pos.y + 30
 			MainState.fuzeToPlayerUid[key_fuze_color] = nil
+			MainState.fuzeColorToPlayerUid:put(key_fuze_color, nil)
 			MSG.BROADSOCK:send_reliable_go({
 				player_uid = player_uid,
 				map_level = MainState.playerOnMapLevel,
@@ -147,7 +110,7 @@ local function throw_fuzes(player_uid)
 				pos = pos})
 			msg.post("/gui#player", "update_fuzes", {fuze_color = key_fuze_color})
 		end
-	end
+	end)
 end
 
 local function hit(self, killer_uid)
@@ -167,6 +130,50 @@ local function hit(self, killer_uid)
 	end
 
 	self.hit_cooldown = HIT_COOLDOWN
+end
+
+local function input_controls(self)
+	if self.isServer then
+		self.touch = multiplayer_input:touched(self.uid)
+
+		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.LEFT) then
+			self.velocity.x = -PLAYER_SPEED
+		elseif multiplayer_input:is_pressed(self.uid, ACTION_IDS.RIGHT) then
+			self.velocity.x = PLAYER_SPEED
+		else
+			self.velocity.x = 0
+		end
+
+		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.UP) then
+			self.velocity.y = PLAYER_SPEED
+		elseif multiplayer_input:is_pressed(self.uid, ACTION_IDS.DOWN) then
+			self.velocity.y = -PLAYER_SPEED
+		else
+			self.velocity.y = 0
+		end
+
+		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.USE) then
+			self.btn_use_pressed = true
+			throw_fuzes(self.uid)
+		end
+
+		log("input_controls", self.velocity.x, self.velocity.y)
+	else
+		--if input.is_pressed(ACTION_IDS.LEFT) then
+		--	self.velocity.x = -PLAYER_SPEED
+		--elseif input.is_pressed(ACTION_IDS.RIGHT) then
+		--	self.velocity.x = PLAYER_SPEED
+		--else
+		--	self.velocity.x = 0
+		--end
+		--if input.is_pressed(ACTION_IDS.UP) then
+		--	self.velocity.y = PLAYER_SPEED
+		--elseif input.is_pressed(ACTION_IDS.DOWN) then
+		--	self.velocity.y = -PLAYER_SPEED
+		--else
+		--	self.velocity.y = 0
+		--end
+	end
 end
 
 function init(self)
@@ -478,6 +485,7 @@ function on_message(self, message_id, message, sender)
 		end
 	end
 
+	log(message_id, message.group, message.other_id, self.uid)
 	if message_id == MSG_GROUPS.COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
 			-- print("I collided with", go.get_id(), message.other_id, message.other_group)
@@ -494,19 +502,21 @@ function on_message(self, message_id, message, sender)
 			end
 		elseif message.group == MSG_GROUPS.FUZE then
 			local fuze_color = MainState.fuzesIdToColor[message.other_id]
-			if MainState.fuzeToPlayerUid[fuze_color] == nil then
-				-- print(message.group, fuze_color, go.get_position(), go.get_position(message.other_id))
-				MainState.fuzeToPlayerUid[fuze_color] = self.uid
+			MainState.fuzeColorToPlayerUid:put(fuze_color, self.uid)
+			log("MSG_GROUPS.FUZE", message.group, message.other_id, fuze_color, self.uid, go.get_position(), go.get_position(message.other_id))
+			if not MainState.fuzeToPlayerUid:has(fuze_color) then
+				MainState.fuzeToPlayerUid:put(fuze_color, self.uid)
 				update_fuzes(self.uid)
-				MSG.BROADSOCK:send_reliable_god({player_uid = self.uid, fuze_color = message.color})
+				--MSG.BROADSOCK:send_reliable_god({player_uid = self.uid, fuze_color = message.color})
 				msg.post("/gui#player", "update_fuzes", {fuze_color = fuze_color})
 			end
 		elseif message.group == MSG_GROUPS.FUZE_BOX then
 			local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
 			if self.btn_use_pressed then
-				if MainState.fuzeToPlayerUid[fuze_box_color] ~= nil then
+				MainState.fuzeColorToPlayerUid:remove(fuze_box_color)
+				if MainState.fuzeToPlayerUid:has(fuze_box_color) then
 					msg.post(message.other_id, "fuze_box_fixed", {fuze_box_color = fuze_box_color})
-					MainState.fuzeToPlayerUid[fuze_box_color] = nil
+					MainState.fuzeToPlayerUid:remove(fuze_box_color)
 					update_fuzes(self.uid)
 				else
 					local pos = go.get_position()

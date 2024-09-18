@@ -14,12 +14,28 @@ local function show_fuze(fuze_color, pos)
 	gui.play_flipbook(node, fuze_color_to_texture[fuze_color])
 	gui.set_enabled(node, true)
 	gui.set_position(node, pos)
-	
+
 	return node
+end
+
+local function update_fuzes(self)
+	for _,node in ipairs(self.fuze_nodes) do
+		gui.delete_node(node)
+	end
+	self.fuze_nodes = {}
+
+	local template_node = gui.get_node("box-fuze-red")
+	local pos = gui.get_position(template_node)
+
+	MainState.fuzeToPlayerUid:for_each(function(fuze_color, v)
+		table.insert(self.fuze_nodes, show_fuze(fuze_color, pos))
+		pos.y = pos.y + 20
+	end)
 end
 
 function init(self)
 	self.fuze_nodes = {}
+	self.player_fuze_count = MainState.fuzeToPlayerUid.length
 end
 
 function final(self)
@@ -29,25 +45,15 @@ function final(self)
 end
 
 function update(self, dt)
-	-- Add update code here
-	-- Learn more: https://defold.com/manuals/script/
-	-- Remove this function if not needed
+	if self.player_fuze_count ~= MainState.fuzeToPlayerUid.length then
+		update_fuzes(self)
+		self.player_fuze_count = MainState.fuzeToPlayerUid.length
+	end
 end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("update_fuzes") then
-		for _,node in ipairs(self.fuze_nodes) do
-			gui.delete_node(node)
-		end
-		self.fuze_nodes = {}
-
-		local template_node = gui.get_node("box-fuze-red")
-		local pos = gui.get_position(template_node)
-
-		for fuze_color,v in pairs(MainState.fuzeToPlayerUid) do
-			table.insert(self.fuze_nodes, show_fuze(fuze_color, pos))
-			pos.y = pos.y + 20
-		end
+		update_fuzes(self)
 	end
 end
 

@@ -24,7 +24,9 @@ end
 
 function init(self)
 	local id = go.get_id()
+
 	self.isServer = MainState.isServer
+
 	if self.isServer then
 		MainState.register_gameobject(0, id, MainState.FACTORY_TYPES.fuze)
 	else

@@ -26,8 +26,9 @@ local M = {
 
     fuzesIdToColor = {},
     fuzesColorToState = {},
-    fuzeToPlayerUid = {},
+    fuzeToPlayerUid = Collections.createMap(),
     fixedFuzeBoxCount = 0,
+    fuzeColorToPlayerUid = Collections.createMap(),
 
     pause = true,
     players = Collections.createMap(),
@@ -174,7 +175,7 @@ end
 function M.playerUidToScoreSortedForEach(fn)
     local list = {}
 
-	M.players:for_each(function (player)
+	M.players:for_each(function (k, player)
 		local item = {player = player, score = M.playerUidToScore[tostring(player.uid)]}
 		table.insert(list, item)
 	end)
@@ -327,7 +328,7 @@ function M.setUsernames(str)
     end
 
     --table.insert(result, str:sub(index, #str))
-    map:for_each(function (v)
+    map:for_each(function (k, v)
         print(v)
     end)
     M.uid_to_username = map
@@ -406,27 +407,29 @@ function M.tostring(self)
     sw.string("FUZE_BOX_4")
     sw.number(4)
     sw.number(0)
+
     -- fuzes
     sw.string("FUZE_1")
     sw.number(1) -- 1: red, 2: green, 3: blue, 4: yellow
     --sw.vector3(pos)
     sw.number(0) -- 0: not used, 1: used
-    sw.number(123) -- player with uid 123 has a red fuze
+    sw.number(M.fuzeColorToPlayerUid:get(M.FUZE.RED) or 0) -- player with uid 123 has a red fuze
     sw.string("FUZE_2")
     sw.number(2)
     --sw.vector3(pos)
     sw.number(0)
-    sw.number(0) -- fuze is on the ground
+    sw.number(M.fuzeColorToPlayerUid:get(M.FUZE.GREEN) or 0) -- fuze is on the ground
     sw.string("FUZE_3")
     sw.number(3)
     --sw.vector3(pos)
     sw.number(0)
-    sw.number(0)
+    sw.number(M.fuzeColorToPlayerUid:get(M.FUZE.BLUE) or 0)
     sw.string("FUZE_4")
     sw.number(4)
     --sw.vector3(pos)
     sw.number(0)
-    sw.number(0)
+    sw.number(M.fuzeColorToPlayerUid:get(M.FUZE.YELLOW) or 0)
+
     -- game objects
     for gouid, v in pairs(self.gameobjects) do
         sw.string("GO")
@@ -447,6 +450,10 @@ function M.tostring(self)
             sw.number(v and v.health or 100)
             sw.number(v and v.score or 0)
             --sw.number(0) -- 0: disconnected, 1: connected
+        elseif M.FACTORY_TYPES.fuze_box == v.type then
+            sw.number(v and v.id and M.fuzeBoxIdsToColor[v.id] or 0)
+        elseif M.FACTORY_TYPES.fuze == v.type then
+            sw.number(v and v.id and M.fuzesIdToColor[v.id] or 0)
         end
         -- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
     end
