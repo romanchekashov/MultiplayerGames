@@ -226,11 +226,19 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local object_type = sr.string()
 					local uid = sr.number()
 
+					if not clients[uid] then
+						add_game_object(uid)
+						log("remote GO add_game_object", uid)
+					end
+
+					local game_object = remote_gameobjects[uid]
+
 					local pos = sr.vector3()
 					local rot = sr.quat()
 					local scale = sr.vector3()
 					local player_type
 					local fuze_box_color
+					local fuze_box_state
 					local fuze_color
 
 					if MainState.FACTORY_TYPES.player == object_type then
@@ -245,16 +253,13 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						--enable = player_map_level == MainState.playerOnMapLevel
 					elseif MainState.FACTORY_TYPES.fuze_box == object_type then
 						fuze_box_color = sr.number()
+						fuze_box_state = sr.number()
+						if MainState.fuzeBoxColorToState[fuze_box_color] ~= fuze_box_state then
+							MainState.fuzeBoxColorToState[fuze_box_color] = fuze_box_state
+						end
 					elseif MainState.FACTORY_TYPES.fuze == object_type then
 						fuze_color = sr.number()
 					end
-
-					if not clients[uid] then
-						add_game_object(uid)
-						log("remote GO add_game_object", uid)
-					end
-
-					local game_object = remote_gameobjects[uid]
 
 					if game_object.gouid == nil then
 						local factory_url = MainState.factories[object_type]

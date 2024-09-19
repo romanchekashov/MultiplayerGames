@@ -103,11 +103,11 @@ local function throw_fuzes(player_uid)
 			pos.y = pos.y + 30
 			MainState.fuzeToPlayerUid[key_fuze_color] = nil
 			MainState.fuzeColorToPlayerUid:put(key_fuze_color, nil)
-			MSG.BROADSOCK:send_reliable_go({
-				player_uid = player_uid,
-				map_level = MainState.playerOnMapLevel,
-				fuze_color = key_fuze_color,
-				pos = pos})
+			--MSG.BROADSOCK:send_reliable_go({
+			--	player_uid = player_uid,
+			--	map_level = MainState.playerOnMapLevel,
+			--	fuze_color = key_fuze_color,
+			--	pos = pos})
 			msg.post("/gui#player", "update_fuzes", {fuze_color = key_fuze_color})
 		end
 	end)
@@ -511,11 +511,11 @@ function on_message(self, message_id, message, sender)
 				msg.post("/gui#player", "update_fuzes", {fuze_color = fuze_color})
 			end
 		elseif message.group == MSG_GROUPS.FUZE_BOX then
-			local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
-			if self.btn_use_pressed then
-				MainState.fuzeColorToPlayerUid:remove(fuze_box_color)
-				if MainState.fuzeToPlayerUid:has(fuze_box_color) then
+			if self.btn_use_pressed and self.isServer then
+				local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
+				if MainState.fuzeToPlayerUid:has(fuze_box_color) or MainState.fuzeColorToPlayerUid:has(fuze_box_color) then
 					msg.post(message.other_id, "fuze_box_fixed", {fuze_box_color = fuze_box_color})
+					MainState.fuzeColorToPlayerUid:remove(fuze_box_color)
 					MainState.fuzeToPlayerUid:remove(fuze_box_color)
 					update_fuzes(self.uid)
 				else

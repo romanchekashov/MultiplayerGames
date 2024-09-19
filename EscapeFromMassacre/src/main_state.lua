@@ -451,7 +451,9 @@ function M.tostring(self)
             sw.number(v and v.score or 0)
             --sw.number(0) -- 0: disconnected, 1: connected
         elseif M.FACTORY_TYPES.fuze_box == v.type then
-            sw.number(v and v.id and M.fuzeBoxIdsToColor[v.id] or 0)
+            local color = v and v.id and M.fuzeBoxIdsToColor[v.id] or 0
+            sw.number(color)
+            sw.number(v and v.id and M.fuzeBoxColorToState[color] or 0)
         elseif M.FACTORY_TYPES.fuze == v.type then
             sw.number(v and v.id and M.fuzesIdToColor[v.id] or 0)
         end

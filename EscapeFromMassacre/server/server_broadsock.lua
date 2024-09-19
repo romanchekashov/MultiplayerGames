@@ -252,12 +252,12 @@ end
 local count = 0
 
 local function on_data(data, data_length)
-	log("on_data", #data, "data_length", data_length, "data:", data, table.tostring(M.clients or {}))
+	--log("on_data", #data, "data_length", data_length, "data:", data, table.tostring(M.clients or {}))
 
 	local sr = stream.reader(data, data_length)
 	local from_uid = sr.number()
 	local msg_id = sr.string()
-	log("on_data from:", from_uid, "msg_id:", msg_id, "count", tostring(count))
+	--log("on_data from:", from_uid, "msg_id:", msg_id, "count", tostring(count))
 
 	if msg_id == MSG_IDS.GO then
 		-- M.send_message_others(data, from_uid)

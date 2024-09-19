@@ -1,4 +1,6 @@
 local MainState = require "src.main_state"
+local debugUtils = require "src.utils.debug-utils"
+local log = debugUtils.createLog("[FUZE_BOX]").log
 
 local MSG_GROUPS = MainState.MSG_GROUPS
 
@@ -17,9 +19,30 @@ local function enable(self)
 	-- msg.post("#sprite", "play_animation", {id = hash(fuze_color_to_texture[self.color].open)})
 end
 
+local function fuze_box_fixed(self)
+	log("fuze_box_fixed", self.color)
+	sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].close)
+	msg.post("#collisionobject", "disable")
+	MainState.fixedFuzeBoxCount = MainState.fixedFuzeBoxCount + 1
+	MainState.fuzeBoxColorToState[self.color] = 1
+
+	local fixedCount = 0
+	for _, v in ipairs(MainState.fuzeBoxColorToState) do
+		if v > 0 then
+			fixedCount = fixedCount + 1
+		end
+	end
+
+	if fixedCount == 4 then
+		msg.post("/levels#change", "gate_open", {})
+	end
+end
+
 function init(self)
-	local id = go.get_id()
 	self.isServer = MainState.isServer
+	self.fuze_box_state = 0
+	local id = go.get_id()
+
 	if self.isServer then
 		MainState.register_gameobject(0, id, MainState.FACTORY_TYPES.fuze_box)
 	else
@@ -39,9 +62,12 @@ function final(self)
 end
 
 function update(self, dt)
-	-- Add update code here
-	-- Learn more: https://defold.com/manuals/script/
-	-- Remove this function if not needed
+	if MainState.fuzeBoxColorToState[self.color] ~= self.fuze_box_state then
+		self.fuze_box_state = MainState.fuzeBoxColorToState[self.color]
+		if self.fuze_box_state == 1 then
+			fuze_box_fixed(self)
+		end
+	end
 end
 
 function fixed_update(self, dt)
@@ -60,13 +86,7 @@ function on_message(self, message_id, message, sender)
 			go.delete(message.other_id)
 		end
 	elseif message_id == hash("fuze_box_fixed") then
-		sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].close)
-		msg.post("#collisionobject", "disable")
-		MainState.fixedFuzeBoxCount = MainState.fixedFuzeBoxCount + 1
-
-		if MainState.fixedFuzeBoxCount == 4 then
-			msg.post("/levels#change", "gate_open", {})
-		end
+		fuze_box_fixed(self)
 	elseif message_id == MSG_GROUPS.ENABLE then
 		enable(self)
 	end
