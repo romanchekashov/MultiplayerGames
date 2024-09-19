@@ -27,7 +27,16 @@ local M = {
     fuzesIdToColor = {},
     fuzesColorToState = {},
     fuzeToPlayerUid = Collections.createMap(),
-    fixedFuzeBoxCount = 0,
+    FIXED_FUZE_BOX_COUNT_MAX = 4, -- 4
+    fixedFuzeBoxCount = function (self)
+        local fixedCount = 0
+        for _, v in ipairs(self.fuzeBoxColorToState) do
+            if v > 0 then
+                fixedCount = fixedCount + 1
+            end
+        end
+        return fixedCount
+    end,
     fuzeColorToPlayerUid = Collections.createMap(),
 
     pause = true,

@@ -42,7 +42,7 @@ function on_message(self, message_id, message, sender)
 			--defold_utils.SET_CURRENT_COLLECTION_IDS("default", self.current_screen)
 			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})
 
-			if MainState.fixedFuzeBoxCount == 4 then
+			if MainState:fixedFuzeBoxCount() == MainState.FIXED_FUZE_BOX_COUNT_MAX then
 				msg.post("/gate-main", "disable")
 			else
 				msg.post("/gate-main", "enable")
@@ -54,7 +54,7 @@ function on_message(self, message_id, message, sender)
 		msg.post("/factory#fuze", MSG.LEVEL_CHANGE.map_level_change.name, {map_level = self.map_level})
 		msg.post("/factory#fuze-box", MSG.LEVEL_CHANGE.map_level_change.name, {map_level = self.map_level})
 	elseif message_id == hash("gate_open") then
-		if self.map_level == MainState.MAP_LEVELS.HOUSE and MainState.fixedFuzeBoxCount == 4 then
+		if self.map_level == MainState.MAP_LEVELS.HOUSE and MainState:fixedFuzeBoxCount() == MainState.FIXED_FUZE_BOX_COUNT_MAX then
 			msg.post("/gate-main", "disable")
 		end
 	end

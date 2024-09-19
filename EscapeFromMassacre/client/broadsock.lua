@@ -238,7 +238,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local scale = sr.vector3()
 					local player_type
 					local fuze_box_color
-					local fuze_box_state
+					local fuze_box_state = 0
 					local fuze_color
 
 					if MainState.FACTORY_TYPES.player == object_type then
@@ -257,6 +257,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						if MainState.fuzeBoxColorToState[fuze_box_color] ~= fuze_box_state then
 							MainState.fuzeBoxColorToState[fuze_box_color] = fuze_box_state
 						end
+						enable = fuze_box_state == 0
 					elseif MainState.FACTORY_TYPES.fuze == object_type then
 						fuze_color = sr.number()
 					end

@@ -23,17 +23,9 @@ local function fuze_box_fixed(self)
 	log("fuze_box_fixed", self.color)
 	sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].close)
 	msg.post("#collisionobject", "disable")
-	MainState.fixedFuzeBoxCount = MainState.fixedFuzeBoxCount + 1
 	MainState.fuzeBoxColorToState[self.color] = 1
 
-	local fixedCount = 0
-	for _, v in ipairs(MainState.fuzeBoxColorToState) do
-		if v > 0 then
-			fixedCount = fixedCount + 1
-		end
-	end
-
-	if fixedCount == 4 then
+	if MainState:fixedFuzeBoxCount() == MainState.FIXED_FUZE_BOX_COUNT_MAX then
 		msg.post("/levels#change", "gate_open", {})
 	end
 end
