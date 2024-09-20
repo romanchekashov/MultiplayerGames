@@ -151,8 +151,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			-- server_nakama.send_player_move(stream.number_to_int32(#data) .. data)
 		end
 	end
-
+	local count = 0
 	function instance.on_data(data, data_length)
+		count = count + 1
 		--log("on_data: data:", data_length, data)
 		local sr = stream.reader(data, data_length)
 		local from_uid = sr.number()
@@ -162,7 +163,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		if msg_id == "GAME_STATE" then
 			MainState.currentGameState = sr.number()
 
-			if MainState.currentGameState == MainState.GAME_STATES.RUNNING then
+			if MainState.gameInitialized and MainState.currentGameState == MainState.GAME_STATES.RUNNING then
 				local newTime = sr.number()
 				if MainState.gameTime ~= newTime then
 					MainState.gameTime = newTime
@@ -173,56 +174,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				local gateState = sr.number()
 				MainState.isGateOpen = gateState == 1
 
-				sr.string() -- FUZE_BOX_1
-				MainState.fuzeBoxColorToState[sr.number()] = sr.number()
-				sr.string() -- FUZE_BOX_2
-				MainState.fuzeBoxColorToState[sr.number()] = sr.number()
-				sr.string() -- FUZE_BOX_3
-				MainState.fuzeBoxColorToState[sr.number()] = sr.number()
-				sr.string() -- FUZE_BOX_4
-				MainState.fuzeBoxColorToState[sr.number()] = sr.number()
+				-- game objects
+				local go_length = sr.number()
 
-				sr.string() -- FUZE_1
-				local color = sr.number()
-				MainState.fuzesColorToState[color] = sr.number()
-				local player_uid_with_fuze = sr.number()
-				if player_uid_with_fuze > 0 and MainState.player.uid == player_uid_with_fuze then
-					MainState.fuzeToPlayerUid:put(color, player_uid_with_fuze)
-				else
-					MainState.fuzeToPlayerUid:remove(color)
-				end
-				sr.string() -- FUZE_2
-				color = sr.number()
-				MainState.fuzesColorToState[color] = sr.number()
-				player_uid_with_fuze = sr.number()
-				if player_uid_with_fuze > 0 and MainState.player.uid == player_uid_with_fuze then
-					MainState.fuzeToPlayerUid:put(color, player_uid_with_fuze)
-				else
-					MainState.fuzeToPlayerUid:remove(color)
-				end
-				sr.string() -- FUZE_3
-				color = sr.number()
-				MainState.fuzesColorToState[color] = sr.number()
-				player_uid_with_fuze = sr.number()
-				if player_uid_with_fuze > 0 and MainState.player.uid == player_uid_with_fuze then
-					MainState.fuzeToPlayerUid:put(color, player_uid_with_fuze)
-				else
-					MainState.fuzeToPlayerUid:remove(color)
-				end
-				sr.string() -- FUZE_4
-				color = sr.number()
-				MainState.fuzesColorToState[color] = sr.number()
-				player_uid_with_fuze = sr.number()
-				if player_uid_with_fuze > 0 and MainState.player.uid == player_uid_with_fuze then
-					MainState.fuzeToPlayerUid:put(color, player_uid_with_fuze)
-				else
-					MainState.fuzeToPlayerUid:remove(color)
-				end
+				while go_length > 0 do
+					go_length = go_length - 1
 
-				local name = sr.string() -- GO
-				local enable = true
-
-				while name == "GO" do
+					local enable = true
+					local name = sr.string() -- GO
 					local object_type = sr.string()
 					local uid = sr.number()
 
@@ -237,9 +196,13 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local rot = sr.quat()
 					local scale = sr.vector3()
 					local player_type
+
 					local fuze_box_color
 					local fuze_box_state = 0
+
 					local fuze_color
+					local fuze_map_level = 0
+					local player_uid_with_fuze = 0
 
 					if MainState.FACTORY_TYPES.player == object_type then
 						player_type = sr.number()
@@ -254,12 +217,28 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					elseif MainState.FACTORY_TYPES.fuze_box == object_type then
 						fuze_box_color = sr.number()
 						fuze_box_state = sr.number()
-						if MainState.fuzeBoxColorToState[fuze_box_color] ~= fuze_box_state then
-							MainState.fuzeBoxColorToState[fuze_box_color] = fuze_box_state
+						if fuze_box_color > 0 then
+							if MainState.fuzeBoxColorToState[fuze_box_color] ~= fuze_box_state then
+								MainState.fuzeBoxColorToState[fuze_box_color] = fuze_box_state
+							end
+							enable = MainState.fuzeBoxColorToMapLevel[fuze_box_color] == MainState.playerOnMapLevel
 						end
-						enable = fuze_box_state == 0
 					elseif MainState.FACTORY_TYPES.fuze == object_type then
 						fuze_color = sr.number()
+						fuze_map_level = sr.number()
+						player_uid_with_fuze = sr.number()
+
+						if fuze_color > 0 and fuze_map_level > 0 then
+							if player_uid_with_fuze > 0 then
+								MainState.fuzeColorToPlayerUid:put(fuze_color, player_uid_with_fuze)
+							else
+								MainState.fuzeColorToPlayerUid:remove(fuze_color)
+							end
+
+							MainState.fuzeColorToMapLevel[fuze_color] = fuze_map_level
+							enable = fuze_map_level == MainState.playerOnMapLevel and player_uid_with_fuze == 0
+							--log("fuze enable", tostring(enable), fuze_color, fuze_map_level, MainState.playerOnMapLevel, "player_uid_with_fuze", player_uid_with_fuze, tostring(count))
+						end
 					end
 
 					if game_object.gouid == nil then
@@ -275,20 +254,31 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 								factory_data.score = 0
 								factory_data.ws_latency = -1
 							elseif object_type == MainState.FACTORY_TYPES.fuze_box then
-								factory_data.color = fuze_box_color
+								if fuze_box_color > 0 then
+									factory_data.color = fuze_box_color
+								else
+									factory_data = nil
+								end
 							elseif object_type == MainState.FACTORY_TYPES.fuze then
-								factory_data.color = fuze_color
+								if fuze_color > 0 and fuze_map_level > 0 then
+									factory_data.color = fuze_color
+									factory_data.map_level = fuze_map_level
+								else
+									factory_data = nil
+								end
 							end
 
-							local id = factory.create(factory_url, pos, rot, factory_data, scale)
-							assert(id, factory_url .. " should return non nil id")
-							log("GO obj created", uid, tostring(object_type), id)
-							game_object.gouid = { id = id, type = object_type }
+							if factory_data ~= nil then
+								local id = factory.create(factory_url, pos, rot, factory_data, scale)
+								assert(id, factory_url .. " should return non nil id")
+								log("GO obj created", uid, tostring(object_type), id)
+								game_object.gouid = { id = id, type = object_type }
 
-							if enable then
-								msg.post(id, "enable")
-							else
-								msg.post(id, "disable")
+								if enable then
+									msg.post(id, "enable")
+								else
+									msg.post(id, "disable")
+								end
 							end
 						end
 					else
@@ -375,7 +365,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						--end
 						--MainState.playerUidToWsLatency[from_uid] = sr.number()
 					end
-					name = sr.string()
+
 				end
 			end
 		elseif msg_id == MSG_IDS.GOD then
@@ -395,11 +385,12 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				end
 			end
 		elseif msg_id == MSG_IDS.CREATE_FUZES then
-			MainState.INITIAL_FUZES_CREATE = {}
-			table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
-			table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
-			table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
-			table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+			--MainState.INITIAL_FUZES_CREATE = {}
+			--table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+			--table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+			--table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+			--table.insert(MainState.INITIAL_FUZES_CREATE, {color = sr.number(), pos = sr.vector3()})
+
 			--msg.post("/factory#factory-fuze", MSG.FUZE_FACTORY.create_fuzes.name, {
 			--	color_red = sr.number(), color_red_pos = sr.vector3(),
 			--	color_green = sr.number(), color_green_pos = sr.vector3(),
@@ -407,13 +398,13 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			--	color_yellow = sr.number(), color_yellow_pos = sr.vector3(),
 			--})
 		elseif msg_id == MSG.BASE_MSG_IDS.RELIABLE_GO then
-			msg.post("/factory#fuze", MSG.FUZE_FACTORY.throw_fuze.name, {map_level = sr.number(), color = sr.number(), pos = sr.vector3()})
+			--msg.post("/factory#fuze", MSG.FUZE_FACTORY.throw_fuze.name, {map_level = sr.number(), color = sr.number(), pos = sr.vector3()})
 		elseif msg_id == MSG.BASE_MSG_IDS.RELIABLE_GOD then
-			msg.post("/factory#fuze", MSG.FUZE_FACTORY.pick_fuze.name, {color = sr.number()})
+			--msg.post("/factory#fuze", MSG.FUZE_FACTORY.pick_fuze.name, {color = sr.number()})
 		elseif msg_id == MSG_IDS.PLAYER_CREATE_POS then
 			local remote = MainState.player.uid ~= from_uid
 			log("PLAYER_CREATE_POS: remote = " .. tostring(remote))
-			msg.post("/spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type, pos = sr.vector3(), remote = remote})
+			--msg.post("/spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type, pos = sr.vector3(), remote = remote})
 		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")
 			add_game_object(from_uid)

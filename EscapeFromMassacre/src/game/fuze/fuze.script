@@ -1,28 +1,51 @@
 local MainState = require "src.main_state"
+local debugUtils = require "src.utils.debug-utils"
+local log = debugUtils.createLog("[FUZE]").log
 
 local MSG_GROUPS = MainState.MSG_GROUPS
 
 go.property("remote", true)
-go.property("color", 1)
+go.property("color", 0)
+go.property("map_level", 0)
 
-local function enable(self)
+local colorToSpriteId = {
+	[MainState.FUZE.RED] = "#fuze_red",
+	[MainState.FUZE.GREEN] = "#fuze_green",
+	[MainState.FUZE.BLUE] = "#fuze_blue",
+	[MainState.FUZE.YELLOW] = "#fuze_yellow"
+}
+
+local function enable(self, enabled)
+
 	msg.post("#fuze_red", "disable")
 	msg.post("#fuze_green", "disable")
 	msg.post("#fuze_blue", "disable")
 	msg.post("#fuze_yellow", "disable")
 
-	if self.color == MainState.FUZE.RED then
-		msg.post("#fuze_red", "enable")
-	elseif self.color == MainState.FUZE.GREEN then
-		msg.post("#fuze_green", "enable")
-	elseif self.color == MainState.FUZE.BLUE then
-		msg.post("#fuze_blue", "enable")
-	elseif self.color == MainState.FUZE.YELLOW then
-		msg.post("#fuze_yellow", "enable")
+	log("enable", enabled, self.color, colorToSpriteId[self.color])
+	self.enable = enabled
+
+	if enabled then
+		msg.post("#collisionobject", "enable")
+		msg.post(colorToSpriteId[self.color], "enable")
+	else
+		msg.post("#collisionobject", "disable")
+		msg.post(colorToSpriteId[self.color], "disable")
 	end
+	--
+	--if self.color == MainState.FUZE.RED then
+	--	msg.post("#fuze_red", "enable")
+	--elseif self.color == MainState.FUZE.GREEN then
+	--	msg.post("#fuze_green", "enable")
+	--elseif self.color == MainState.FUZE.BLUE then
+	--	msg.post("#fuze_blue", "enable")
+	--elseif self.color == MainState.FUZE.YELLOW then
+	--	msg.post("#fuze_yellow", "enable")
+	--end
 end
 
 function init(self)
+	log("init", self.color, self.map_level)
 	local id = go.get_id()
 
 	self.isServer = MainState.isServer
@@ -33,9 +56,8 @@ function init(self)
 		msg.post("/broadsock", "register_gameobject", { id = id, type = MainState.FACTORY_TYPES.fuze })
 	end
 
-	enable(self)
+	enable(self, true)
 	MainState.fuzesIdToColor[id] = self.color
-	print("[FUZE] created", self.color)
 end
 
 function final(self)
@@ -47,9 +69,10 @@ function final(self)
 end
 
 function update(self, dt)
-	-- Add update code here
-	-- Learn more: https://defold.com/manuals/script/
-	-- Remove this function if not needed
+	local player_uid_with_fuze = MainState.fuzeColorToPlayerUid:get(self.color) or 0
+	local fuze_map_level = MainState.fuzeColorToMapLevel[self.color]
+	local enabled = fuze_map_level == MainState.playerOnMapLevel and player_uid_with_fuze == 0
+	enable(self, enabled)
 end
 
 function fixed_update(self, dt)
@@ -81,7 +104,13 @@ function on_message(self, message_id, message, sender)
 			go.set_position(pos)
 		end
 	elseif message_id == MSG_GROUPS.ENABLE then
-		enable(self)
+		if not self.enable then
+			enable(self, true)
+		end
+	elseif message_id == MSG_GROUPS.DISABLE then
+		if self.enable then
+			enable(self, false)
+		end
 	end
 end
 

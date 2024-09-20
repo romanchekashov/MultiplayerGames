@@ -27,15 +27,17 @@ local function update_fuzes(self)
 	local template_node = gui.get_node("box-fuze-red")
 	local pos = gui.get_position(template_node)
 
-	MainState.fuzeToPlayerUid:for_each(function(fuze_color, v)
-		table.insert(self.fuze_nodes, show_fuze(fuze_color, pos))
-		pos.y = pos.y + 20
+	MainState.fuzeColorToPlayerUid:for_each(function(fuze_color, player_uid)
+		if player_uid == MainState.player.uid then
+			table.insert(self.fuze_nodes, show_fuze(fuze_color, pos))
+			pos.y = pos.y + 20
+		end
 	end)
 end
 
 function init(self)
 	self.fuze_nodes = {}
-	self.player_fuze_count = MainState.fuzeToPlayerUid.length
+	self.player_fuze_count = MainState.fuzeColorToPlayerUid.length
 end
 
 function final(self)
@@ -45,9 +47,9 @@ function final(self)
 end
 
 function update(self, dt)
-	if self.player_fuze_count ~= MainState.fuzeToPlayerUid.length then
+	if self.player_fuze_count ~= MainState.fuzeColorToPlayerUid.length then
 		update_fuzes(self)
-		self.player_fuze_count = MainState.fuzeToPlayerUid.length
+		self.player_fuze_count = MainState.fuzeColorToPlayerUid.length
 	end
 end
 

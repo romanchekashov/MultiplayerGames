@@ -5,6 +5,11 @@ local stream = require "client.stream"
 local debugUtils = require "src.utils.debug-utils"
 local log = debugUtils.createLog("[MAIN_STATE]").log
 
+local MAP_LEVELS = {
+    BASEMENT = 1,
+    HOUSE = 2,
+}
+
 local PLAYER_STATUS = {
     DISCONNECTED = 0,
     CONNECTED = 1,
@@ -13,7 +18,15 @@ local PLAYER_STATUS = {
     DEAD = 4
 }
 
+local FUZE = {
+    RED = 1,
+    GREEN = 2,
+    BLUE = 3,
+    YELLOW = 4,
+}
+
 local M = {
+    gameInitialized = false,
     factories = {},
     gameobjects = {},
     gameobject_count = 0,
@@ -22,11 +35,18 @@ local M = {
     isGateOpen = false,
 
     fuzeBoxIdsToColor = {},
-    fuzeBoxColorToState = {},
-
-    fuzesIdToColor = {},
-    fuzesColorToState = {},
-    fuzeToPlayerUid = Collections.createMap(),
+    fuzeBoxColorToMapLevel = {
+        [FUZE.RED] = MAP_LEVELS.BASEMENT,
+        [FUZE.GREEN] = MAP_LEVELS.HOUSE,
+        [FUZE.BLUE] = MAP_LEVELS.BASEMENT,
+        [FUZE.YELLOW] = MAP_LEVELS.HOUSE
+    },
+    fuzeBoxColorToState = {
+        [FUZE.RED] = 0,
+        [FUZE.GREEN] = 0,
+        [FUZE.BLUE] = 0,
+        [FUZE.YELLOW] = 0
+    },
     FIXED_FUZE_BOX_COUNT_MAX = 4, -- 4
     fixedFuzeBoxCount = function (self)
         local fixedCount = 0
@@ -37,6 +57,20 @@ local M = {
         end
         return fixedCount
     end,
+
+    fuzesIdToColor = {},
+    fuzeColorToMapLevel = {
+        [FUZE.RED] = MAP_LEVELS.HOUSE,
+        [FUZE.GREEN] = MAP_LEVELS.BASEMENT,
+        [FUZE.BLUE] = MAP_LEVELS.HOUSE,
+        [FUZE.YELLOW] = MAP_LEVELS.BASEMENT
+    },
+    fuzesColorToState = {
+        [FUZE.RED] = 0,
+        [FUZE.GREEN] = 0,
+        [FUZE.BLUE] = 0,
+        [FUZE.YELLOW] = 0
+    },
     fuzeColorToPlayerUid = Collections.createMap(),
 
     pause = true,
@@ -66,8 +100,8 @@ local M = {
     GAME_TIMEOUT_IN_SEC = 60 * 1,
     PLAYER_STATUS = PLAYER_STATUS,
     PLAYER_TYPE = {
-        SURVIVOR = 0,
-        FAMILY = 1
+        FAMILY = 1,
+        SURVIVOR = 2,
     },
     bulletBelongToPlayerUid = {},
     playerUidToScore = {},
@@ -125,16 +159,8 @@ local M = {
         LOBBY = 0,
         GAME = 1
     },
-    MAP_LEVELS = {
-        HOUSE = 1,
-        BASEMENT = 0
-    },
-    FUZE = {
-        RED = 1,
-        GREEN = 2,
-        BLUE = 3,
-        YELLOW = 4,
-    },
+    MAP_LEVELS = MAP_LEVELS,
+    FUZE = FUZE,
     playerSlots = {}
 }
 
@@ -148,19 +174,7 @@ M.player = {
 
 M.gameTime = M.GAME_TIMEOUT_IN_SEC
 M.currentGameState = M.GAME_STATES.LOBBY
-M.playerOnMapLevel = M.MAP_LEVELS.HOUSE
-M.fuzeBoxColorToState = {
-    [M.FUZE.RED] = 0,
-    [M.FUZE.GREEN] = 0,
-    [M.FUZE.BLUE] = 0,
-    [M.FUZE.YELLOW] = 0
-}
-M.fuzesColorToState = {
-    [M.FUZE.RED] = 0,
-    [M.FUZE.GREEN] = 0,
-    [M.FUZE.BLUE] = 0,
-    [M.FUZE.YELLOW] = 0
-}
+M.playerOnMapLevel = MAP_LEVELS.HOUSE
 
 M.isServer = false
 
@@ -403,43 +417,9 @@ function M.tostring(self)
     sw.string(tostring(self.gameTime))
     sw.string("GATE")
     sw.number(0) -- 0 - closed, 1 - opened
-    -- fuze boxes
-    sw.string("FUZE_BOX_1")
-    sw.number(1) -- 1: red, 2: green, 3: blue, 4: yellow
-    sw.number(0) -- 0: broken, 1: working
-    sw.string("FUZE_BOX_2")
-    sw.number(2)
-    sw.number(0)
-    sw.string("FUZE_BOX_3")
-    sw.number(3)
-    sw.number(0)
-    sw.string("FUZE_BOX_4")
-    sw.number(4)
-    sw.number(0)
-
-    -- fuzes
-    sw.string("FUZE_1")
-    sw.number(1) -- 1: red, 2: green, 3: blue, 4: yellow
-    --sw.vector3(pos)
-    sw.number(0) -- 0: not used, 1: used
-    sw.number(M.fuzeColorToPlayerUid:get(M.FUZE.RED) or 0) -- player with uid 123 has a red fuze
-    sw.string("FUZE_2")
-    sw.number(2)
-    --sw.vector3(pos)
-    sw.number(0)
-    sw.number(M.fuzeColorToPlayerUid:get(M.FUZE.GREEN) or 0) -- fuze is on the ground
-    sw.string("FUZE_3")
-    sw.number(3)
-    --sw.vector3(pos)
-    sw.number(0)
-    sw.number(M.fuzeColorToPlayerUid:get(M.FUZE.BLUE) or 0)
-    sw.string("FUZE_4")
-    sw.number(4)
-    --sw.vector3(pos)
-    sw.number(0)
-    sw.number(M.fuzeColorToPlayerUid:get(M.FUZE.YELLOW) or 0)
 
     -- game objects
+    sw.number(self.gameobject_count)
     for gouid, v in pairs(self.gameobjects) do
         sw.string("GO")
         sw.string(v.type)
@@ -454,17 +434,21 @@ function M.tostring(self)
 
         if M.FACTORY_TYPES.player == v.type then
             local player = M.players:get(gouid)
-            sw.number(player and player.player_type or M.PLAYER_TYPE.FAMILY)
-            sw.number(v and v.playerOnMapLevel or M.MAP_LEVELS.HOUSE)
-            sw.number(v and v.health or 100)
-            sw.number(v and v.score or 0)
+            sw.number(player and player.type or 0)
+            sw.number(player and player.map_level or 0)
+            sw.number(player and player.health or 100)
+            sw.number(player and player.score or 0)
             --sw.number(0) -- 0: disconnected, 1: connected
         elseif M.FACTORY_TYPES.fuze_box == v.type then
             local color = v and v.id and M.fuzeBoxIdsToColor[v.id] or 0
-            sw.number(color)
-            sw.number(v and v.id and M.fuzeBoxColorToState[color] or 0)
+            sw.number(color) -- 1: red, 2: green, 3: blue, 4: yellow
+            sw.number(M.fuzeBoxColorToState[color] or 0) -- 0: broken, 1: working
         elseif M.FACTORY_TYPES.fuze == v.type then
-            sw.number(v and v.id and M.fuzesIdToColor[v.id] or 0)
+            local color = v and v.id and M.fuzesIdToColor[v.id] or 0
+            sw.number(color) -- 1: red, 2: green, 3: blue, 4: yellow
+            sw.number(M.fuzeColorToMapLevel[color] or 0)
+            -- 0: not used, 1: used
+            sw.number(M.fuzeColorToPlayerUid:get(color) or 0) -- fuze is on the ground
         end
         -- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
     end

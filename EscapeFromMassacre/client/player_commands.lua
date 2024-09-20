@@ -44,8 +44,8 @@ function M.create()
         commands = Collections.createList(),
         MAX_COMMANDS_BUFFER_SIZE = 2,
         build = function (self, player_uid, data)
-            log("build", data.action_id, data.action.pressed, data.action.released, data.action.x, data.action.y)
-            log("commands.length", tostring(self.commands.length))
+            --log("build", data.action_id, data.action.pressed, data.action.released, data.action.x, data.action.y)
+            --log("commands.length", tostring(self.commands.length))
             local last_command = self.commands:getLast()
             if last_command == nil then
                 last_command = {

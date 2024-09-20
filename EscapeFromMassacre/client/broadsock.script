@@ -50,7 +50,7 @@ local function sendToUnreliableAndFastConnection(msg)
 end
 
 local function js_listener(self, message_id, message)
-	log(message_id, message)
+	--log(message_id, message)
 	if message_id == "ServerMsg" then
 		if message:sub(1, 12) == MSG.BASE_MSG_IDS.ROOMS then
 			MainState.setRooms(message)
