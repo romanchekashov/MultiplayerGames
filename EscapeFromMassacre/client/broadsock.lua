@@ -210,7 +210,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						sr.number()
 						sr.number()
 
-						if MainState.player.uid == uid then
+						if MainState.player.uid == uid and MainState.players:has(uid) then
+							MainState.players:get(uid).map_level = player_map_level
 							MainState.playerOnMapLevel = player_map_level
 						end
 						--enable = player_map_level == MainState.playerOnMapLevel

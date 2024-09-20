@@ -30,6 +30,10 @@ function on_message(self, message_id, message, sender)
 
 		if message.map_level == MainState.MAP_LEVELS.BASEMENT then
 			MainState.playerOnMapLevel = MainState.MAP_LEVELS.BASEMENT
+			if MainState.players:has(MainState.player.uid) then
+				MainState.players:get(MainState.player.uid).map_level = MainState.MAP_LEVELS.BASEMENT
+			end
+
 			self.current_screen = collectionfactory.create("#collectionfactory-basement", self.screen_pos)
 			--defold_utils.SET_CURRENT_COLLECTION_IDS("default", self.current_screen)
 			msg.post("@render:", "clear_color", {color = assets.COLORS.RED})
@@ -38,6 +42,10 @@ function on_message(self, message_id, message, sender)
 			print("BASEMENT", #self.current_screen)
 		elseif message.map_level == MainState.MAP_LEVELS.HOUSE then
 			MainState.playerOnMapLevel = MainState.MAP_LEVELS.HOUSE
+			if MainState.players:has(MainState.player.uid) then
+				MainState.players:get(MainState.player.uid).map_level = MainState.MAP_LEVELS.HOUSE
+			end
+
 			self.current_screen = collectionfactory.create("#collectionfactory-house", self.screen_pos)
 			--defold_utils.SET_CURRENT_COLLECTION_IDS("default", self.current_screen)
 			msg.post("@render:", "clear_color", {color = assets.COLORS.GREEN})

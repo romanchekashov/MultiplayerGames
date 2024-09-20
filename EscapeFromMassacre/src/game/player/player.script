@@ -176,6 +176,67 @@ local function input_controls(self)
 	end
 end
 
+local prev_pressed = {
+	[ACTION_IDS.LEFT] = false,
+	[ACTION_IDS.RIGHT] = false,
+	[ACTION_IDS.UP] = false,
+	[ACTION_IDS.DOWN] = false,
+}
+
+local function send_command(self, action_id, action)
+	--action.pressed, action.released
+	local need_send = not self.is_hit_wall
+
+	if prev_pressed[action_id] ~= nil then
+		if action.released then
+			need_send = true
+			prev_pressed[action_id] = false
+		elseif action.pressed then
+			prev_pressed[action_id] = true
+		end
+	end
+
+	if need_send then
+		MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
+	end
+end
+
+local MAP_LEVEL_TO_MSG_GROUP = {
+	[MainState.MAP_LEVELS.HOUSE] = MSG_GROUPS.WALL,
+	[MainState.MAP_LEVELS.BASEMENT] = MSG_GROUPS.WALL_BASEMENT,
+}
+
+local function check_hit_wall(self, pos)
+	local collision_object_hash = MAP_LEVEL_TO_MSG_GROUP[MainState.players:get(self.uid).map_level]
+	local offset = 1
+	local multiply = 1
+	local hit_left = physics.raycast(pos, pos + vmath.vector3(offset, 0, 0), { collision_object_hash })
+	if hit_left then
+		go.set_position(pos - vmath.vector3(offset * multiply, 0, 0))
+		return true
+	end
+
+	local hit_right = physics.raycast(pos, pos + vmath.vector3(-offset, 0, 0), { collision_object_hash })
+	if hit_right then
+		go.set_position(pos - vmath.vector3(-offset * multiply, 0, 0))
+		return true
+	end
+
+	local hit_up = physics.raycast(pos, pos + vmath.vector3(0, offset * multiply, 0), { collision_object_hash })
+	if hit_up then
+		go.set_position(pos - vmath.vector3(0, offset * multiply, 0))
+		return true
+	end
+
+	local hit_down = physics.raycast(pos, pos + vmath.vector3(0, -offset, 0), { collision_object_hash })
+	if hit_down then
+		go.set_position(pos - vmath.vector3(0, -offset, 0))
+		return true
+	end
+
+	return false
+end
+
 function init(self)
 	log("player init", msg.url())
 	local go_id = go.get_id()
@@ -195,6 +256,7 @@ function init(self)
 	self.fire_cooldown = 0
 	self.btn_use_pressed = false
 	self.camera_pos = vmath.vector3()
+	self.is_hit_wall = false
 
 	label.set_text("#name", MainState.player.username)
 
@@ -309,17 +371,22 @@ function update(self, dt)
 	-- move in direction of rotation
 	local pos = go.get_position()
 	pos = pos + self.velocity * dt
-	go.set_position(pos)
+
+	self.is_hit_wall = check_hit_wall(self, pos)
+
+	if not self.is_hit_wall then
+		go.set_position(pos)
+
+		self.camera_pos = pos + vmath.vector3(-568, - 320, 0)
+
+		if not self.isServer then
+			-- update camera position
+			go.set_position(self.camera_pos, "camera")
+			go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
+		end
+	end
 
 	input_controls(self)
-
-	self.camera_pos = pos + vmath.vector3(-568, - 320, 0)
-
-	if not self.isServer then
-		-- update camera position
-		go.set_position(self.camera_pos, "camera")
-		go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
-	end
 
 	self.stairs_change_cooldown = self.stairs_change_cooldown - dt
 	self.fire_cooldown = self.fire_cooldown - dt
@@ -399,7 +466,7 @@ function on_input(self, action_id, action)
 
 	if action_id == ACTION_IDS.LEFT or action_id == ACTION_IDS.RIGHT or action_id == ACTION_IDS.UP or action_id == ACTION_IDS.DOWN then
 		print(action_id, action.value, action.pressed, action.released, action.x, action.y) -- a value between 0.0 an -1.0
-		MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
+		send_command(self, action_id, action)
 		if action.pressed and not self.sound_run_playing then
 			MainState.SOUND.loop_run.play()
 			self.sound_run_playing = true
@@ -455,7 +522,7 @@ function on_input(self, action_id, action)
 		if not action_id then
 			if not insideVirtualGamepadLeftStickBound(action) and self.virtualGamepadLeftStickTouchNum == 0 then
 				self.touch = action
-				MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.TOUCH, action = action})
+				send_command(self, ACTION_IDS.TOUCH, action)
 			end
 		end
 	else
@@ -467,7 +534,7 @@ function on_input(self, action_id, action)
 
 		if not action_id then
 			self.touch = action
-			MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.TOUCH, action = action})
+			send_command(self, ACTION_IDS.TOUCH, action)
 		end
 	end
 end
@@ -534,7 +601,11 @@ function on_message(self, message_id, message, sender)
 			msg.post("/gui#menu", "player_exit", {})
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
-		if message.group == MSG_GROUPS.WALL then
+		local player_on_level = MainState.players:get(self.uid).map_level
+		local player_hit_wall_house = player_on_level == MainState.MAP_LEVELS.HOUSE and message.group == MSG_GROUPS.WALL
+		local player_hit_wall_basement = player_on_level == MainState.MAP_LEVELS.BASEMENT and message.group == MSG_GROUPS.WALL_BASEMENT
+
+		if player_hit_wall_house or player_hit_wall_basement then
 			log("contact_point_response", message.group, message.normal, message.distance)
 			-- https://forum.defold.com/t/there-is-a-bug-with-collisions-in-my-game/77002/14
 			-- Some things I’d try to do:
@@ -550,10 +621,16 @@ function on_message(self, message_id, message, sender)
 
 		if self.stairs_change_cooldown < 0 then
 			if message.group == STAIRS_TO_BASEMENT then
-				msg.post("/levels#change", "load_level", {map_level = MainState.MAP_LEVELS.BASEMENT})
+				if not self.isServer then
+					msg.post("/levels#change", "load_level", {map_level = MainState.MAP_LEVELS.BASEMENT})
+				end
+				MainState.players:get(self.uid).map_level = MainState.MAP_LEVELS.BASEMENT
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			elseif message.group == STAIRS_TO_HOUSE then
-				msg.post("/levels#change", "load_level", {map_level = MainState.MAP_LEVELS.HOUSE})
+				if not self.isServer then
+					msg.post("/levels#change", "load_level", {map_level = MainState.MAP_LEVELS.HOUSE})
+				end
+				MainState.players:get(self.uid).map_level = MainState.MAP_LEVELS.HOUSE
 				self.stairs_change_cooldown = STAIRS_CHANGE_COOLDOWN
 			end
 		end
