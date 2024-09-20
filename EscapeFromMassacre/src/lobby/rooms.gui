@@ -286,6 +286,7 @@ nodes {
 }
 nodes {
   position {
+    x: 40.0
     y: 240.0
   }
   size {
@@ -471,16 +472,21 @@ nodes {
   position {
     y: 250.0
   }
+  scale {
+    x: 1.5
+    y: 1.5
+  }
   color {
     x: 0.82
     y: 0.18
     z: 0.4
   }
   type: TYPE_TEXT
-  text: "Mafia"
+  text: "Family"
   id: "family/title"
   parent: "family/list"
   overridden_fields: 1
+  overridden_fields: 3
   overridden_fields: 5
   overridden_fields: 8
   template_node_child: true
@@ -695,6 +701,11 @@ nodes {
 nodes {
   position {
     x: -40.0
+    y: -10.0
+  }
+  scale {
+    x: 1.5
+    y: 1.5
   }
   size {
     x: 500.0

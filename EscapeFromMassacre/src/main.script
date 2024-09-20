@@ -13,7 +13,7 @@ local FACTORY_TYPES = MainState.FACTORY_TYPES
 
 function init(self)
 	local enableLogs = true
-	debugUtils.isProd = true
+	debugUtils.isProd = false
 	debugUtils.debug(enableLogs)
 	--if html5 then
 	--	if enableLogs then
