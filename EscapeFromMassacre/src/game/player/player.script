@@ -64,16 +64,20 @@ local function get_rotation(self, touch)
 	return vmath.quat_rotation_z(angle)
 end
 
+local function fire(self)
+	local rotation = go.get_rotation()
+	local position = go.get_position() + vmath.rotate(rotation, vmath.vector3(10, 30, 0))
+	msg.post("/spawner-bullet#script", "add_bullet", {pos = position, rot = rotation, uid = self.uid})
+	self.fire_cooldown = FIRE_COOLDOWN
+end
+
 local function trigger(self, action)
 	if action.pressed then
 		self.pressed_time = socket.gettime()
 	elseif action.released then
 		-- fire a bullet if the time between press and release is sufficiently short
 		if socket.gettime() - self.pressed_time < 0.2 and self.fire_cooldown < 0 then
-			local rotation = go.get_rotation()
-			local position = go.get_position() + vmath.rotate(rotation, vmath.vector3(10, 30, 0))
-			msg.post("/spawner-bullet#script", "add_bullet", {pos = position, rot = rotation, uid = self.uid})
-			self.fire_cooldown = FIRE_COOLDOWN
+			fire(self)
 		end
 	end
 end
@@ -155,6 +159,16 @@ local function input_controls(self)
 		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.USE) then
 			self.btn_use_pressed = true
 			--throw_fuzes(self.uid)
+		end
+
+		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.TRIGGER) and not self.btn_trigger_pressed then
+			self.btn_trigger_pressed = true
+			timer.delay(0.2, false, function()
+				if self.fire_cooldown < 0 then
+					fire(self)
+				end
+				self.btn_trigger_pressed = false
+			end)
 		end
 
 		--log("input_controls", self.velocity.x, self.velocity.y)
@@ -465,7 +479,7 @@ function on_input(self, action_id, action)
 	end
 
 	if action_id == ACTION_IDS.LEFT or action_id == ACTION_IDS.RIGHT or action_id == ACTION_IDS.UP or action_id == ACTION_IDS.DOWN then
-		print(action_id, action.value, action.pressed, action.released, action.x, action.y) -- a value between 0.0 an -1.0
+		--print(action_id, action.value, action.pressed, action.released, action.x, action.y) -- a value between 0.0 an -1.0
 		send_command(self, action_id, action)
 		if action.pressed and not self.sound_run_playing then
 			MainState.SOUND.loop_run.play()
@@ -502,7 +516,8 @@ function on_input(self, action_id, action)
 					end
 				end
 				if self.virtualGamepadLeftStickTouchNum ~= i then
-					trigger(self, touchdata)
+					MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.TRIGGER, action = touchdata})
+					--trigger(self, touchdata)
 					if touchdata.pressed then
 						go.set_rotation(get_rotation(self, touchdata))
 						-- go.set_rotation(getRotation(go.get_position() + vmath.vector3(touchdata.x, touchdata.y, 0)))
@@ -515,8 +530,9 @@ function on_input(self, action_id, action)
 			end
 		end
 
-		if action_id == hash("trigger") then
-			trigger(self, action)
+		if action_id == ACTION_IDS.TRIGGER then
+			MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
+			--trigger(self, action)
 		end
 
 		if not action_id then
@@ -527,9 +543,10 @@ function on_input(self, action_id, action)
 		end
 	else
 		-- handle touch/mouse movement by holding down the finger/mouse button
-		if (action_id == hash("trigger") or action_id == hash("touch")) then
+		if (action_id == ACTION_IDS.TRIGGER or action_id == ACTION_IDS.TOUCH) then
 			-- print(go.get_position())
-			trigger(self, action)
+			MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
+			--trigger(self, action)
 		end
 
 		if not action_id then
@@ -561,7 +578,9 @@ function on_message(self, message_id, message, sender)
 	if message_id == MSG_GROUPS.COLLISION_RESPONSE then
 		if message.group == BULLET or message.group == ZOMBIE then
 			-- print("I collided with", go.get_id(), message.other_id, message.other_group)
-			if self.bullet_id ~= message.other_id then
+			local player_on_level = MainState.players:get(self.uid).map_level
+
+			if self.bullet_id ~= message.other_id and player_on_level == MainState.bulletUidBelongToMapLevel[MainState.bulletIdToUid[message.other_id]] then
 				self.bullet_id = message.other_id
 				self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
 

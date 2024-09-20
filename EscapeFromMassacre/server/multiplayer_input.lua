@@ -12,7 +12,8 @@ local ACT_CODE = {
     DOWN = 6,
     TOUCH = 7,
     TOUCH_X = 8,
-    TOUCH_Y = 9
+    TOUCH_Y = 9,
+    TRIGGER = 10
 }
 local M = {
     playerCommands = Collections.createMap(),
@@ -74,7 +75,8 @@ local M = {
                 [ACT_CODE.UP] = streamReader.number(),
                 [ACT_CODE.DOWN] = streamReader.number(),
                 [ACT_CODE.TOUCH_X] = streamReader.double(),
-                [ACT_CODE.TOUCH_Y] = streamReader.double()
+                [ACT_CODE.TOUCH_Y] = streamReader.double(),
+                [ACT_CODE.TRIGGER] = streamReader.number()
             }
 
             playerCommands.commands:add(command)

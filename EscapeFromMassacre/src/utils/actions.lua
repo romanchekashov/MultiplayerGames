@@ -13,6 +13,7 @@ local ACTION_IDS = {
     TOUCH = hash("touch"),
     TOUCH_X = hash("touch_x"),
     TOUCH_Y = hash("touch_y"),
+    TRIGGER = hash("trigger"),
 
     GAMEPAD = {
         CONNECTED = hash("gamepad_connected"),

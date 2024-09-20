@@ -5,8 +5,7 @@ local _wall = Utils.wall
 go.property("remote", true)
 go.property("speed", 50)
 
-local COLLISION_RESPONSE = hash("collision_response")
-local CONTACT_POINT_RESPONSE = hash("contact_point_response")
+local MSG_GROUPS = MainState.MSG_GROUPS
 local PLAYER = hash("player")
 local WALL = hash("wall")
 local BULLET = hash("bullet")
@@ -115,7 +114,7 @@ function update(self, dt)
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == COLLISION_RESPONSE then
+	if message_id == MSG_GROUPS.COLLISION_RESPONSE then
 		if message.group == PLAYER then
 			local my_pos = go.get_world_position()
 			local other_pos = go.get_world_position(message.other_id)
@@ -139,9 +138,9 @@ function on_message(self, message_id, message, sender)
 		-- 	local distance_to_collision = vmath.length(my_pos - other_pos)
 		-- 	print(string.format("zombie %s see wall %s in distance %s", go.get_id(), message.other_id, distance_to_collision))
 		elseif message.group == BULLET then
-			msg.post("spawner-zombie#script", "remove_zombie", {zombie_id = go.get_id()})
+			msg.post("/spawner-zombie#script", "remove_zombie", {zombie_id = go.get_id()})
 		end
-	elseif message_id == CONTACT_POINT_RESPONSE then
+	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
 		if message.group == WALL and self.wall_hit_cooldown <= 0 then
 			self.wall_hit_cooldown = 0.2
 			go.set_position(go.get_position() + message.normal * message.distance)

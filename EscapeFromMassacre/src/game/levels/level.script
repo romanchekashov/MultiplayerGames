@@ -1,6 +1,8 @@
+local MainState = require "src.main_state"
 local debugUtils = require "src.utils.debug-utils"
 
 local log = debugUtils.createLog("[level]").log
+local MSG_GROUPS = MainState.MSG_GROUPS
 
 function init(self)
 	log("level init", msg.url())

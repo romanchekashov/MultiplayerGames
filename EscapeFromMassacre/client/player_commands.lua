@@ -20,7 +20,8 @@ local M = {
         [ACTION_IDS.DOWN] = 6,
         [ACTION_IDS.TOUCH] = 7,
         [ACTION_IDS.TOUCH_X] = 8,
-        [ACTION_IDS.TOUCH_Y] = 9
+        [ACTION_IDS.TOUCH_Y] = 9,
+        [ACTION_IDS.TRIGGER] = 10
     },
     CodeToActionId = {
         [1] = ACTION_IDS.JOIN,
@@ -31,7 +32,8 @@ local M = {
         [6] = ACTION_IDS.DOWN,
         [7] = ACTION_IDS.TOUCH,
         [8] = ACTION_IDS.TOUCH_X,
-        [9] = ACTION_IDS.TOUCH_Y
+        [9] = ACTION_IDS.TOUCH_Y,
+        [10] = ACTION_IDS.TRIGGER
     },
     ActionState = {
         released = 0,
@@ -57,7 +59,8 @@ function M.create()
                     [M.ActionIdToCode[ACTION_IDS.UP]] = M.ActionState.released,
                     [M.ActionIdToCode[ACTION_IDS.DOWN]] = M.ActionState.released,
                     [M.ActionIdToCode[ACTION_IDS.TOUCH_X]] = 0,
-                    [M.ActionIdToCode[ACTION_IDS.TOUCH_Y]] = 0
+                    [M.ActionIdToCode[ACTION_IDS.TOUCH_Y]] = 0,
+                    [M.ActionIdToCode[ACTION_IDS.TRIGGER]] = M.ActionState.released
                 }
             end
 
@@ -99,6 +102,7 @@ function M.create()
                         .number(command[M.ActionIdToCode[ACTION_IDS.DOWN]])
                         .number(command[M.ActionIdToCode[ACTION_IDS.TOUCH_X]])
                         .number(command[M.ActionIdToCode[ACTION_IDS.TOUCH_Y]])
+                        .number(command[M.ActionIdToCode[ACTION_IDS.TRIGGER]])
             end)
 
             return sendData.tostring()

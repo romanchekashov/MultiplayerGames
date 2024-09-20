@@ -2,6 +2,8 @@ local MainState = require "src.main_state"
 
 go.property("remote", true)
 go.property("uid", 0)
+go.property("player_uid", 0)
+go.property("map_level", 0)
 
 local MSG_GROUPS = MainState.MSG_GROUPS
 
@@ -10,16 +12,16 @@ function init(self)
 	self.isServer = MainState.isServer
 
 	if self.isServer then
-		MainState.register_gameobject(self.uid, id, MainState.FACTORY_TYPES.bullet)
+		local obj = MainState.register_gameobject(self.player_uid, id, MainState.FACTORY_TYPES.bullet)
+		MainState.bulletUidBelongToMapLevel[obj.gouid] = MainState.players:get(self.player_uid).map_level
 	else
 		msg.post("/broadsock", "register_gameobject", { id = id, type = MainState.FACTORY_TYPES.bullet })
+		MainState.bulletUidBelongToMapLevel[self.uid] = self.map_level
+		MainState.SOUND.pistol_9mm_shoot_1()
 	end
 
-	if self.remote then
-		MainState.bulletBelongToPlayerUid[id] = self.uid
-	end
+	MainState.bulletBelongToPlayerUid[id] = self.player_uid
 	-- print("bullet from", self.uid)
-	MainState.SOUND.pistol_9mm_shoot_1()
 end
 
 function final(self)
@@ -31,9 +33,7 @@ function final(self)
 		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
 	end
 
-	if self.remote then
-		MainState.bulletBelongToPlayerUid[id] = nil
-	end
+	MainState.bulletBelongToPlayerUid[id] = nil
 end
 
 function update(self, dt)

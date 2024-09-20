@@ -166,10 +166,13 @@ local M = {
     RECREATE_PLAYER_TIMEOUT_IN_SEC = 2,
     GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
-    GAME_TIMEOUT_IN_SEC = 60 * 2,
+    GAME_TIMEOUT_IN_SEC = 60 * 1,
     PLAYER_STATUS = PLAYER_STATUS,
     PLAYER_TYPE = PLAYER_TYPE,
     bulletBelongToPlayerUid = {},
+    bulletIdToUid = {},
+    bulletUidBelongToPlayerUid = Collections.createMap(),
+    bulletUidBelongToMapLevel = {},
     playerUidToScore = {},
     playerUidToWsLatency = {},
     MSG_IDS = MSG_IDS,
@@ -388,6 +391,7 @@ function M.register_gameobject(uid, go_id, type)
 
     M.gameobjects[gouid] = { id = go_id, type = type, gouid = gouid, player_uid = uid }
     M.gameobject_count = M.gameobject_count + 1
+    return M.gameobjects[gouid]
 end
 
 function M.unregister_gameobject(message)
@@ -463,6 +467,9 @@ function M.tostring(self)
             sw.number(M.fuzeColorToMapLevel[color] or 0)
             -- 0: not used, 1: used
             sw.number(M.fuzeColorToPlayerUid:get(color) or 0) -- fuze is on the ground
+        elseif M.FACTORY_TYPES.bullet == v.type then
+            sw.number(v.player_uid)
+            sw.number(M.bulletUidBelongToMapLevel[gouid])
         end
         -- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
     end

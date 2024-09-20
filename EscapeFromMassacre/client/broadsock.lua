@@ -4,6 +4,7 @@ local debugUtils = require "src.utils.debug-utils"
 local MainState = require "src.main_state"
 local performance_utils = require "server.performance_utils"
 local MSG = require "src.utils.messages"
+local Collections = require "src.utils.collections"
 
 
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
@@ -186,6 +187,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				-- game objects
 				local go_length = sr.number()
 
+				local existing_go_uid_set = Collections.createSet()
+
 				while go_length > 0 do
 					go_length = go_length - 1
 
@@ -193,6 +196,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local name = sr.string() -- GO
 					local object_type = sr.string()
 					local uid = sr.number()
+
+					existing_go_uid_set:add(uid)
 
 					if not clients[uid] then
 						add_game_object(uid)
@@ -212,6 +217,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local fuze_color
 					local fuze_map_level = 0
 					local player_uid_with_fuze = 0
+
+					local bullet_belongs_to_player_uid = 0
+					local bullet_map_level = 0
 
 					if MainState.FACTORY_TYPES.player == object_type then
 						player_type = sr.number()
@@ -249,6 +257,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							enable = fuze_map_level == MainState.playerOnMapLevel and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[fuze_color] == 0
 							--log("fuze enable", tostring(enable), fuze_color, fuze_map_level, MainState.playerOnMapLevel, "player_uid_with_fuze", player_uid_with_fuze, tostring(count))
 						end
+					elseif MainState.FACTORY_TYPES.bullet == object_type then
+						bullet_belongs_to_player_uid = sr.number()
+						bullet_map_level = sr.number()
+						MainState.bulletUidBelongToPlayerUid:put(uid, bullet_belongs_to_player_uid)
 					end
 
 					if game_object.gouid == nil then
@@ -276,6 +288,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 								else
 									factory_data = nil
 								end
+							elseif object_type == MainState.FACTORY_TYPES.bullet then
+								factory_data.player_uid = bullet_belongs_to_player_uid
+								factory_data.map_level = bullet_map_level
 							end
 
 							if factory_data ~= nil then
@@ -376,6 +391,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						--MainState.playerUidToWsLatency[from_uid] = sr.number()
 					end
 
+				end
+
+				-- remove game objects that are not in the message
+				for uid, gameobject in pairs(remote_gameobjects) do
+					if existing_go_uid_set:has(uid) == false then
+						go.delete(gameobject.gouid.id)
+						gameobject.gouid = nil
+					end
 				end
 			end
 		elseif msg_id == MSG_IDS.GOD then
