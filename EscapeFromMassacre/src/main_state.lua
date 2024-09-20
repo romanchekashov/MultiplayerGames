@@ -5,6 +5,71 @@ local stream = require "client.stream"
 local debugUtils = require "src.utils.debug-utils"
 local log = debugUtils.createLog("[MAIN_STATE]").log
 
+local MSG_IDS = {
+    GAME_START = hash("game_start")
+}
+
+local MSG_GROUPS = {
+    COLLISION_RESPONSE = hash("collision_response"),
+    CONTACT_POINT_RESPONSE = hash("contact_point_response"),
+    ENABLE = hash("enable"),
+    DISABLE = hash("disable"),
+    EXIT = hash("exit"),
+    WALL = hash("wall"),
+    WALL_BASEMENT = hash("wall_basement"),
+    --WALL_HOUSE = hash("wall_house"),
+    BOX = hash("box"),
+    FUZE = hash("fuze"),
+    FUZE_BOX = hash("fuze-box"),
+    PLAYER = hash("player")
+}
+
+local SOUND = {
+    level_up = function ()
+        msg.post("default:/sound#level_up", "play_sound")
+    end,
+    laser = function ()
+        msg.post("default:/sound#laser", "play_sound")
+    end,
+    pistol_9mm_shoot_1 = function ()
+        msg.post("default:/sound#pistol_9mm_shoot_1", "play_sound")
+    end,
+    pistol_9mm_shoot_2 = function ()
+        msg.post("default:/sound#pistol_9mm_shoot_2", "play_sound")
+    end,
+    shotgun_fire_1 = function ()
+        msg.post("default:/sound#shotgun_fire_1", "play_sound")
+    end,
+    loop_step = {
+        play = function ()
+            msg.post("default:/sound#step", "play_sound")
+        end,
+        stop = function ()
+            msg.post("default:/sound#step", "stop_sound")
+        end
+    },
+    loop_run = {
+        play = function ()
+            msg.post("default:/sound#run", "play_sound")
+        end,
+        stop = function ()
+            msg.post("default:/sound#run", "stop_sound")
+        end
+    }
+}
+
+local GAME_STATES = {
+    START = 1,
+    RUNNING = 2,
+    END = 3,
+    LOBBY = 4,
+}
+
+local GAME_SCREENS = {
+    LOBBY = 0,
+    GAME = 1
+}
+
 local MAP_LEVELS = {
     BASEMENT = 1,
     HOUSE = 2,
@@ -25,8 +90,23 @@ local FUZE = {
     YELLOW = 4,
 }
 
+local PLAYER_TYPE = {
+    FAMILY = 1,
+    SURVIVOR = 2,
+}
+
+local FACTORY_TYPES = {
+    player = "player",
+    zombie = "zombie",
+    bullet = "bullet",
+    fuze = "fuze",
+    fuze_box = "fuze-box",
+}
+
 local M = {
+    isServer = false,
     gameInitialized = false,
+    currentGameState = GAME_STATES.LOBBY,
     factories = {},
     gameobjects = {},
     gameobject_count = 0,
@@ -80,105 +160,37 @@ local M = {
     uid_to_username = Collections.createMap(),
     rooms = Collections.createList(),
     INITIAL_FUZES_CREATE = {},
-    FACTORY_TYPES = {
-        player = "player",
-        zombie = "zombie",
-        bullet = "bullet",
-        fuze = "fuze",
-        fuze_box = "fuze-box",
-    },
+    FACTORY_TYPES = FACTORY_TYPES,
     selectedRoom = nil,
-    GAME_STATES = {
-        START = 1,
-        RUNNING = 2,
-        END = 3,
-        LOBBY = 4,
-    },
+    GAME_STATES = GAME_STATES,
     RECREATE_PLAYER_TIMEOUT_IN_SEC = 2,
     GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
     GAME_TIMEOUT_IN_SEC = 60 * 2,
     PLAYER_STATUS = PLAYER_STATUS,
-    PLAYER_TYPE = {
-        FAMILY = 1,
-        SURVIVOR = 2,
-    },
+    PLAYER_TYPE = PLAYER_TYPE,
     bulletBelongToPlayerUid = {},
     playerUidToScore = {},
     playerUidToWsLatency = {},
-    MSG_IDS = {
-        GAME_START = hash("game_start")
-    },
-    MSG_GROUPS = {
-        COLLISION_RESPONSE = hash("collision_response"),
-        CONTACT_POINT_RESPONSE = hash("contact_point_response"),
-        ENABLE = hash("enable"),
-        DISABLE = hash("disable"),
-        EXIT = hash("exit"),
-        WALL = hash("wall"),
-        WALL_BASEMENT = hash("wall_basement"),
-        --WALL_HOUSE = hash("wall_house"),
-        BOX = hash("box"),
-        FUZE = hash("fuze"),
-        FUZE_BOX = hash("fuze-box"),
-        PLAYER = hash("player")
-    },
+    MSG_IDS = MSG_IDS,
+    MSG_GROUPS = MSG_GROUPS,
     HAS_GAMEPAD = false,
-    SOUND = {
-        level_up = function ()
-            msg.post("default:/sound#level_up", "play_sound")
-        end,
-        laser = function ()
-            msg.post("default:/sound#laser", "play_sound")
-        end,
-        pistol_9mm_shoot_1 = function ()
-            msg.post("default:/sound#pistol_9mm_shoot_1", "play_sound")
-        end,
-        pistol_9mm_shoot_2 = function ()
-            msg.post("default:/sound#pistol_9mm_shoot_2", "play_sound")
-        end,
-        shotgun_fire_1 = function ()
-            msg.post("default:/sound#shotgun_fire_1", "play_sound")
-        end,
-        loop_step = {
-            play = function ()
-                msg.post("default:/sound#step", "play_sound")
-            end,
-            stop = function ()
-                msg.post("default:/sound#step", "stop_sound")
-            end
-        },
-        loop_run = {
-            play = function ()
-                msg.post("default:/sound#run", "play_sound")
-            end,
-            stop = function ()
-                msg.post("default:/sound#run", "stop_sound")
-            end
-        }
-    },
-    GAME_SCREENS = {
-        LOBBY = 0,
-        GAME = 1
-    },
+    SOUND = SOUND,
+    GAME_SCREENS = GAME_SCREENS,
     MAP_LEVELS = MAP_LEVELS,
     FUZE = FUZE,
-    playerSlots = {}
-}
-
-M.player = {
-    uid = 0,
-    username = "N/A",
-    type = M.PLAYER_TYPE.SURVIVOR,
-    room = nil,
-    status = PLAYER_STATUS.CONNECTED
+    playerSlots = {},
+    player = {
+        uid = 0,
+        username = "N/A",
+        type = PLAYER_TYPE.SURVIVOR,
+        room = nil,
+        status = PLAYER_STATUS.CONNECTED
+    },
+    playerOnMapLevel = MAP_LEVELS.HOUSE
 }
 
 M.gameTime = M.GAME_TIMEOUT_IN_SEC
-M.currentGameState = M.GAME_STATES.LOBBY
-M.playerOnMapLevel = MAP_LEVELS.HOUSE
-
-M.isServer = false
 
 function M.increasePlayerScore(killer_uid)
 	if killer_uid ~= nil and killer_uid ~= "" then

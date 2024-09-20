@@ -49,6 +49,7 @@ function init(self)
 	-- print(go.get("#fuze_box_sprite", "image"))
 	sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].open)
 	MainState.fuzeBoxIdsToColor[id] = self.color
+	MainState.fuzeBoxColorToState[self.color] = 0
 end
 
 function final(self)

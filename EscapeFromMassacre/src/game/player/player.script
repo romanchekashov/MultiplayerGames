@@ -573,19 +573,23 @@ function on_message(self, message_id, message, sender)
 				hit(self, self.killer_uid)
 			end
 		elseif message.group == MSG_GROUPS.FUZE then
+			local player_on_level = MainState.players:get(self.uid).map_level
 			local fuze_color = MainState.fuzesIdToColor[message.other_id]
 			local player_uid = MainState.fuzeColorToPlayerUid:get(fuze_color)
 			log("contact_fuze", message.group, message.other_id, fuze_color, self.uid, go.get_position(), go.get_position(message.other_id))
-			if not MainState.fuzeColorToPlayerUid:has(fuze_color) then
+
+			if player_uid == nil and MainState.fuzeColorToMapLevel[fuze_color] == player_on_level and MainState.fuzeBoxColorToState[fuze_color] == 0 then
 				MainState.fuzeColorToPlayerUid:put(fuze_color, self.uid)
 				--update_fuzes(self)
 				--MSG.BROADSOCK:send_reliable_god({player_uid = self.uid, fuze_color = message.color})
 				msg.post("/gui#player", "update_fuzes", {fuze_color = fuze_color})
 			end
 		elseif message.group == MSG_GROUPS.FUZE_BOX then
-			print("contact_fuze_box", message.group, self.btn_use_pressed)
-			if self.btn_use_pressed and self.isServer then
-				local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
+			local player_on_level = MainState.players:get(self.uid).map_level
+			local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
+			log("contact_fuze_box", message.group, self.btn_use_pressed)
+
+			if self.btn_use_pressed and self.isServer and MainState.fuzeBoxColorToMapLevel[fuze_box_color] == player_on_level then
 				log("fuze_box_hit", fuze_box_color, message_id, message.group)
 				if MainState.fuzeColorToPlayerUid:has(fuze_box_color) then
 					msg.post(message.other_id, "fuze_box_fixed", {fuze_box_color = fuze_box_color})

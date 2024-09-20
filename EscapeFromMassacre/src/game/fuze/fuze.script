@@ -75,7 +75,8 @@ function update(self, dt)
 
 	local player_uid_with_fuze = MainState.fuzeColorToPlayerUid:get(self.color) or 0
 	local fuze_map_level = MainState.fuzeColorToMapLevel[self.color]
-	local enabled = fuze_map_level == MainState.playerOnMapLevel and player_uid_with_fuze == 0
+	local enabled = fuze_map_level == MainState.playerOnMapLevel and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[self.color] == 0
+
 	enable(self, enabled)
 end
 

@@ -59,6 +59,15 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		client_count = client_count - 1
 	end
 
+	local function clear_remote_gameobjects()
+		log("clear_remote_gameobjects: remote_gameobjects.length = ", #remote_gameobjects)
+
+		for uid, gameobject in pairs(remote_gameobjects) do
+			go.delete(gameobject.gouid.id)
+			gameobject.gouid = nil
+		end
+	end
+
 	--- Get the number of clients (including self)
 	-- @return Client count
 	function instance.client_count()
@@ -237,7 +246,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							end
 
 							MainState.fuzeColorToMapLevel[fuze_color] = fuze_map_level
-							enable = fuze_map_level == MainState.playerOnMapLevel and player_uid_with_fuze == 0
+							enable = fuze_map_level == MainState.playerOnMapLevel and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[fuze_color] == 0
 							--log("fuze enable", tostring(enable), fuze_color, fuze_map_level, MainState.playerOnMapLevel, "player_uid_with_fuze", player_uid_with_fuze, tostring(count))
 						end
 					end
@@ -425,6 +434,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			msg.post("/gui#menu", "update_timer", {time = sr.number()})
 		elseif msg_id == MSG_IDS.GAME_OVER then
 			log("SERVER: TIMER GAME_OVER")
+			clear_remote_gameobjects()
+
 			MainState.players:for_each(function (k, v)
 				MainState.game_over_players:put(v.uid, v)
 			end)
