@@ -48,7 +48,6 @@ function init(self)
 	end
 	-- print(go.get("#fuze_box_sprite", "image"))
 	sprite.play_flipbook("#sprite", fuze_color_to_texture[self.color].open)
-	enable(self, true)
 	MainState.fuzeBoxIdsToColor[id] = self.color
 end
 
@@ -61,6 +60,10 @@ function final(self)
 end
 
 function update(self, dt)
+	if self.isServer then
+		return
+	end
+
 	if MainState.fuzeBoxColorToState[self.color] ~= self.fuze_box_state then
 		self.fuze_box_state = MainState.fuzeBoxColorToState[self.color]
 		if self.fuze_box_state == 1 then
@@ -86,7 +89,13 @@ function on_message(self, message_id, message, sender)
 		end
 	elseif message_id == hash("fuze_box_fixed") then
 		fuze_box_fixed(self)
-	elseif message_id == MSG_GROUPS.ENABLE then
+	end
+
+	if self.isServer then
+		return
+	end
+
+	if message_id == MSG_GROUPS.ENABLE then
 		enable(self, true)
 	elseif message_id == MSG_GROUPS.DISABLE then
 		enable(self, false)

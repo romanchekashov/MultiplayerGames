@@ -154,7 +154,7 @@ local function input_controls(self)
 
 		if multiplayer_input:is_pressed(self.uid, ACTION_IDS.USE) then
 			self.btn_use_pressed = true
-			throw_fuzes(self.uid)
+			--throw_fuzes(self.uid)
 		end
 
 		--log("input_controls", self.velocity.x, self.velocity.y)
@@ -479,12 +479,12 @@ function on_input(self, action_id, action)
 	if action_id == ACTION_IDS.USE then
 		-- print(action_id, action.value, action.pressed, action.released, action.x, action.y) -- a value between 0.0 an -1.0
 		MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
-		if action.pressed then
-			self.btn_use_pressed = true
-		elseif action.released then
-			self.btn_use_pressed = false
-			--throw_fuzes(self.uid)
-		end
+		--if action.pressed then
+		--	self.btn_use_pressed = true
+		--elseif action.released then
+		--	self.btn_use_pressed = false
+		--	--throw_fuzes(self.uid)
+		--end
 	end
 
 	if IS_MOBILE then
@@ -575,7 +575,7 @@ function on_message(self, message_id, message, sender)
 		elseif message.group == MSG_GROUPS.FUZE then
 			local fuze_color = MainState.fuzesIdToColor[message.other_id]
 			local player_uid = MainState.fuzeColorToPlayerUid:get(fuze_color)
-			log("MSG_GROUPS.FUZE", message.group, message.other_id, fuze_color, self.uid, go.get_position(), go.get_position(message.other_id))
+			log("contact_fuze", message.group, message.other_id, fuze_color, self.uid, go.get_position(), go.get_position(message.other_id))
 			if not MainState.fuzeColorToPlayerUid:has(fuze_color) then
 				MainState.fuzeColorToPlayerUid:put(fuze_color, self.uid)
 				--update_fuzes(self)
@@ -583,20 +583,22 @@ function on_message(self, message_id, message, sender)
 				msg.post("/gui#player", "update_fuzes", {fuze_color = fuze_color})
 			end
 		elseif message.group == MSG_GROUPS.FUZE_BOX then
+			print("contact_fuze_box", message.group, self.btn_use_pressed)
 			if self.btn_use_pressed and self.isServer then
 				local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
+				log("fuze_box_hit", fuze_box_color, message_id, message.group)
 				if MainState.fuzeColorToPlayerUid:has(fuze_box_color) then
 					msg.post(message.other_id, "fuze_box_fixed", {fuze_box_color = fuze_box_color})
 					MainState.fuzeColorToPlayerUid:remove(fuze_box_color)
-					--update_fuzes(self)
+					update_fuzes(self)
 				else
 					local pos = go.get_position()
 					pos.x = pos.x + 50
 					go.set_position(pos)
 					hit(self, nil)
 				end
+				self.btn_use_pressed = false
 			end
-			-- print(message_id, message.group, fuze_box_color)
 		elseif message.group == MSG_GROUPS.EXIT then
 			msg.post("/gui#menu", "player_exit", {})
 		end

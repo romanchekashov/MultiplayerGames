@@ -29,21 +29,24 @@ local function use_map_level_visibility(self, map_level)
 end
 
 function init(self)
+	self.isServer = MainState.isServer
 	self.fuzeBoxOnMapLevel = {}
 	self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT] = {}
 	self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE] = {}
 
-	local fuze_box = create_fuze(MainState.FUZE.GREEN, vmath.vector3(2206, 2400, 0), vmath.quat_rotation_z(math.rad(-90)))
-	table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE], fuze_box)
-	fuze_box = create_fuze(MainState.FUZE.YELLOW, vmath.vector3(224, 286, 0), nil)
-	table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE], fuze_box)
+	if self.isServer then
+		local fuze_box = create_fuze(MainState.FUZE.GREEN, vmath.vector3(2206, 2400, 0), vmath.quat_rotation_z(math.rad(-90)))
+		table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE], fuze_box)
+		fuze_box = create_fuze(MainState.FUZE.YELLOW, vmath.vector3(224, 286, 0), nil)
+		table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE], fuze_box)
 
-	fuze_box = create_fuze(MainState.FUZE.BLUE, vmath.vector3(1952, 608, 0), nil)
-	table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT], fuze_box)
-	fuze_box = create_fuze(MainState.FUZE.RED, vmath.vector3(480, 2654, 0), nil)
-	table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT], fuze_box)
+		fuze_box = create_fuze(MainState.FUZE.BLUE, vmath.vector3(1952, 608, 0), nil)
+		table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT], fuze_box)
+		fuze_box = create_fuze(MainState.FUZE.RED, vmath.vector3(480, 2654, 0), nil)
+		table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT], fuze_box)
 
-	use_map_level_visibility(self, MainState.playerOnMapLevel)
+		--use_map_level_visibility(self, MainState.playerOnMapLevel)
+	end
 	-- self.zombies = MainState.zombies
 	-- for i = 1, 10 do
 	-- 	local obj = MainState.createGameObject(spawn_zombie())
@@ -64,6 +67,6 @@ end
 
 function on_message(self, message_id, message, sender)
 	if message_id == MSG.LEVEL_CHANGE.map_level_change.hash then
-		use_map_level_visibility(self, message.map_level)
+		--use_map_level_visibility(self, message.map_level)
 	end
 end
