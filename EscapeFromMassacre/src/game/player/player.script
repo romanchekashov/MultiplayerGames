@@ -6,6 +6,7 @@ local ACTION_IDS = require "src.utils.actions"
 local device = require "src.utils.device"
 local MSG = require "src.utils.messages"
 local multiplayer_input = require "server.multiplayer_input"
+local broadsock = require "server.server_broadsock"
 
 local isGamepadLeftStickActionId = ACTION_IDS.isGamepadLeftStickActionId
 local isGamepadRightStickActionId = ACTION_IDS.isGamepadRightStickActionId
@@ -655,7 +656,8 @@ function on_message(self, message_id, message, sender)
 				self.btn_use_pressed = false
 			end
 		elseif message.group == MSG_GROUPS.EXIT then
-			msg.post("/gui#menu", "player_exit", {})
+			broadsock.sendGameOver(MainState.PLAYER_TYPE.SURVIVOR)
+			--msg.post("/gui#menu", "player_exit", {})
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
 		local player_on_level = MainState.players:get(self.uid).map_level

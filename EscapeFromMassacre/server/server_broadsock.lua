@@ -233,10 +233,11 @@ function M.send(data)
 	end
 end
 
-function M.sendGameOver()
+function M.sendGameOver(won_player_type)
 	local sw = stream.writer()
 	sw.number(-1)
 	sw.string(MSG_IDS.GAME_OVER)
+	sw.number(won_player_type)
 	for _, client in pairs(clients_map) do
 		sw.string("player")
 		sw.number(client.uid)

@@ -509,6 +509,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			msg.post("/gui#menu", "update_timer", {time = sr.number()})
 		elseif msg_id == MSG_IDS.GAME_OVER then
 			log("SERVER: TIMER GAME_OVER", "go_id_set.length:", go_id_set.length)
+			local won_player_type = sr.number()
 
 			MainState.players:for_each(function (uid, v)
 				MainState.game_over_players:put(uid, v)
@@ -529,7 +530,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				local ws_latency = sr.number()
 			end
 			remove_client(uid)
-			msg.post("/gui#menu", "game_over")
+			msg.post("/gui#menu", "game_over", {won_player_type = won_player_type})
 			msg.post("/spawner-player#script", "remove_player", {uid = uid})
 		elseif msg_id == MSG_IDS.PLAYER_LEAVE_ROOM then
 			log("SERVER: PLAYER_LEAVE_ROOM", from_uid)

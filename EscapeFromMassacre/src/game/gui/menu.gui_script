@@ -45,26 +45,26 @@ end
 
 local function update_stats(self)
 	local nodeId = gui.get_node("stats-playing")
-        -- format score like: 006 with leading zeros
-		gui.set_text(nodeId, string.format("Playing: %03d", MainState.players.length))
+	-- format score like: 006 with leading zeros
+	gui.set_text(nodeId, string.format("Playing: %03d", MainState.players.length))
 
-		for _,node in ipairs(self.playersTextNodes) do
-			gui.delete_node(node)
-		end
-		self.playersTextNodes = {}
-		-- print("menu_gui: players.length", MainState.players.length)
-		local parent = gui.get_parent(nodeId)
-		local pos = gui.get_position(nodeId)
-		pos.x = pos.x + 20
-		local scale = gui.get_scale(nodeId)
-		-- local pos = vmath.vector3(500, 1000, 0)
-		local scorePosX = gui.get_position(gui.get_node("stats-score")).x
+	for _,node in ipairs(self.playersTextNodes) do
+		gui.delete_node(node)
+	end
+	self.playersTextNodes = {}
+	-- print("menu_gui: players.length", MainState.players.length)
+	local parent = gui.get_parent(nodeId)
+	local pos = gui.get_position(nodeId)
+	pos.x = pos.x + 20
+	local scale = gui.get_scale(nodeId)
+	-- local pos = vmath.vector3(500, 1000, 0)
+	local scorePosX = gui.get_position(gui.get_node("stats-score")).x
 
-		MainState:playerUidToScoreSortedForEach(function (player)
-			pos.y = pos.y - 20
-			local textNode = add_player_stat(player, pos, scale, parent, scorePosX)
-			table.insert(self.playersTextNodes, textNode)
-		end)
+	MainState:playerUidToScoreSortedForEach(function (player)
+		pos.y = pos.y - 20
+		local textNode = add_player_stat(player, pos, scale, parent, scorePosX)
+		table.insert(self.playersTextNodes, textNode)
+	end)
 end
 
 local UPDATE_STATS_INTERVAL = 2
@@ -153,7 +153,7 @@ function on_message(self, message_id, message, sender)
 		gui.set_enabled(gui.get_node("panel-join"), false)
 		gui.set_enabled(gui.get_node("btn-exit"), false)
 		MainState.currentGameState = MainState.GAME_STATES.END
-		msg.post("gui#game-over", "show")
+		msg.post("gui#game-over", "show", {won_player_type = message.won_player_type})
 	elseif message_id == hash("set_username") then
 		local nodeId = gui.get_node("username")
         -- format max 30 characters
