@@ -123,7 +123,8 @@ local M = {
     RECREATE_PLAYER_TIMEOUT_IN_SEC = 2,
     GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
-    GAME_TIMEOUT_IN_SEC = 60 * 1,
+    GAME_TIMEOUT_IN_SEC = 60 * 2,
+    FIXED_FUZE_BOX_COUNT_MAX = 2, -- 4
     PLAYER_STATUS = PLAYER_STATUS,
     PLAYER_TYPE = PLAYER_TYPE,
     MSG_IDS = MSG_IDS,
@@ -147,7 +148,6 @@ local M = {
         [FUZE.BLUE] = 0,
         [FUZE.YELLOW] = 0
     },
-    FIXED_FUZE_BOX_COUNT_MAX = 1, -- 4
     fixedFuzeBoxCount = function (self)
         local fixedCount = 0
         for _, v in ipairs(self.fuzeBoxColorToState) do
