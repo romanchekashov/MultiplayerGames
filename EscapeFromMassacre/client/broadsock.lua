@@ -509,14 +509,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			msg.post("/gui#menu", "update_timer", {time = sr.number()})
 		elseif msg_id == MSG_IDS.GAME_OVER then
 			log("SERVER: TIMER GAME_OVER", "go_id_set.length:", go_id_set.length)
+
+			MainState.players:for_each(function (uid, v)
+				MainState.game_over_players:put(uid, v)
+			end)
+
 			clear_remote_gameobjects()
 			go_id_set:for_each(function (go_id)
 				go.delete(go_id)
-			end)
-			log("SERVER: TIMER GAME_OVER after clean", "go_id_set.length:", go_id_set.length)
-
-			MainState.players:for_each(function (k, v)
-				MainState.game_over_players:put(v.uid, v)
 			end)
 
 			while sr.string() == "player" do

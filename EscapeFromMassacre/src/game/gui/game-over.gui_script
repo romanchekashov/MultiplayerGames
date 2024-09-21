@@ -71,6 +71,7 @@ local function updateDataList(self)
 			table.insert(family, player)
 		end
 	end)
+	MainState.game_over_players:clear()
 
 	show_results(self, survivors)
 	show_results2(self, family)

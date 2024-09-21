@@ -104,6 +104,10 @@ function M.createMap()
 			for k, v in pairs(self.items) do
 				fn(k, v)
 			end
+		end,
+		clear = function (self)
+			self.items = {}
+			self.length = 0
 		end
 	}
 end
