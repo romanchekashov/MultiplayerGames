@@ -35,7 +35,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	local clients = {}
 	local client_count = 0
 
-	local remote_gameobjects = {}
+	local remote_gameobjects = Collections.createMap()
 
 	local go_uid_sequence = 0
 
@@ -43,30 +43,48 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 	local connection = {}
 
-	local function add_game_object(uid_to_add)
-		log("add_game_object", uid_to_add)
+	local function add_client(uid_to_add)
+		log("add_client", uid_to_add)
+
 		clients[uid_to_add] = { uid = uid_to_add }
-		remote_gameobjects[uid_to_add] = {gouid = nil}
 		client_count = client_count + 1
 	end
 
 	local function remove_client(uid_to_remove)
-		log("remove_client", uid_to_remove, "remote_gameobjects.length:", #remote_gameobjects)
+		log("remove_client", uid_to_remove, "client_count = ", client_count)
+
 		clients[uid_to_remove] = nil
-		for _,gameobject in pairs(remote_gameobjects[uid_to_remove]) do
-			go.delete(gameobject.id)
-		end
-		remote_gameobjects[uid_to_remove] = nil
 		client_count = client_count - 1
 	end
 
-	local function clear_remote_gameobjects()
-		log("clear_remote_gameobjects: remote_gameobjects.length = ", #remote_gameobjects)
+	local function add_game_object(uid_to_add, type, go_id)
+		log("add_game_object", uid_to_add, type, go_id)
 
-		for uid, gameobject in pairs(remote_gameobjects) do
-			go.delete(gameobject.gouid.id)
-			gameobject.gouid = nil
+		remote_gameobjects:put(uid_to_add, { id = go_id, type = type })
+	end
+
+	local function remove_game_object(uid_to_remove)
+		log("remove_game_object", uid_to_remove, "remote_gameobjects.length:", remote_gameobjects.length)
+
+		if remote_gameobjects:has(uid_to_remove) then
+			local v = remote_gameobjects:remove(uid_to_remove)
+			if v ~= nil then
+				go.delete(v.id)
+			end
 		end
+	end
+
+	local function clear_remote_gameobjects()
+		log("clear_remote_gameobjects: remote_gameobjects.length = ", remote_gameobjects.length)
+
+		local deleting_uid_list = Collections.createList()
+		remote_gameobjects:for_each(function (uid, v)
+			deleting_uid_list:add(uid)
+		end)
+		deleting_uid_list:for_each(function (uid)
+			local v = remote_gameobjects:remove(uid)
+			go.delete(v.id)
+		end)
 	end
 
 	--- Get the number of clients (including self)
@@ -97,18 +115,19 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	-- @param id Id of the game object
 	function instance.unregister_gameobject(message)
 		local id = message.id
-		local killer_uid = message.killer_uid
+		--local killer_uid = message.killer_uid
 		log("unregister_gameobject", id)
 		for gouid,gameobject in pairs(MainState.gameobjects) do
 			if gameobject.id == id then
+				log("unregister_gameobject", uid, id, gameobject.type)
 				MainState.gameobjects[gouid] = nil
 				MainState.gameobject_count = MainState.gameobject_count - 1
 
-				local sw = stream.writer().string("GOD").string(gouid)
-				if killer_uid ~= nil then
-					sw.string(killer_uid)
-				end
-				instance.send(sw.tostring())
+				--local sw = stream.writer().string("GOD").string(gouid)
+				--if killer_uid ~= nil then
+				--	sw.string(killer_uid)
+				--end
+				--instance.send(sw.tostring())
 				return
 			end
 		end
@@ -199,13 +218,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 					existing_go_uid_set:add(uid)
 
-					if not clients[uid] then
-						add_game_object(uid)
-						log("remote GO add_game_object", uid)
-					end
-
-					local game_object = remote_gameobjects[uid]
-
 					local pos = sr.vector3()
 					local rot = sr.quat()
 					local scale = sr.vector3()
@@ -263,7 +275,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						MainState.bulletUidBelongToPlayerUid:put(uid, bullet_belongs_to_player_uid)
 					end
 
-					if game_object.gouid == nil then
+					local game_object = remote_gameobjects:get(uid)
+
+					if game_object == nil then
 						local factory_url = MainState.factories[object_type]
 						if factory_url then
 							local factory_data = {remote = MainState.player.uid ~= uid, uid = uid}
@@ -297,7 +311,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 								local id = factory.create(factory_url, pos, rot, factory_data, scale)
 								assert(id, factory_url .. " should return non nil id")
 								log("GO obj created", uid, tostring(object_type), id)
-								game_object.gouid = { id = id, type = object_type }
+
+								add_game_object(uid, object_type, id)
+								game_object = remote_gameobjects:get(uid)
 
 								if enable then
 									msg.post(id, "enable")
@@ -307,7 +323,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							end
 						end
 					else
-						local id = game_object.gouid.id
+						local id = game_object.id
 						if enable then
 							msg.post(id, "enable")
 							local ok, err = pcall(function()
@@ -394,12 +410,16 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				end
 
 				-- remove game objects that are not in the message
-				for uid, gameobject in pairs(remote_gameobjects) do
-					if existing_go_uid_set:has(uid) == false then
-						go.delete(gameobject.gouid.id)
-						gameobject.gouid = nil
+				local deleting_uid_list = Collections.createList()
+				remote_gameobjects:for_each(function (uid, v)
+					if not existing_go_uid_set:has(uid) then
+						deleting_uid_list:add(uid)
 					end
-				end
+				end)
+				deleting_uid_list:for_each(function (uid)
+					local v = remote_gameobjects:remove(uid)
+					go.delete(v.id)
+				end)
 			end
 		elseif msg_id == MSG_IDS.GOD then
 			log("GOD")
@@ -408,14 +428,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				local killer_uid = sr.number()
 				MainState.increasePlayerScore(killer_uid)
 
-				local remote_gameobjects_for_user = remote_gameobjects[from_uid]
-				if remote_gameobjects_for_user[gouid] ~= nil then
-					local id = remote_gameobjects_for_user[gouid].id
-					local ok, err = pcall(function()
-						go.delete(id)
-					end)
-					remote_gameobjects_for_user[gouid] = nil
-				end
+				--local remote_gameobjects_for_user = remote_gameobjects[from_uid]
+				--if remote_gameobjects_for_user[gouid] ~= nil then
+				--	local id = remote_gameobjects_for_user[gouid].id
+				--	local ok, err = pcall(function()
+				--		go.delete(id)
+				--	end)
+				--	remote_gameobjects_for_user[gouid] = nil
+				--end
 			end
 		elseif msg_id == MSG_IDS.CREATE_FUZES then
 			--MainState.INITIAL_FUZES_CREATE = {}
@@ -440,10 +460,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			--msg.post("/spawner-player#script", "add_player", {uid = MainState.player.uid, player_type = MainState.player.type, pos = sr.vector3(), remote = remote})
 		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")
-			add_game_object(from_uid)
+			add_client(from_uid)
 		elseif msg_id == MSG_IDS.CONNECT_SELF then
 			log("CONNECT_SELF")
-			add_game_object(from_uid)
+			add_client(from_uid)
 			uid = from_uid
 			on_connected()
 			MainState.player.uid = uid

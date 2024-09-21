@@ -94,8 +94,10 @@ function M.createMap()
 		end,
 		remove = function (self, key)
 			if self.items[key] ~= nil then
+				local removed = self.items[key]
 				self.items[key] = nil
 				self.length = self.length - 1
+				return removed
 			end
 		end,
 		for_each = function (self, fn)
