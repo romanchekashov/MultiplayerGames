@@ -107,6 +107,7 @@ local FACTORY_TYPES = {
 
 local M = {
     isServer = false,
+    online = 0,
     gameInitialized = false,
     currentGameState = GAME_STATES.LOBBY,
     factories = {},

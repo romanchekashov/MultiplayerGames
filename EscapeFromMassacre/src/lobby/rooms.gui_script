@@ -12,6 +12,8 @@ local timer_component = require("druid.extended.timer")
 
 local log = debugUtils.createLog("[ROOMS GUI_SCRIPT]").log
 
+local UPDATE_TIMEOUT = 1
+
 local function enable_start_leave_btns(is_enable)
 	gui.set_enabled(gui.get_node("btn-leave-game"), is_enable)
 	gui.set_enabled(gui.get_node("btn-start-game"), is_enable)
@@ -166,6 +168,7 @@ function init(self)
 	enable_start_leave_btns(false)
 
 	self.enabled = true
+	self.update_timeout = UPDATE_TIMEOUT
 end
 
 
@@ -177,6 +180,12 @@ end
 
 function update(self, dt)
 	self.druid:update(dt)
+
+	if self.update_timeout < 0 then
+		self.update_timeout = UPDATE_TIMEOUT
+		gui.set_text(gui.get_node("choose-room"), string.format("Choose room! Online: %03d", MainState.online))
+	end
+	self.update_timeout = self.update_timeout - dt
 end
 
 

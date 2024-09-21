@@ -544,6 +544,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		elseif msg_id == MSG_IDS.GAME_START then
 			log("SERVER: TIMER GAME_START")
 			msg.post("/gui#rooms", "game_start")
+		elseif msg_id == MSG_IDS.ONLINE then
+			MainState.online = sr.number()
 		else
 			log("CUSTOM MESSAGE", msg_id)
 			local message_data, message_length = sr.rest()

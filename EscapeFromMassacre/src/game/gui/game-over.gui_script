@@ -115,8 +115,6 @@ function on_message(self, message_id, message, sender)
 
 		local nodeId = gui.get_node("game-over")
 		gui.set_text(nodeId, "GAME OVER - " .. WON_TITLE[message.won_player_type])
-		-- format score like: 006 with leading zeros
-		--gui.set_text(nodeId, string.format("Playing: %03d", MainState.players.length))
     elseif message_id == hash("hide") then
         gui.set_enabled(gui.get_node("panel-game-over"), false)
 		gui.set_enabled(gui.get_node("btn-game-exit"), false)

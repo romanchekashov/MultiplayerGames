@@ -66,6 +66,7 @@ async def handle_client_disconnected(websocket):
     rooms.remove_player(client)
 
     await reliable_connection.send_message_all(f'{rooms}')
+    await reliable_connection.send_message_all(f'-1.ONLINE.{len(clients)}')
 
     Log.info(f'client disconected: {client}, clients = {len(clients)}')
 
@@ -107,6 +108,7 @@ async def to_server(msg, client: Client):
     if GameServerMessages.CONNECT_ME in msg:
         await reliable_connection.send_msg_to(client, f'{client.uid}.CONNECT_SELF.{client.username}')
         await reliable_connection.send_message_others(f'{client.uid}.CONNECT_OTHER', client.uid)
+        await reliable_connection.send_message_all(f'-1.ONLINE.{len(clients)}')
         await send_usernames()
         return
 
