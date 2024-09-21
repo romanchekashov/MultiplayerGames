@@ -35,6 +35,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	local clients = {}
 	local client_count = 0
 
+	local go_id_set = Collections.createSet()
 	local remote_gameobjects = Collections.createMap()
 
 	local go_uid_sequence = 0
@@ -61,6 +62,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		log("add_game_object", uid_to_add, type, go_id)
 
 		remote_gameobjects:put(uid_to_add, { id = go_id, type = type })
+		go_id_set:add(go_id)
 	end
 
 	local function remove_game_object(uid_to_remove)
@@ -70,6 +72,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			local v = remote_gameobjects:remove(uid_to_remove)
 			if v ~= nil then
 				go.delete(v.id)
+				go_id_set:remove(v.id)
 			end
 		end
 	end
@@ -84,6 +87,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		deleting_uid_list:for_each(function (uid)
 			local v = remote_gameobjects:remove(uid)
 			go.delete(v.id)
+			go_id_set:remove(v.id)
 		end)
 	end
 
@@ -101,11 +105,12 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	function instance.register_gameobject(id, type)
 		assert(id, "You must provide a game object id")
 		assert(type and MainState.factories[type], "You must provide a known game object type")
-		log("register_gameobject", id, type)
 		go_uid_sequence = go_uid_sequence + 1
 		local gouid = tostring(uid) .. "_" .. go_uid_sequence
 		MainState.gameobjects[gouid] = { id = id, type = type, gouid = gouid }
 		MainState.gameobject_count = MainState.gameobject_count + 1
+		go_id_set:add(id)
+		log("register_gameobject", id, type, "go_id_set.length = ", go_id_set.length)
 	end
 
 	--- Unregister a game object
@@ -116,12 +121,12 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	function instance.unregister_gameobject(message)
 		local id = message.id
 		--local killer_uid = message.killer_uid
-		log("unregister_gameobject", id)
 		for gouid,gameobject in pairs(MainState.gameobjects) do
 			if gameobject.id == id then
-				log("unregister_gameobject", uid, id, gameobject.type)
 				MainState.gameobjects[gouid] = nil
 				MainState.gameobject_count = MainState.gameobject_count - 1
+				go_id_set:remove(id)
+				log("unregister_gameobject", id, gameobject.type, "go_id_set.length = ", go_id_set.length)
 
 				--local sw = stream.writer().string("GOD").string(gouid)
 				--if killer_uid ~= nil then
@@ -476,8 +481,12 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			log("SERVER: TIMER GAME_TIME: " .. data)
 			msg.post("/gui#menu", "update_timer", {time = sr.number()})
 		elseif msg_id == MSG_IDS.GAME_OVER then
-			log("SERVER: TIMER GAME_OVER")
+			log("SERVER: TIMER GAME_OVER", "go_id_set.length:", go_id_set.length)
 			clear_remote_gameobjects()
+			go_id_set:for_each(function (go_id)
+				go.delete(go_id)
+			end)
+			log("SERVER: TIMER GAME_OVER after clean", "go_id_set.length:", go_id_set.length)
 
 			MainState.players:for_each(function (k, v)
 				MainState.game_over_players:put(v.uid, v)
