@@ -14,9 +14,11 @@ function init(self)
 	if self.isServer then
 		local obj = MainState.register_gameobject(self.player_uid, id, MainState.FACTORY_TYPES.bullet)
 		MainState.bulletUidBelongToMapLevel[obj.gouid] = MainState.players:get(self.player_uid).map_level
+		MainState.bulletIdToUid[id] = obj.gouid
 	else
 		msg.post("/broadsock", "register_gameobject", { id = id, type = MainState.FACTORY_TYPES.bullet })
 		MainState.bulletUidBelongToMapLevel[self.uid] = self.map_level
+		MainState.bulletIdToUid[id] = self.uid
 		MainState.SOUND.pistol_9mm_shoot_1()
 	end
 
@@ -34,6 +36,7 @@ function final(self)
 	end
 
 	MainState.bulletBelongToPlayerUid[id] = nil
+	MainState.bulletIdToUid[id] = nil
 end
 
 function update(self, dt)

@@ -29,7 +29,6 @@ function on_message(self, message_id, message, sender)
 		end
 
 		if message.map_level == MainState.MAP_LEVELS.BASEMENT then
-			MainState.playerOnMapLevel = MainState.MAP_LEVELS.BASEMENT
 			if MainState.players:has(MainState.player.uid) then
 				MainState.players:get(MainState.player.uid).map_level = MainState.MAP_LEVELS.BASEMENT
 			end
@@ -41,7 +40,6 @@ function on_message(self, message_id, message, sender)
 			msg.post("/gate-main", "disable")
 			print("BASEMENT", #self.current_screen)
 		elseif message.map_level == MainState.MAP_LEVELS.HOUSE then
-			MainState.playerOnMapLevel = MainState.MAP_LEVELS.HOUSE
 			if MainState.players:has(MainState.player.uid) then
 				MainState.players:get(MainState.player.uid).map_level = MainState.MAP_LEVELS.HOUSE
 			end

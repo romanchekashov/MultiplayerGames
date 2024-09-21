@@ -86,8 +86,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		end)
 		deleting_uid_list:for_each(function (uid)
 			local v = remote_gameobjects:remove(uid)
-			go.delete(v.id)
-			go_id_set:remove(v.id)
+			if v ~= nil then
+				go.delete(v.id)
+				go_id_set:remove(v.id)
+			end
 		end)
 	end
 
@@ -246,16 +248,16 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						local player_health = sr.number()
 						local player_score = sr.number()
 
-						if MainState.player.uid == uid and MainState.players:has(uid) then
-							local player = MainState.players:get(uid)
+						local player = MainState.players:get(uid)
+						if player ~= nil then
 							player.map_level = player_map_level
 
 							if player.health ~= player_health then
 								player.health = player_health
-								msg.post(player.go_id, "update_health", {uid = player.uid, health = player_health})
+								if player.health > 1 then
+									msg.post(player.go_id, "update_health", {uid = player.uid, health = player_health})
+								end
 							end
-
-							MainState.playerOnMapLevel = player_map_level
 						end
 						--enable = player_map_level == MainState.playerOnMapLevel
 					elseif MainState.FACTORY_TYPES.fuze_box == object_type then
@@ -265,7 +267,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							if MainState.fuzeBoxColorToState[fuze_box_color] ~= fuze_box_state then
 								MainState.fuzeBoxColorToState[fuze_box_color] = fuze_box_state
 							end
-							enable = MainState.fuzeBoxColorToMapLevel[fuze_box_color] == MainState.playerOnMapLevel
+							local player = MainState.players:get(MainState.player.uid)
+							if player ~= nil then
+								enable = MainState.fuzeBoxColorToMapLevel[fuze_box_color] == player.map_level
+							end
 						end
 					elseif MainState.FACTORY_TYPES.fuze == object_type then
 						fuze_color = sr.number()
@@ -280,7 +285,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							end
 
 							MainState.fuzeColorToMapLevel[fuze_color] = fuze_map_level
-							enable = fuze_map_level == MainState.playerOnMapLevel and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[fuze_color] == 0
+							local player = MainState.players:get(MainState.player.uid)
+							if player ~= nil then
+								enable = fuze_map_level == player.map_level and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[fuze_color] == 0
+							end
 							--log("fuze enable", tostring(enable), fuze_color, fuze_map_level, MainState.playerOnMapLevel, "player_uid_with_fuze", player_uid_with_fuze, tostring(count))
 						end
 					elseif MainState.FACTORY_TYPES.bullet == object_type then
@@ -552,7 +560,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			local player = MainState.players:get(uid)
 			local sw = stream.writer()
 			sw.string("GO")
-			sw.number(MainState.playerOnMapLevel)
+			sw.number(MainState.players:get(MainState.player.uid).map_level)
 			sw.number(MainState.player.type)
 			sw.number(MainState.gameobject_count)
 			for gouid,gameobject in pairs(MainState.gameobjects) do

@@ -594,17 +594,21 @@ function on_message(self, message_id, message, sender)
 	end
 
 	--log(message_id, message.group, message.other_id, self.uid)
-	if message_id == MSG_GROUPS.COLLISION_RESPONSE then
+	if message_id == MSG_GROUPS.COLLISION_RESPONSE and self.isServer then
 		if message.group == MSG_GROUPS.BULLET then
-			-- print("I collided with", go.get_id(), message.other_id, message.other_group)
 			local player_on_level = MainState.players:get(self.uid).map_level
+			local bullet_uid = MainState.bulletIdToUid[message.other_id]
+			print("I collided with", self.uid, "bullet_uid = ", bullet_uid)
 
-			if self.bullet_id ~= message.other_id and player_on_level == MainState.bulletUidBelongToMapLevel[MainState.bulletIdToUid[message.other_id]] then
+			if self.bullet_id ~= message.other_id and player_on_level == MainState.bulletUidBelongToMapLevel[bullet_uid] then
 				self.bullet_id = message.other_id
 				self.killer_uid = MainState.bulletBelongToPlayerUid[message.other_id]
 
 				local killer = MainState.players:get(self.killer_uid)
-				if self.killer_uid == nil or (killer ~= nil and killer.map_level ~= MainState.playerOnMapLevel) then
+
+				print("I collided with", self.uid, "killer = ", killer.uid, "bullet_uid = ", bullet_uid)
+
+				if killer == nil or killer.map_level ~= player_on_level then
 					 return
 				end
 

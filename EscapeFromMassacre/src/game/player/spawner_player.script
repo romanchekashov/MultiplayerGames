@@ -20,6 +20,10 @@ function init(self)
 end
 
 function on_message(self, message_id, message, sender)
+	if not self.isServer then
+		return
+	end
+
 	if message_id == hash("add_player") then
 		-- start position outside screen edge
 		--local pos = vmath.vector3(400, 400, 0)

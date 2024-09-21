@@ -116,6 +116,23 @@ local M = {
     gameTime = 0,
     isGateOpen = false,
 
+    INITIAL_FUZES_CREATE = {},
+    FACTORY_TYPES = FACTORY_TYPES,
+    GAME_STATES = GAME_STATES,
+    RECREATE_PLAYER_TIMEOUT_IN_SEC = 2,
+    GAME_START_TIMEOUT_IN_SEC = 5,
+    -- GAME_TIMEOUT_IN_SEC = 60 * 15,
+    GAME_TIMEOUT_IN_SEC = 60 * 1,
+    PLAYER_STATUS = PLAYER_STATUS,
+    PLAYER_TYPE = PLAYER_TYPE,
+    MSG_IDS = MSG_IDS,
+    MSG_GROUPS = MSG_GROUPS,
+    HAS_GAMEPAD = false,
+    SOUND = SOUND,
+    GAME_SCREENS = GAME_SCREENS,
+    MAP_LEVELS = MAP_LEVELS,
+    FUZE = FUZE,
+
     fuzeBoxIdsToColor = {},
     fuzeBoxColorToMapLevel = {
         [FUZE.RED] = MAP_LEVELS.BASEMENT,
@@ -165,29 +182,15 @@ local M = {
 
     uid_to_username = Collections.createMap(),
     rooms = Collections.createList(),
-    INITIAL_FUZES_CREATE = {},
-    FACTORY_TYPES = FACTORY_TYPES,
     selectedRoom = nil,
-    GAME_STATES = GAME_STATES,
-    RECREATE_PLAYER_TIMEOUT_IN_SEC = 2,
-    GAME_START_TIMEOUT_IN_SEC = 5,
-    -- GAME_TIMEOUT_IN_SEC = 60 * 15,
-    GAME_TIMEOUT_IN_SEC = 60 * 1,
-    PLAYER_STATUS = PLAYER_STATUS,
-    PLAYER_TYPE = PLAYER_TYPE,
+
     bulletBelongToPlayerUid = {},
     bulletIdToUid = {},
     bulletUidBelongToPlayerUid = Collections.createMap(),
     bulletUidBelongToMapLevel = {},
+
     playerUidToScore = {},
     playerUidToWsLatency = {},
-    MSG_IDS = MSG_IDS,
-    MSG_GROUPS = MSG_GROUPS,
-    HAS_GAMEPAD = false,
-    SOUND = SOUND,
-    GAME_SCREENS = GAME_SCREENS,
-    MAP_LEVELS = MAP_LEVELS,
-    FUZE = FUZE,
     playerSlots = {},
     player = {
         uid = 0,
@@ -195,8 +198,7 @@ local M = {
         type = PLAYER_TYPE.SURVIVOR,
         room = nil,
         status = PLAYER_STATUS.CONNECTED
-    },
-    playerOnMapLevel = MAP_LEVELS.HOUSE
+    }
 }
 
 M.gameTime = M.GAME_TIMEOUT_IN_SEC
