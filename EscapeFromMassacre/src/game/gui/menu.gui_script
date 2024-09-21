@@ -29,7 +29,7 @@ end
 local function add_player_stat(player, pos, scale, parent, scorePosX)
 	-- print(debugUtils.printTable(player), pos)
 	-- Create a new text node
-	local score = tostring(MainState.playerUidToScore[tostring(player.uid)])
+	local score = tostring(player.score)
 	local ws_latency = tostring(MainState.playerUidToWsLatency[player.uid])
 	local new_textnode = gui.new_text_node(pos, player.username .. " ping" .. ws_latency .. "   " .. score)
 	gui.set_scale(new_textnode, scale)
@@ -60,7 +60,7 @@ local function update_stats(self)
 		-- local pos = vmath.vector3(500, 1000, 0)
 		local scorePosX = gui.get_position(gui.get_node("stats-score")).x
 
-		MainState.playerUidToScoreSortedForEach(function (player)
+		MainState:playerUidToScoreSortedForEach(function (player)
 			pos.y = pos.y - 20
 			local textNode = add_player_stat(player, pos, scale, parent, scorePosX)
 			table.insert(self.playersTextNodes, textNode)

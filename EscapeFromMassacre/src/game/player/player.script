@@ -124,7 +124,9 @@ local function decrease_health(self, killer_uid)
 
 	if player.health <= 0 then
 		if killer_uid ~= nil then
-			MainState.increasePlayerScore(killer_uid)
+			local killer = MainState.players:get(killer_uid)
+			killer.score = killer.score + 1
+			msg.post(killer.go_id, "update_score", {uid = killer.uid, score = killer.score})
 		end
 		msg.post("/spawner-player#script", "remove_player", {
 			uid = self.uid,

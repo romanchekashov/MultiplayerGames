@@ -251,12 +251,18 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						local player = MainState.players:get(uid)
 						if player ~= nil then
 							player.map_level = player_map_level
+							player.score = player_score
 
 							if player.health ~= player_health then
 								player.health = player_health
 								if player.health > 1 then
 									msg.post(player.go_id, "update_health", {uid = player.uid, health = player_health})
 								end
+							end
+
+							if player.score ~= player_score then
+								player.score = player_score
+								msg.post(player.go_id, "update_score", {uid = player.uid, score = player_score})
 							end
 						end
 						--enable = player_map_level == MainState.playerOnMapLevel
@@ -452,7 +458,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			if clients[from_uid] and from_uid ~= uid then
 				local gouid = sr.string()
 				local killer_uid = sr.number()
-				MainState.increasePlayerScore(killer_uid)
+				--MainState.increasePlayerScore(killer_uid)
 
 				--local remote_gameobjects_for_user = remote_gameobjects[from_uid]
 				--if remote_gameobjects_for_user[gouid] ~= nil then

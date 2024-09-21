@@ -198,46 +198,30 @@ local M = {
         type = PLAYER_TYPE.SURVIVOR,
         room = nil,
         status = PLAYER_STATUS.CONNECTED
-    }
+    },
+
+    playerUidToScoreSortedForEach = function(self, fn)
+        local list = {}
+
+        self.players:for_each(function (k, player)
+            table.insert(list, player)
+        end)
+
+        local function compare(a,b)
+            return a.score > b.score
+        end
+
+        table.sort(list, compare)
+
+        for _, player in ipairs(list) do
+            fn(player)
+        end
+    end
 }
 
 M.gameTime = M.GAME_TIMEOUT_IN_SEC
 
-function M.increasePlayerScore(killer_uid)
-	if killer_uid ~= nil and killer_uid ~= "" then
-        killer_uid = tostring(killer_uid)
-        if M.playerUidToScore[killer_uid] == nil then
-            M.playerUidToScore[killer_uid] = 0
-        end
 
-        M.playerUidToScore[killer_uid] = M.playerUidToScore[killer_uid] + 1
-
-        local player = M.players:get(tonumber(killer_uid))
-        if player ~= nil then
-            player.score = player.score + 1
-			msg.post(player.go_id, "update_score", {uid = player.uid, score = player.score})
-        end
-    end
-end
-
-function M.playerUidToScoreSortedForEach(fn)
-    local list = {}
-
-	M.players:for_each(function (k, player)
-		local item = {player = player, score = M.playerUidToScore[tostring(player.uid)]}
-		table.insert(list, item)
-	end)
-
-	local function compare(a,b)
-		return a.score > b.score
-	end
-
-	table.sort(list, compare)
-
-	for _, item in ipairs(list) do
-        fn(item.player)
-	end
-end
 
 local pauseBound = {
     x1 = 0,
