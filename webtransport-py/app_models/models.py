@@ -8,8 +8,8 @@ Log = getLogger(__name__)
 def get_ws_latency_in_ms(ws):
     return int(ws.latency * 1000)
 
-PLAYER_TYPE_SURVIVOR = 0
 PLAYER_TYPE_FAMILY = 1
+PLAYER_TYPE_SURVIVOR = 2
 
 class Client:
     def __init__(self, uid, web_transport, websocket, data):
