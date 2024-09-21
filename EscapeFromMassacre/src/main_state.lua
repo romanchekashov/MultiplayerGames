@@ -21,7 +21,9 @@ local MSG_GROUPS = {
     BOX = hash("box"),
     FUZE = hash("fuze"),
     FUZE_BOX = hash("fuze-box"),
-    PLAYER = hash("player")
+    PLAYER = hash("player"),
+    ZOMBIE = hash("zombie"),
+    BULLET = hash("bullet")
 }
 
 local SOUND = {
@@ -156,7 +158,11 @@ local M = {
     pause = true,
     players = Collections.createMap(),
     game_over_players = Collections.createMap(),
+
     zombies = Collections.createMap(),
+    zombieUidToMapLevel = {},
+    zombieIdToUid = {},
+
     uid_to_username = Collections.createMap(),
     rooms = Collections.createList(),
     INITIAL_FUZES_CREATE = {},
@@ -470,6 +476,8 @@ function M.tostring(self)
         elseif M.FACTORY_TYPES.bullet == v.type then
             sw.number(v.player_uid)
             sw.number(M.bulletUidBelongToMapLevel[gouid])
+        elseif M.FACTORY_TYPES.zombie == v.type then
+            sw.number(M.zombieUidToMapLevel[gouid])
         end
         -- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
     end

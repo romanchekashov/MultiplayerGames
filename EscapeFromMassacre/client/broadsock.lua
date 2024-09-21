@@ -238,14 +238,23 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local bullet_belongs_to_player_uid = 0
 					local bullet_map_level = 0
 
+					local zombie_map_level = 0
+
 					if MainState.FACTORY_TYPES.player == object_type then
 						player_type = sr.number()
 						local player_map_level = sr.number()
-						sr.number()
-						sr.number()
+						local player_health = sr.number()
+						local player_score = sr.number()
 
 						if MainState.player.uid == uid and MainState.players:has(uid) then
-							MainState.players:get(uid).map_level = player_map_level
+							local player = MainState.players:get(uid)
+							player.map_level = player_map_level
+
+							if player.health ~= player_health then
+								player.health = player_health
+								msg.post(player.go_id, "update_health", {uid = player.uid, health = player_health})
+							end
+
 							MainState.playerOnMapLevel = player_map_level
 						end
 						--enable = player_map_level == MainState.playerOnMapLevel
@@ -278,6 +287,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						bullet_belongs_to_player_uid = sr.number()
 						bullet_map_level = sr.number()
 						MainState.bulletUidBelongToPlayerUid:put(uid, bullet_belongs_to_player_uid)
+					elseif MainState.FACTORY_TYPES.zombie == object_type then
+						zombie_map_level = sr.number()
 					end
 
 					local game_object = remote_gameobjects:get(uid)
@@ -310,6 +321,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							elseif object_type == MainState.FACTORY_TYPES.bullet then
 								factory_data.player_uid = bullet_belongs_to_player_uid
 								factory_data.map_level = bullet_map_level
+							elseif object_type == MainState.FACTORY_TYPES.zombie then
+								factory_data.map_level = zombie_map_level
 							end
 
 							if factory_data ~= nil then

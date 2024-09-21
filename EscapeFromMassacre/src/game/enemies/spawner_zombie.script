@@ -3,22 +3,22 @@ local Utils = require "src.utils.utils"
 
 local random_position = Utils.random_position
 
-local function spawn_zombie()
-	return factory.create("#factory-zombie", random_position(), nil, {remote = false})
+local function spawn_zombie(speed, map_level)
+	return factory.create("#factory-zombie", random_position(), nil, {remote = false, speed = speed, map_level = map_level})
 end
 
 function init(self)
 	self.isServer = MainState.isServer
 	self.zombies = MainState.zombies
 
-	if self.isServer then
+	if not self.isServer then
 		return
 	end
 
-	 for i = 1, 100 do
+	 for i = 1, 10 do
 	 	local obj = {
 			uid = 10000 + i,
-			go_id = spawn_zombie() or nil,
+			go_id = spawn_zombie(50, MainState.MAP_LEVELS.HOUSE) or nil,
 			health = 100
 		}
 	 	self.zombies:put(obj.go_id, obj)
@@ -26,7 +26,7 @@ function init(self)
 end
 
 function on_message(self, message_id, message, sender)
-	if self.isServer then
+	if not self.isServer then
 		return
 	end
 

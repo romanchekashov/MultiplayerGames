@@ -12,6 +12,7 @@ local random_position = Utils.random_position
 
 function init(self)
 	log("spawner_player init", msg.url())
+	self.isServer = MainState.isServer
     self.w = tonumber(sys.get_config("display.width")) - 300
     self.h = tonumber(sys.get_config("display.height")) - 200
 	-- print("w " .. self.w .. " h " .. self.h)
@@ -34,6 +35,17 @@ function on_message(self, message_id, message, sender)
 			local player = self.players:get(message.uid)
 			--log("Bullet killed player", player.username)
 			go.delete(player.go_id)
+
+			if self.isServer then
+				local player = self.players:get(message.uid)
+				timer.delay(5, false, function()
+					factory.create("#factory-player", Utils.random_position(), nil, {
+						remote = false,
+						uid = player.uid,
+						map_level = MainState.MAP_LEVELS.HOUSE,
+						player_type = player.type})
+				end)
+			end
 		end
 		-- for m, _ in pairs(self.players) do
         --     go.delete(m)

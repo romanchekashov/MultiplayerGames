@@ -4,11 +4,11 @@ local _wall = Utils.wall
 
 go.property("remote", true)
 go.property("speed", 50)
+go.property("map_level", 0)
 
 local MSG_GROUPS = MainState.MSG_GROUPS
 local PLAYER = hash("player")
 local WALL = hash("wall")
-local BULLET = hash("bullet")
 
 local random_position_walls = {
 	[1] = vmath.vector3(0, math.random(_wall.offset.y, _wall.y), 0),
@@ -35,7 +35,10 @@ end
 function init(self)
 	self.isServer = MainState.isServer
 	if self.isServer then
-		MainState.register_gameobject(0, go.get_id(), MainState.FACTORY_TYPES.zombie)
+		local obj = MainState.register_gameobject(0, go.get_id(), MainState.FACTORY_TYPES.zombie)
+		self.gouid = obj.gouid
+		MainState.zombieUidToMapLevel[self.gouid] = self.map_level
+		MainState.zombieIdToUid[obj.id] = self.gouid
 	else
 		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = MainState.FACTORY_TYPES.zombie })
 	end
@@ -50,7 +53,10 @@ end
 
 function final(self)
 	if self.isServer then
-		MainState.unregister_gameobject({ id = go.get_id() })
+		local id = go.get_id()
+		MainState.unregister_gameobject({ id = id })
+		MainState.zombieUidToMapLevel[self.gouid] = nil
+		MainState.zombieIdToUid[id] = nil
 	else
 		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
 	end
@@ -137,8 +143,10 @@ function on_message(self, message_id, message, sender)
 		-- 	local other_pos = go.get_world_position(message.other_id)
 		-- 	local distance_to_collision = vmath.length(my_pos - other_pos)
 		-- 	print(string.format("zombie %s see wall %s in distance %s", go.get_id(), message.other_id, distance_to_collision))
-		elseif message.group == BULLET then
-			msg.post("/spawner-zombie#script", "remove_zombie", {zombie_id = go.get_id()})
+		elseif message.group == MSG_GROUPS.BULLET then
+			if self.isServer then
+				msg.post("/spawner-zombie#script", "remove_zombie", {zombie_id = go.get_id()})
+			end
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
 		if message.group == WALL and self.wall_hit_cooldown <= 0 then
