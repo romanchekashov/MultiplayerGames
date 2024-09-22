@@ -274,9 +274,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 								MainState.fuzeBoxColorToState[fuze_box_color] = fuze_box_state
 							end
 							local player = MainState.players:get(MainState.player.uid)
-							if player ~= nil then
-								enable = MainState.fuzeBoxColorToMapLevel[fuze_box_color] == player.map_level
-							end
+							enable = player ~= nil and MainState.fuzeBoxColorToMapLevel[fuze_box_color] == player.map_level
 						end
 					elseif MainState.FACTORY_TYPES.fuze == object_type then
 						fuze_color = sr.number()
@@ -292,9 +290,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 							MainState.fuzeColorToMapLevel[fuze_color] = fuze_map_level
 							local player = MainState.players:get(MainState.player.uid)
-							if player ~= nil then
-								enable = fuze_map_level == player.map_level and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[fuze_color] == 0
-							end
+							enable = player ~= nil and fuze_map_level == player.map_level and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[fuze_color] == 0
 							--log("fuze enable", tostring(enable), fuze_color, fuze_map_level, MainState.playerOnMapLevel, "player_uid_with_fuze", player_uid_with_fuze, tostring(count))
 						end
 					elseif MainState.FACTORY_TYPES.bullet == object_type then
