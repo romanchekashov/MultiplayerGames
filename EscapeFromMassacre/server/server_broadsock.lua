@@ -54,8 +54,7 @@ local function create_client(uid, player_type)
 		type = player_type,
 		map_level = MainState.MAP_LEVELS.HOUSE,
 		health = 100,
-		score = 0,
-		ws_latency = -1
+		score = 0
 	}
 	return client
 end
@@ -252,7 +251,6 @@ function M.sendGameOver(won_player_type)
 		sw.number(client.map_level)
 		sw.number(client.health)
 		sw.number(client.score)
-		sw.number(client.ws_latency)
 	end
 	M.send(sw.tostring())
 end

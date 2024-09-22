@@ -21,7 +21,7 @@ local M = {
         GAME_OVER = "GAME_OVER",
         GAME_TIME = "GAME_TIME",
         ONLINE = "ONLINE",
-        WS_LATENCY = "WS_LATENCY"
+        LATENCY = "LATENCY"
     }
 }
 

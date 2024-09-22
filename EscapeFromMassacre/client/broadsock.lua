@@ -323,7 +323,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 								factory_data.map_level = MainState.MAP_LEVELS.HOUSE
 								factory_data.health = 100
 								factory_data.score = 0
-								factory_data.ws_latency = -1
 							elseif object_type == MainState.FACTORY_TYPES.fuze_box then
 								if fuze_box_color > 0 then
 									factory_data.color = fuze_box_color
@@ -536,7 +535,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				local map_level = sr.number()
 				local health = sr.number()
 				player.score = sr.number()
-				local ws_latency = sr.number()
 			end
 			remove_client(uid)
 			msg.post("/gui#menu", "game_over", {won_player_type = won_player_type})
@@ -555,13 +553,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			msg.post("/gui#rooms", "game_start")
 		elseif msg_id == MSG_IDS.ONLINE then
 			MainState.online = sr.number()
-		elseif msg_id == MSG_IDS.WS_LATENCY then
+		elseif msg_id == MSG_IDS.LATENCY then
 			local t = sr.number()
 			while t > 0 do
 				t = t - 1
 				local player = MainState.players:get(sr.number())
 				if player ~= nil then
 					player.ws_latency = sr.number()
+					player.wt_latency = sr.number()
 				end
 			end
 		else

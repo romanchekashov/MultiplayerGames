@@ -20,11 +20,11 @@ class Client:
         self.reliableWS = websocket
         self.unreliableFastWT = web_transport
         self.wt_latency = -1
+        self.ws_latency = -1
+        self.wsPingSentTime = datetime.now()
         self.data = data
         self.connected = True
         self.disconnected_time = None
-        self.ws_latency = -1
-        self.wsPingSentTime = datetime.now()
 
     def calc_ws_latency(self):
         self.ws_latency = int((datetime.now() - self.wsPingSentTime).total_seconds() * 1000 / 2)

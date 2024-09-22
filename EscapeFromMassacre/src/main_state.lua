@@ -262,6 +262,7 @@ function M.createGameObject(uid, username, go_id, player_type, map_level)
         level = 1,
         xp = 0,
         ws_latency = 0,
+        wt_latency = 0,
         type = player_type or M.PLAYER_TYPE.SURVIVOR,
 
         is_family = function (self)

@@ -164,11 +164,11 @@ nodes {
 }
 nodes {
   position {
-    x: 1050.0
+    x: 990.0
     y: 460.0
   }
   size {
-    x: 180.0
+    x: 300.0
     y: 100.0
   }
   color {
@@ -179,7 +179,7 @@ nodes {
   type: TYPE_BOX
   id: "stats"
   inherit_alpha: true
-  alpha: 0.7
+  alpha: 0.4
 }
 nodes {
   position {

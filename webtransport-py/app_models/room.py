@@ -52,9 +52,9 @@ class Room:
         await self.reliable_connection.send_message_all(ClientGameMessages.WS_PING)
 
         self.wsLatencyCheckTime = datetime.now()
-        msg = f'-1.WS_LATENCY.{len(self.clients)}'
+        msg = f'-1.LATENCY.{len(self.clients)}'
         for client in self.clients:
-            msg += f'.{client.uid}.{client.ws_latency}'
+            msg += f'.{client.uid}.{client.ws_latency}.{client.wt_latency}'
         await self.reliable_connection.send_message_all(msg)
 
     async def to_game_client(self, msg):
