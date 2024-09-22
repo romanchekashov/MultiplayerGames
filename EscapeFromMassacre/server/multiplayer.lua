@@ -20,7 +20,8 @@ local M = {
         GAME_START = "GAME_START",
         GAME_OVER = "GAME_OVER",
         GAME_TIME = "GAME_TIME",
-        ONLINE = "ONLINE"
+        ONLINE = "ONLINE",
+        WS_LATENCY = "WS_LATENCY"
     }
 }
 

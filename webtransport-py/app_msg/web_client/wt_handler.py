@@ -40,7 +40,7 @@ class CounterHandler:
         self.client = None
         self.now = datetime.now()
         # self._encoding = 'utf-8'
-    
+
     def send_datagram(self, data) -> None:
         payload = str(data).encode(self._encoding)
         self._http.send_datagram(self._session_id, payload) # remove b'<str_bytes>'
@@ -54,15 +54,15 @@ class CounterHandler:
                 Log.info(f'handler: WT = {id(self)}: client = {self.client}')
                 self.send_datagram(f'BIND_WT_CONNECTED.{self.client.uid}')
             elif self.client:
-                if msg == 'PING':
+                if msg == 'WT_PONG':
                     self.client.wt_latency = int((datetime.now() - self.now).total_seconds() * 1000 / 2)
                     # Log.info(f'{self.client.wt_latency}, {(datetime.now() - self.now).total_seconds()}')
                 else:
                     to_game_server(msg, self.client)
-                
+
                 if (datetime.now() - self.now).total_seconds() > 5:
                     self.now = datetime.now()
-                    self.send_datagram('PING')
+                    self.send_datagram('WT_PING')
 
         if isinstance(event, WebTransportStreamDataReceived):
             self._counters[event.stream_id] += len(event.data)

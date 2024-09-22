@@ -290,8 +290,8 @@
 		}
 
 		function onMsgFromWebTransport(text) {
-			if (text === 'PING') {
-				WebTransportSendData('PING');
+			if (text === 'WT_PING') {
+				WebTransportSendData('WT_PONG');
 				return;
 			}
 

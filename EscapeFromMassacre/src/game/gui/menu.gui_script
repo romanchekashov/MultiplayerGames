@@ -29,9 +29,7 @@ end
 local function add_player_stat(player, pos, scale, parent, scorePosX)
 	-- print(debugUtils.printTable(player), pos)
 	-- Create a new text node
-	local score = tostring(player.score)
-	local ws_latency = tostring(MainState.playerUidToWsLatency[player.uid])
-	local new_textnode = gui.new_text_node(pos, player.username .. " ping" .. ws_latency .. "   " .. score)
+	local new_textnode = gui.new_text_node(pos, player.username .. " ping" .. tostring(player.ws_latency) .. "   " .. tostring(player.score))
 	gui.set_scale(new_textnode, scale)
 	gui.set_font(new_textnode, "tictactoe")
 	if MainState.player.uid == player.uid then

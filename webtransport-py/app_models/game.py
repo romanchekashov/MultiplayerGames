@@ -9,6 +9,8 @@ class ClientGameMessages:
     LEAVE_ROOM = 'NOT_GS_LEAVE_ROOM'
     PLAYER_READY = 'NOT_GS_PLAYER_READY'
     START_GAME = 'NOT_GS_START_GAME'
+    WS_PING = 'WS_PING'
+    WS_PONG = 'WS_PONG'
 
 class GameServerMessages:
     GO = 'GO'

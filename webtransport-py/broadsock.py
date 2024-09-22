@@ -140,6 +140,9 @@ async def to_server(msg, client: Client):
     # elif 'NOT_GS_CREATE_ROOM' in msg:
     #     rooms.add(Room(f'Room {rooms.size()}'))
     #     send_to_server = False
+    elif ClientGameMessages.WS_PONG in msg:
+        client.calc_ws_latency()
+        return
     elif ClientGameMessages.JOIN_ROOM in msg:
         parts = msg.split('.')
         room_name = parts[1]

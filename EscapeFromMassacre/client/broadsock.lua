@@ -555,6 +555,15 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			msg.post("/gui#rooms", "game_start")
 		elseif msg_id == MSG_IDS.ONLINE then
 			MainState.online = sr.number()
+		elseif msg_id == MSG_IDS.WS_LATENCY then
+			local t = sr.number()
+			while t > 0 do
+				t = t - 1
+				local player = MainState.players:get(sr.number())
+				if player ~= nil then
+					player.ws_latency = sr.number()
+				end
+			end
 		else
 			log("CUSTOM MESSAGE", msg_id)
 			local message_data, message_length = sr.rest()

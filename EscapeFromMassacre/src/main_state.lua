@@ -197,7 +197,6 @@ local M = {
     bulletUidBelongToMapLevel = {},
 
     playerUidToScore = {},
-    playerUidToWsLatency = {},
     playerSlots = {},
     player = {
         uid = 0,
@@ -262,6 +261,7 @@ function M.createGameObject(uid, username, go_id, player_type, map_level)
         manna = 100,
         level = 1,
         xp = 0,
+        ws_latency = 0,
         type = player_type or M.PLAYER_TYPE.SURVIVOR,
 
         is_family = function (self)
@@ -420,9 +420,10 @@ function M.delete_player(uid)
     multiplayer_input.playerCommands:remove(uid)
 
     local player = M.players:remove(uid)
-    go.delete(player.go_id)
+    if player ~= nil then
+        go.delete(player.go_id)
+    end
     M.playerUidToScore[uid] = nil
-    M.playerUidToWsLatency[uid] = nil
     M.playerSlots[uid] = nil
 end
 

@@ -311,10 +311,6 @@ function init(self)
 
 	label.set_text("#scale-level", string.format("%d", MainState.playerUidToScore[tostring(obj.uid)] + 1))
 
-	if MainState.playerUidToWsLatency[obj.uid] == nil then
-		MainState.playerUidToWsLatency[obj.uid] = -1
-	end
-
 	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
 	log("player joined: " .. self.username .. " remote: " .. tostring(self.remote))
 

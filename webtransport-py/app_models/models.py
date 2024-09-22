@@ -1,6 +1,6 @@
 from typing import List, Dict
 from app_logs import getLogger
-from app_models import GameServerMessages
+from app_models import GameServerMessages, ClientGameMessages
 from datetime import datetime
 
 Log = getLogger(__name__)
@@ -23,6 +23,11 @@ class Client:
         self.data = data
         self.connected = True
         self.disconnected_time = None
+        self.ws_latency = -1
+        self.wsPingSentTime = datetime.now()
+
+    def calc_ws_latency(self):
+        self.ws_latency = int((datetime.now() - self.wsPingSentTime).total_seconds() * 1000 / 2)
 
     def connect(self):
         self.connected = True
@@ -52,7 +57,10 @@ class ReliableConnection:
     async def send_msg_to(self, client: Client, msg):
         if client.reliableWS is not None:
             try:
-                if GameServerMessages.GO in msg:
+                if ClientGameMessages.WS_PING in msg:
+                    client.wsPingSentTime = datetime.now()
+                    await client.reliableWS.send(msg)
+                elif GameServerMessages.GO in msg:
                     await client.reliableWS.send(f'{msg}.{get_ws_latency_in_ms(client.reliableWS)}')
                 else:
                     await client.reliableWS.send(msg)

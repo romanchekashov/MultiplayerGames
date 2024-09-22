@@ -1,10 +1,11 @@
 from typing import List, Dict
 
 import queue
+from datetime import datetime
 
 from app_models import get_uid_from_msg
 from app_logs import getLogger
-from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, GameServerMessages
+from app_models import Client, ReliableConnection, FastUnreliableConnection, PLAYER_TYPE_FAMILY, GameServerMessages, ClientGameMessages, get_ws_latency_in_ms
 from app_msg.game_server import GameServer, terminate_game_server
 
 from app_msg.game_server import start_game_server, GameServer, MAX_ROOMS
@@ -27,6 +28,7 @@ class Room:
         self.clients: List[Client] = []
         self.reliable_connection = ReliableConnection(self.clients)
         self.fast_unreliable_connection = FastUnreliableConnection(self.reliable_connection)
+        self.wsLatencyCheckTime = datetime.now()
 
     def get_client_by_uid(self, uid: int) -> Client:
         for c in self.clients:
@@ -43,7 +45,21 @@ class Room:
         self.reliable_connection.clients = self.clients
         self.fast_unreliable_connection.clients = self.clients
 
+    async def check_latency(self):
+        if (datetime.now() - self.wsLatencyCheckTime).total_seconds() < 5:
+            return
+
+        await self.reliable_connection.send_message_all(ClientGameMessages.WS_PING)
+
+        self.wsLatencyCheckTime = datetime.now()
+        msg = f'-1.WS_LATENCY.{len(self.clients)}'
+        for client in self.clients:
+            msg += f'.{client.uid}.{client.ws_latency}'
+        await self.reliable_connection.send_message_all(msg)
+
     async def to_game_client(self, msg):
+        await self.check_latency()
+
         if GameServerMessages.GOD in msg:
             # await self.reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
             await self.reliable_connection.send_message_all(msg)
