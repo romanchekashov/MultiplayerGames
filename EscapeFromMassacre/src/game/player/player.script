@@ -697,9 +697,6 @@ function on_message(self, message_id, message, sender)
 		end
 	end
 
-	--if self.remote then
-	--	return
-	--end
 	if not self.isServer then
 		return
 	end

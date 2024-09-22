@@ -242,6 +242,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 					local zombie_map_level = 0
 
+					local main_player = MainState.players:get(MainState.player.uid)
+
 					if MainState.FACTORY_TYPES.player == object_type then
 						player_type = sr.number()
 						local player_map_level = sr.number()
@@ -265,7 +267,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 								msg.post(player.go_id, "update_score", {uid = player.uid, score = player_score})
 							end
 						end
-						--enable = player_map_level == MainState.playerOnMapLevel
+
+						enable = main_player ~= nil and player_map_level == main_player.map_level
 					elseif MainState.FACTORY_TYPES.fuze_box == object_type then
 						fuze_box_color = sr.number()
 						fuze_box_state = sr.number()
@@ -273,8 +276,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							if MainState.fuzeBoxColorToState[fuze_box_color] ~= fuze_box_state then
 								MainState.fuzeBoxColorToState[fuze_box_color] = fuze_box_state
 							end
-							local player = MainState.players:get(MainState.player.uid)
-							enable = player ~= nil and MainState.fuzeBoxColorToMapLevel[fuze_box_color] == player.map_level
+
+							enable = main_player ~= nil and MainState.fuzeBoxColorToMapLevel[fuze_box_color] == main_player.map_level
 						end
 					elseif MainState.FACTORY_TYPES.fuze == object_type then
 						fuze_color = sr.number()
@@ -289,16 +292,20 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							end
 
 							MainState.fuzeColorToMapLevel[fuze_color] = fuze_map_level
-							local player = MainState.players:get(MainState.player.uid)
-							enable = player ~= nil and fuze_map_level == player.map_level and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[fuze_color] == 0
+
+							enable = main_player ~= nil and fuze_map_level == main_player.map_level and player_uid_with_fuze == 0 and MainState.fuzeBoxColorToState[fuze_color] == 0
 							--log("fuze enable", tostring(enable), fuze_color, fuze_map_level, MainState.playerOnMapLevel, "player_uid_with_fuze", player_uid_with_fuze, tostring(count))
 						end
 					elseif MainState.FACTORY_TYPES.bullet == object_type then
 						bullet_belongs_to_player_uid = sr.number()
 						bullet_map_level = sr.number()
 						MainState.bulletUidBelongToPlayerUid:put(uid, bullet_belongs_to_player_uid)
+
+						enable = main_player ~= nil and bullet_map_level == main_player.map_level
 					elseif MainState.FACTORY_TYPES.zombie == object_type then
 						zombie_map_level = sr.number()
+
+						enable = main_player ~= nil and zombie_map_level == main_player.map_level
 					end
 
 					local game_object = remote_gameobjects:get(uid)
