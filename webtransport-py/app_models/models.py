@@ -1,6 +1,7 @@
 from typing import List, Dict
 from app_logs import getLogger
 from app_models import GameServerMessages
+from datetime import datetime
 
 Log = getLogger(__name__)
 
@@ -20,6 +21,19 @@ class Client:
         self.unreliableFastWT = web_transport
         self.wt_latency = -1
         self.data = data
+        self.connected = True
+        self.disconnected_time = None
+
+    def connect(self):
+        self.connected = True
+        self.disconnected_time = None
+
+    def can_connect(self):
+        return (datetime.now() - self.disconnected_time).total_seconds() < 10
+
+    def disconnect(self):
+        self.connected = False
+        self.disconnected_time = datetime.now()
 
     def set_uid(self, uid):
         self.uid = uid

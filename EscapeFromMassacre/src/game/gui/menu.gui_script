@@ -134,11 +134,11 @@ function on_message(self, message_id, message, sender)
 	if message_id == hash("set_online_players") then
 		update_stats(self)
 	elseif message_id == hash("create_player") then
-		timer.delay(MainState.RECREATE_PLAYER_TIMEOUT_IN_SEC, false, function ()
-			if MainState.GAME_STATES.RUNNING == MainState.currentGameState then
-				--MSG.BROADSOCK:create_player()
-			end
-		end)
+		--timer.delay(MainState.RECREATE_PLAYER_TIMEOUT_IN_SEC, false, function ()
+		--	if MainState.GAME_STATES.RUNNING == MainState.currentGameState then
+		--		--MSG.BROADSOCK:create_player()
+		--	end
+		--end)
 	elseif message_id == hash("player_exit") then
 		print("player_exit")
 		onBtnExit(self)

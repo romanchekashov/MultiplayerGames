@@ -71,8 +71,8 @@ function update(self, dt)
 
 	if self.player_id_detected_maybe ~= nil and self.player_id_detected == nil then
 		-- request ray cast
-		local my_start = go.get_position()
 		local my_end = go.get_position(self.player_id_detected_maybe)
+		local my_start = go.get_position()
 		local my_groups = { WALL, PLAYER }
 
 		local result = physics.raycast(my_start, my_end, my_groups)

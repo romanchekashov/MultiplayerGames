@@ -359,13 +359,15 @@ function final(self)
 		msg.post("/virtual_gamepad", "unregister")
 	end
 
+	throw_fuzes(self.uid)
+
 	--if MainState.GAME_STATES.RUNNING ~= MainState.currentGameState then
 	--	MainState.players:remove(self.uid)
 	--	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
 	--	print("clear player", self.uid)
 	--end
 
-	msg.post("/gui#menu", "create_player")
+	--msg.post("/gui#menu", "create_player")
 end
 
 function update(self, dt)

@@ -70,7 +70,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 
 		if remote_gameobjects:has(uid_to_remove) then
 			local v = remote_gameobjects:remove(uid_to_remove)
-			if v ~= nil then
+			if v ~= nil and v.id ~= nil then
 				go.delete(v.id)
 				go_id_set:remove(v.id)
 			end
@@ -86,7 +86,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		end)
 		deleting_uid_list:for_each(function (uid)
 			local v = remote_gameobjects:remove(uid)
-			if v ~= nil then
+			if v ~= nil and v.id ~= nil then
 				go.delete(v.id)
 				go_id_set:remove(v.id)
 			end
@@ -450,7 +450,10 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				end)
 				deleting_uid_list:for_each(function (uid)
 					local v = remote_gameobjects:remove(uid)
-					go.delete(v.id)
+					if v ~= nil and v.id ~= nil then
+						go.delete(v.id)
+						go_id_set:remove(v.id)
+					end
 				end)
 			end
 		elseif msg_id == MSG_IDS.GOD then

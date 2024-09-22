@@ -24,7 +24,7 @@ local function room_create_function(self, data, index, data_list)
 	local nodes = gui.clone_tree(self.prefab)
 	local root = nodes["prefab"]
 	gui.set_enabled(root, true)
-	gui.set_text(nodes["text"], string.format("%s: mafia %d / survs %d", data.name, data.survivors.length, data.family.length))
+	gui.set_text(nodes["text"], string.format("%s(%s): family %d / survs %d", data.name, data.state, data.survivors.length, data.family.length))
 
 	local button = self.druid:new_button(root, function()
 		if MainState.player.room ~= nil then return end
@@ -204,8 +204,9 @@ function on_message(self, message_id, message, sender)
         room_updateDataList(self)
 		self.input_username:set_text(string.format("%.30s", MainState.player.username))
 		if MainState.selectedRoom ~= nil then
+			local btn_text = MainState.selectedRoom.state == MainState.RoomState.PLAYING and "Join" or "Ready"
 			if not canStartGame(MainState.selectedRoom) then
-				gui.set_text(gui.get_node("btn-join-/text"), "Ready")
+				gui.set_text(gui.get_node("btn-join-/text"), btn_text)
 			end
 		end
 	elseif message_id == hash("set_username") then

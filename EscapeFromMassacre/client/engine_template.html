@@ -258,6 +258,10 @@
 		// const BASE_ADDRESS = 'game.look.ovh';
 		const BASE_ADDRESS = 'localhost';
 
+		let uidBoundToFastUnreliableConnection = false;
+		let uidBoundToWtIntervalKey;
+		let playerUid = +(sessionStorage.getItem('playerUid') ?? 0);
+
 		// Send data to game client
 		function addToEventLog(text) {
 			JsToDef.send("ServerMsg", text);
@@ -265,6 +269,7 @@
 
 		function WebSocketReliableConnectionSendData(rawData) {
 			log('[WS reliable]: ', rawData);
+			if (playerUid > 0 && rawData.startsWith('CONNECT_ME')) rawData = playerUid + '.' + rawData;
 			socket.send(rawData);
 		}
 
@@ -283,11 +288,6 @@
 				WebSocketReliableConnectionSendData(rawData);
 			}
 		}
-
-
-		let uidBoundToFastUnreliableConnection = false;
-		let uidBoundToWtIntervalKey;
-		let playerUid = +(sessionStorage.getItem('playerUid') ?? 0);
 
 		function onMsgFromWebTransport(text) {
 			if (text === 'PING') {

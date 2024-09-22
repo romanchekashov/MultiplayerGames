@@ -144,21 +144,28 @@ function M.handle_client_message(client_uid, message)
 end
 
 function M.handle_client_disconnected(client_uid)
+	log("handle_client_disconnected", client_uid)
 	assert(client_uid, "You must provide a client")
-	local _disconnect_message = stream.writer()
-		.number(client_uid)
-		.string(MSG_IDS.DISCONNECT)
-		.tostring()
+	--local _disconnect_message = stream.writer()
+	--	.number(client_uid)
+	--	.string(MSG_IDS.DISCONNECT)
+	--	.tostring()
+	--M.send(_disconnect_message)
+
 	-- local disconnect_message = tomessage(_disconnect_message)
 	-- M.send_message_all(disconnect_message)
-	M.send(_disconnect_message)
 
 	remove_client(client_uid)
+	MainState.delete_player(client_uid)
 end
 
 function M.handle_client_connected(uid, player_type)
+	log("handle_client_connected", uid, player_type)
+
 	local client = create_client(uid, player_type)
+
 	add_client(client)
+
 	msg.post("/spawner-player#script", "add_player", {
 		uid = uid,
 		player_type = player_type,
@@ -226,7 +233,7 @@ end
 -- @param data
 function M.send(data)
 	if connection.connected then
-		log("send", #data, "data:", data)
+		--log("send", #data, "data:", data)
 		connection.writer.add(number_to_int32(#data) .. data)
 	else
 		log("send - not connected")

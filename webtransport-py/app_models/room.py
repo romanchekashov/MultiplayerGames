@@ -70,6 +70,7 @@ class Room:
 
     def end_game(self):
         terminate_game_server(self.game_server.pid)
+        self.state = RoomState.MATCHING
         # stop_game_server(self.game_server.pid, game_server_stopped_clear_communication)
         for c_uid in self.family_uids.keys():
             self.family_uids[c_uid]['ready'] = False
@@ -129,7 +130,9 @@ class Room:
 
     def __str__(self):
         ready_players = 0
-        res = f'{self.name}.family'
+        res = f'{self.name}.{self.state}'
+
+        res += '.family'
         for c_uid, value in self.family_uids.items():
             ready = 1 if self.family_uids[c_uid]['ready'] else 0
             res += f'.{c_uid}.{ready}'
@@ -212,8 +215,12 @@ class Rooms:
 
         room = self.get_room_by_client_uid(client.uid)
         if room is not None and room.can_start_game():
-            self.game_server_star_room_queue.put(room)
-            await start_game_server()
+            if room.state == RoomState.MATCHING:
+                self.game_server_star_room_queue.put(room)
+                await start_game_server()
+            else:
+                room.game_server.write(f'{client.uid}.CONNECT_ME.{client.type}')
+                await room.reliable_connection.send_msg_to(client, f'-1.GAME_START')
 
     def remove_room_by_player(self, c_uid: int):
         for room in self.list:

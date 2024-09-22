@@ -2,6 +2,7 @@ local Collections = require "src.utils.collections"
 local MSG = require "src.utils.messages"
 local utils = require "src.utils.utils"
 local stream = require "client.stream"
+local multiplayer_input = require "server.multiplayer_input"
 local debugUtils = require "src.utils.debug-utils"
 local log = debugUtils.createLog("[MAIN_STATE]").log
 
@@ -58,6 +59,11 @@ local SOUND = {
             msg.post("default:/sound#run", "stop_sound")
         end
     }
+}
+
+local RoomState = {
+    MATCHING = "MATCHING",
+    PLAYING = "PLAYING"
 }
 
 local GAME_STATES = {
@@ -134,6 +140,7 @@ local M = {
     GAME_SCREENS = GAME_SCREENS,
     MAP_LEVELS = MAP_LEVELS,
     FUZE = FUZE,
+    RoomState = RoomState,
 
     fuzeBoxIdsToColor = {},
     fuzeBoxColorToMapLevel = {
@@ -265,9 +272,10 @@ function M.createGameObject(uid, username, go_id, player_type, map_level)
     return obj
 end
 
-function M.createRoom(name)
+function M.createRoom(name, state)
     return {
         name = name or "n/a",
+        state = state or RoomState.MATCHING,
         survivors = Collections.createSet(),
         family = Collections.createSet(),
         ready_players = 0,
@@ -313,7 +321,7 @@ function M.setRooms(str)
     sr.string() -- NOT_GS_ROOMS
     local count = sr.number()
     for _=1,count do
-        room = M.createRoom(sr.string())
+        room = M.createRoom(sr.string(), sr.string())
         rooms:add(room)
         sr.string() -- family
         local uid = sr.number()
@@ -406,6 +414,20 @@ function M.unregister_gameobject(message)
     end
     error("Unable to find game object")
 end
+
+function M.delete_player(uid)
+    log("delete_player", uid)
+
+    multiplayer_input.playerCommands:remove(uid)
+
+    local player = M.players:remove(uid)
+    go.delete(player.go_id)
+    M.playerUidToScore[uid] = nil
+    M.playerUidToWsLatency[uid] = nil
+    M.playerSlots[uid] = nil
+end
+
+-- factories
 function M.register_factory(obj)
     assert(obj.url, "You must provide a factory URL")
     assert(obj.type, "You must provide a game object type")
@@ -420,6 +442,8 @@ function M.get_factory_url(type)
     assert(type, "You must provide a game object type")
     return M.factories[type]
 end
+
+-- game state which sent to clients
 function M.tostring(self)
     local sw = stream.writer()
     sw.number(-1)
