@@ -78,7 +78,7 @@ class Room:
         elif GameServerMessages.DISCONNECT in msg:
             await self.reliable_connection.send_message_all(msg)
         else:
-            await self.reliable_connection.send_message_all(msg)
+            await self.fast_unreliable_connection.send_message_all(msg)
 
     def set_game_server(self, gs: GameServer):
         self.game_server = gs

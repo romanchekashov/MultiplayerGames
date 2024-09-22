@@ -183,7 +183,8 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	function instance.send(data)
 		if connection.connected then
 			--log("send", #data, "data:", data)
-			sendToUnreliableAndFastConnection(data)
+			sendToReliableConnection(data)
+			--sendToUnreliableAndFastConnection(data)
 			-- server_nakama.send_player_move(stream.number_to_int32(#data) .. data)
 		end
 	end
