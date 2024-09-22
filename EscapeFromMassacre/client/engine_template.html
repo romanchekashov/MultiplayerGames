@@ -343,7 +343,8 @@
 						let sUid = data.split('.')[0];
 						sessionStorage.setItem('playerUid', sUid);
 						playerUid = +sUid;
-						await webTransportСonnect();
+						// TODO: WebTransport doesn't work properly need to check(loss of input from player + after reconnect player not visible)
+						// await webTransportСonnect();
 					}
 				});
 
