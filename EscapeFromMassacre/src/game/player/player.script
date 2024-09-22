@@ -240,7 +240,12 @@ local MAP_LEVEL_TO_MSG_GROUP = {
 }
 
 local function check_hit_wall(self, pos)
-	local collision_object_hash = MAP_LEVEL_TO_MSG_GROUP[MainState.players:get(self.uid).map_level]
+	local player = MainState.players:get(self.uid)
+	if player == nil then
+		return false
+	end
+
+	local collision_object_hash = MAP_LEVEL_TO_MSG_GROUP[player.map_level]
 	local offset = 1
 	local multiply = 1
 	local hit_left = physics.raycast(pos, pos + vmath.vector3(offset, 0, 0), { collision_object_hash })
@@ -659,7 +664,10 @@ function on_message(self, message_id, message, sender)
 			--msg.post("/gui#menu", "player_exit", {})
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
-		local player_on_level = MainState.players:get(self.uid).map_level
+		local player = MainState.players:get(self.uid)
+		if player == nil then return end
+
+		local player_on_level = player.map_level
 		local player_hit_wall_house = player_on_level == MainState.MAP_LEVELS.HOUSE and message.group == MSG_GROUPS.WALL
 		local player_hit_wall_basement = player_on_level == MainState.MAP_LEVELS.BASEMENT and message.group == MSG_GROUPS.WALL_BASEMENT
 
@@ -694,9 +702,7 @@ function on_message(self, message_id, message, sender)
 		end
 	end
 
-	if not self.isServer then
-		return
-	end
+	if not self.isServer then return end
 
 	if message_id == hash("analog") then
 		-- print("analog: x", message.x, " - y", message.y, message.pressed, message.released)
