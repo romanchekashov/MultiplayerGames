@@ -9,20 +9,8 @@ end
 
 function init(self)
 	self.isServer = MainState.isServer
-	self.zombies = MainState.zombies
-
-	if not self.isServer then
-		return
-	end
-
-	 for i = 1, 10 do
-	 	local obj = {
-			uid = 10000 + i,
-			go_id = spawn_zombie(50, MainState.MAP_LEVELS.HOUSE) or nil,
-			health = 100
-		}
-	 	self.zombies:put(obj.go_id, obj)
-	 end
+	self.last_zombie_speed = 50
+	self.last_zombie_map_level = MainState.MAP_LEVELS.BASEMENT
 end
 
 function on_message(self, message_id, message, sender)
@@ -30,14 +18,24 @@ function on_message(self, message_id, message, sender)
 		return
 	end
 
-	if message_id == hash("remove_zombie") then
-		local zombie_id = message.zombie_id
+	if message_id == hash("add_zombie") then
+		for i = 1, message.size do
+			local go_id = spawn_zombie(self.last_zombie_speed, self.last_zombie_map_level)
+		end
 
-		if self.zombies:has(zombie_id) then
-			print("Zombie killed with bullet", zombie_id)
-			go.delete(zombie_id)
+		self.last_zombie_speed = self.last_zombie_speed + 22
 
-			self.zombies:remove(zombie_id)
+		if self.last_zombie_map_level == MainState.MAP_LEVELS.HOUSE then
+			self.last_zombie_map_level = MainState.MAP_LEVELS.BASEMENT
+		else
+			self.last_zombie_map_level = MainState.MAP_LEVELS.HOUSE
+		end
+	elseif message_id == hash("remove_zombie") then
+		local zombie_uid = MainState.zombieIdToUid[message.zombie_id]
+		local zombie = MainState.zombies:get(zombie_uid)
+
+		if zombie ~= nil then
+			go.delete(zombie.id)
 			-- msg.post("/gui#menu", "set_online_players", {online_players = self.zombies.length})
 		end
 	end

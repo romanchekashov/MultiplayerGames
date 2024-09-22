@@ -37,7 +37,7 @@ debug = 0
 max_collisions = 256
 max_contacts = 256
 gravity_y = -100
-max_collision_object_count = 256
+max_collision_object_count = 1024
 
 [script]
 shared_state = 1

@@ -14,6 +14,9 @@ local function setup_timer(self)
     self.timer = self.druid:new_timer("timer", MainState.GAME_TIMEOUT_IN_SEC, 0, empty_callback)
     self.timer.on_tick:subscribe(function(self, value)
         MainState.gameTime = value
+        if value > 0 and value % 60 == 0 then
+            msg.post("/spawner-zombie#script", "add_zombie", {size = 10})
+        end
     end)
 end
 

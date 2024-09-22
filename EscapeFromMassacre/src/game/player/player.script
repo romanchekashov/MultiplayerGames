@@ -621,9 +621,10 @@ function on_message(self, message_id, message, sender)
 			end
 		elseif message.group == MSG_GROUPS.ZOMBIE then
 			local player_on_level = MainState.players:get(self.uid).map_level
-			local zombie_go_id = message.other_id
+			local zombie_uid = MainState.zombieIdToUid[message.other_id]
+			local zombie = MainState.zombies:get(zombie_uid)
 
-			if player_on_level == MainState.zombieUidToMapLevel[MainState.zombieIdToUid[zombie_go_id]] then
+			if zombie ~= nil and zombie.map_level == player_on_level then
 				hit_by_zombie(self, nil)
 			end
 		elseif message.group == MSG_GROUPS.FUZE then

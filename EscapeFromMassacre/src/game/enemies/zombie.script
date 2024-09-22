@@ -37,7 +37,10 @@ function init(self)
 	if self.isServer then
 		local obj = MainState.register_gameobject(0, go.get_id(), MainState.FACTORY_TYPES.zombie)
 		self.gouid = obj.gouid
-		MainState.zombieUidToMapLevel[self.gouid] = self.map_level
+		obj.speed = self.speed
+		obj.map_level = self.map_level
+
+		MainState.zombies:put(obj.gouid, obj)
 		MainState.zombieIdToUid[obj.id] = self.gouid
 	else
 		msg.post("/broadsock", "register_gameobject", { id = go.get_id(), type = MainState.FACTORY_TYPES.zombie })
@@ -55,7 +58,7 @@ function final(self)
 	if self.isServer then
 		local id = go.get_id()
 		MainState.unregister_gameobject({ id = id })
-		MainState.zombieUidToMapLevel[self.gouid] = nil
+		MainState.zombies:remove(MainState.zombieIdToUid[id])
 		MainState.zombieIdToUid[id] = nil
 	else
 		msg.post("/broadsock", "unregister_gameobject", { id = go.get_id() })
@@ -69,10 +72,14 @@ function update(self, dt)
 		self.player_id_detected = nil
 	end
 
+	if self.player_id_detected_maybe ~= nil and not go.exists(self.player_id_detected_maybe) then
+		self.player_id_detected_maybe = nil
+	end
+
 	if self.player_id_detected_maybe ~= nil and self.player_id_detected == nil then
 		-- request ray cast
-		local my_end = go.get_position(self.player_id_detected_maybe)
 		local my_start = go.get_position()
+		local my_end = go.get_position(self.player_id_detected_maybe)
 		local my_groups = { WALL, PLAYER }
 
 		local result = physics.raycast(my_start, my_end, my_groups)
@@ -93,7 +100,7 @@ function update(self, dt)
 	local current_quat = go.get_rotation()
 
 	-- rotate towards target
-	local q = vmath.slerp(0.08, current_quat, target_quat)
+	local q = vmath.slerp(0.58, current_quat, target_quat)
 	go.set_rotation(q)
 
 	-- move towards target

@@ -241,6 +241,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local bullet_map_level = 0
 
 					local zombie_map_level = 0
+					local zombie_speed = 0
 
 					local main_player = MainState.players:get(MainState.player.uid)
 
@@ -304,6 +305,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						enable = main_player ~= nil and bullet_map_level == main_player.map_level
 					elseif MainState.FACTORY_TYPES.zombie == object_type then
 						zombie_map_level = sr.number()
+						zombie_speed = sr.number()
 
 						enable = main_player ~= nil and zombie_map_level == main_player.map_level
 					end
@@ -340,6 +342,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 								factory_data.map_level = bullet_map_level
 							elseif object_type == MainState.FACTORY_TYPES.zombie then
 								factory_data.map_level = zombie_map_level
+								factory_data.speed = zombie_speed
 							end
 
 							if factory_data ~= nil then

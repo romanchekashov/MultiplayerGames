@@ -129,8 +129,8 @@ local M = {
     RECREATE_PLAYER_TIMEOUT_IN_SEC = 2,
     GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
-    GAME_TIMEOUT_IN_SEC = 60 * 2,
-    FIXED_FUZE_BOX_COUNT_MAX = 2, -- 4
+    GAME_TIMEOUT_IN_SEC = 60 * 15,
+    FIXED_FUZE_BOX_COUNT_MAX = 4, -- 4
     PLAYER_STATUS = PLAYER_STATUS,
     PLAYER_TYPE = PLAYER_TYPE,
     MSG_IDS = MSG_IDS,
@@ -185,7 +185,6 @@ local M = {
     game_over_players = Collections.createMap(),
 
     zombies = Collections.createMap(),
-    zombieUidToMapLevel = {},
     zombieIdToUid = {},
 
     uid_to_username = Collections.createMap(),
@@ -488,7 +487,9 @@ function M.tostring(self)
             sw.number(v.player_uid)
             sw.number(M.bulletUidBelongToMapLevel[gouid])
         elseif M.FACTORY_TYPES.zombie == v.type then
-            sw.number(M.zombieUidToMapLevel[gouid])
+            local zombie = M.zombies:get(gouid)
+            sw.number(zombie and zombie.map_level or 0)
+            sw.number(zombie and zombie.speed or 0)
         end
         -- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
     end
