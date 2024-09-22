@@ -24,7 +24,7 @@ local function room_create_function(self, data, index, data_list)
 	local nodes = gui.clone_tree(self.prefab)
 	local root = nodes["prefab"]
 	gui.set_enabled(root, true)
-	gui.set_text(nodes["text"], string.format("%s(%s): family %d / survs %d", data.name, data.state, data.survivors.length, data.family.length))
+	gui.set_text(nodes["text"], string.format("%s(%s): family %d / survs %d", data.name, data.state, data.family.length, data.survivors.length))
 
 	local button = self.druid:new_button(root, function()
 		if MainState.player.room ~= nil then return end
