@@ -23,7 +23,7 @@ function on_message(self, message_id, message, sender)
 			local go_id = spawn_zombie(self.last_zombie_speed, self.last_zombie_map_level)
 		end
 
-		self.last_zombie_speed = self.last_zombie_speed + 22
+		self.last_zombie_speed = self.last_zombie_speed + 20
 
 		if self.last_zombie_map_level == MainState.MAP_LEVELS.HOUSE then
 			self.last_zombie_map_level = MainState.MAP_LEVELS.BASEMENT

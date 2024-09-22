@@ -85,7 +85,7 @@ function update(self, dt)
 		local result = physics.raycast(my_start, my_end, my_groups)
 		if result and self.player_id_detected_maybe == result.id then
 			-- act on the hit (see 'ray_cast_response' message for all values)
-			print("ray_cast_response " .. result.id)
+			--print("ray_cast_response " .. result.id)
 			self.player_id_detected = result.id
 		end
 	end

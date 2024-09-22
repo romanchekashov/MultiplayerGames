@@ -604,7 +604,7 @@ function on_message(self, message_id, message, sender)
 		if message.group == MSG_GROUPS.BULLET then
 			local player_on_level = MainState.players:get(self.uid).map_level
 			local bullet_uid = MainState.bulletIdToUid[message.other_id]
-			print("I collided with", self.uid, "bullet_uid = ", bullet_uid)
+			--print("I collided with", self.uid, "bullet_uid = ", bullet_uid)
 
 			if self.bullet_id ~= message.other_id and player_on_level == MainState.bulletUidBelongToMapLevel[bullet_uid] then
 				self.bullet_id = message.other_id
@@ -612,7 +612,7 @@ function on_message(self, message_id, message, sender)
 
 				local killer = MainState.players:get(self.killer_uid)
 
-				print("I collided with", self.uid, "killer = ", killer.uid, "bullet_uid = ", bullet_uid)
+				--print("I collided with", self.uid, "killer = ", killer.uid, "bullet_uid = ", bullet_uid)
 
 				if killer == nil or killer.map_level ~= player_on_level then
 					 return
