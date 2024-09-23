@@ -489,7 +489,9 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				deleting_uid_list:for_each(function (uid)
 					local v = remote_gameobjects:remove(uid)
 					if v ~= nil and v.id ~= nil then
-						go.delete(v.id)
+						if go.exists(v.id) then
+							go.delete(v.id)
+						end
 						go_id_set:remove(v.id)
 					end
 				end)

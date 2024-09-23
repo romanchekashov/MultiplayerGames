@@ -9,7 +9,7 @@ function on_message(self, message_id, message, sender)
 		local to = message.pos + vmath.rotate(message.rot, vmath.vector3(0, 1000, 0))
 		local bullet = factory.create("#factory-bullet", message.pos, message.rot, {remote = false, player_uid = message.uid})
 
-		go.animate(bullet, "position", go.PLAYBACK_ONCE_FORWARD, to, go.EASING_LINEAR, 0.75, 0, function()
+		go.animate(bullet, "position", go.PLAYBACK_ONCE_FORWARD, to, go.EASING_LINEAR, 1.75, 0, function()
 			go.delete(bullet)
 		end)
 	end
