@@ -7,7 +7,9 @@ local device = require "src.utils.device"
 local MSG = require "src.utils.messages"
 local multiplayer_input = require "server.multiplayer_input"
 local broadsock = require "server.server_broadsock"
+local Utils = require "src.utils.utils"
 
+local get_timestamp_in_ms = Utils.get_timestamp_in_ms
 local isGamepadLeftStickActionId = ACTION_IDS.isGamepadLeftStickActionId
 local isGamepadRightStickActionId = ACTION_IDS.isGamepadRightStickActionId
 local IS_MOBILE = device.type == "mobile" or device.type == "tablet"
@@ -340,6 +342,8 @@ function init(self)
 			msg.post("/virtual_gamepad", "disable")
 		end
 	end
+
+	self.t = 0
 end
 
 function final(self)
@@ -372,22 +376,44 @@ function final(self)
 end
 
 function update(self, dt)
+	self.t = self.t + dt
+	if MainState.pause then
+		-- input_release_controls()
+		return
+	end
+
 	if self.remote then
+		-- Find the two authoritative positions surrounding the rendering timestamp.
+		local buffer = MainState.server_state_buffer:get(self.uid)
+		if buffer == nil then
+			return
+		end
+
+		local render_timestamp = get_timestamp_in_ms() - (1000 / MainState.server_update_rate);
+		-- Drop older positions.
+		while buffer.length >= 2 and buffer:get(2).ts <= render_timestamp do
+			buffer:removeFirst()
+			self.t = 0
+		end
+		-- Interpolate between the two surrounding authoritative positions.
+		if buffer.length >= 2 and buffer:get(1).ts <= render_timestamp and render_timestamp <= buffer:get(2).ts and self.t <= 1 then
+			local pos = vmath.lerp(self.t, buffer:get(1).pos, buffer:get(2).pos)
+			go.set_position(pos)
+			local rot = vmath.slerp(self.t, buffer:get(1).rot, buffer:get(2).rot)
+			go.set_rotation(rot)
+			local scale = vmath.slerp(self.t, buffer:get(1).scale, buffer:get(2).scale)
+			go.set_scale(scale)
+		end
+
 		return
 	end
 	--if not self.isServer then
 	--	return
 	--end
 
-	if MainState.pause then
-		-- input_release_controls()
-        return
-    end
-
-	msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
-
 	if not self.isServer then
 		update_fuzes(self)
+		msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
 	end
 
 	local rotation = go.get_rotation()

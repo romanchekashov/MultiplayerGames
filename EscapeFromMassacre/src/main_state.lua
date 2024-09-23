@@ -222,7 +222,10 @@ local M = {
         for _, player in ipairs(list) do
             fn(player)
         end
-    end
+    end,
+
+    server_update_rate = 10,
+    server_state_buffer = Collections.createMap()
 }
 
 M.gameTime = M.GAME_TIMEOUT_IN_SEC
@@ -449,6 +452,7 @@ function M.tostring(self)
     local sw = stream.writer()
     sw.number(-1)
     sw.string("GAME_STATE")
+    sw.number(self.server_update_rate)
     sw.number(self.currentGameState)
     sw.string(tostring(self.gameTime))
     sw.string("GATE")

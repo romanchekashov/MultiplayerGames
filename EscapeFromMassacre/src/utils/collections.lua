@@ -20,6 +20,12 @@ function M.createList()
 			table.remove(self.items, index)
 			self.length = self.length - 1
 		end,
+		get = function (self, index) -- 1-based
+			if index > self.length then
+				return
+			end
+			return self.items[index]
+		end,
 		getLast = function (self)
 			if self.length == 0 then
 				return

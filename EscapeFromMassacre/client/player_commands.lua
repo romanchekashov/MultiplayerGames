@@ -2,13 +2,11 @@ local Collections = require "src.utils.collections"
 local ACTION_IDS = require "src.utils.actions"
 local stream = require "client.stream"
 local debugUtils = require "src.utils.debug-utils"
+local Utils = require "src.utils.utils"
 
 local log = debugUtils.createLog("[PLAYER_COMMAND]").log
 local compareTables = debugUtils.compareTables
-
-local function get_timestamp_in_ms()
-    return socket.gettime() * 1000
-end
+local get_timestamp_in_ms = Utils.get_timestamp_in_ms
 
 local M = {
     ActionIdToCode = {

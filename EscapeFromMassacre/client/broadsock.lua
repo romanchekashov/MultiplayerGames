@@ -5,8 +5,9 @@ local MainState = require "src.main_state"
 local performance_utils = require "server.performance_utils"
 local MSG = require "src.utils.messages"
 local Collections = require "src.utils.collections"
+local Utils = require "src.utils.utils"
 
-
+local get_timestamp_in_ms = Utils.get_timestamp_in_ms
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
 local rateLimiter = performance_utils.createRateLimiter(performance_utils.TIMES._100_MILISECONDS)
 
@@ -198,6 +199,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		log("on_data: from:", from_uid, "msg_id:", msg_id, "data:", data)
 
 		if msg_id == "GAME_STATE" then
+			MainState.server_update_rate = sr.number()
 			MainState.currentGameState = sr.number()
 
 			if MainState.gameInitialized and MainState.currentGameState == MainState.GAME_STATES.RUNNING then
@@ -223,12 +225,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local name = sr.string() -- GO
 					local object_type = sr.string()
 					local uid = sr.number()
+					local remote = MainState.player.uid ~= uid
 
 					existing_go_uid_set:add(uid)
 
 					local pos = sr.vector3()
 					local rot = sr.quat()
 					local scale = sr.vector3()
+
 					local player_type
 
 					local fuze_box_color
@@ -271,6 +275,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						end
 
 						enable = main_player ~= nil and player_map_level == main_player.map_level
+
 					elseif MainState.FACTORY_TYPES.fuze_box == object_type then
 						fuze_box_color = sr.number()
 						fuze_box_state = sr.number()
@@ -316,7 +321,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					if game_object == nil then
 						local factory_url = MainState.factories[object_type]
 						if factory_url then
-							local factory_data = {remote = MainState.player.uid ~= uid, uid = uid}
+							local factory_data = {remote = remote, uid = uid}
 							log("GO create obj", uid, MainState.player.uid, tostring(object_type), factory_url, "remote:", factory_data.remote)
 
 							if object_type == FACTORY_TYPE_PLAYER then
@@ -361,17 +366,32 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							end
 						end
 					else
-						local id = game_object.id
-						if enable then
-							msg.post(id, "enable")
-							local ok, err = pcall(function()
-								go.set_position(pos, id)
-								go.set_rotation(rot, id)
-								go.set_scale(scale, id)
-							end)
-						else
-							msg.post(id, "disable")
+						local server_state_buffer_is_small = true
+						if remote and MainState.FACTORY_TYPES.player == object_type then
+
+							local server_state_buffer = MainState.server_state_buffer:get(uid)
+							if server_state_buffer == nil then
+								server_state_buffer = Collections.createList()
+								MainState.server_state_buffer:put(uid, server_state_buffer)
+							end
+							server_state_buffer:add({ts = get_timestamp_in_ms(), pos = pos, rot = rot, scale = scale})
+							server_state_buffer_is_small = server_state_buffer.length < 2
 						end
+
+						if MainState.FACTORY_TYPES.player ~= object_type or server_state_buffer_is_small then
+							local id = game_object.id
+							if enable then
+								msg.post(id, "enable")
+								local ok, err = pcall(function()
+									go.set_position(pos, id)
+									go.set_rotation(rot, id)
+									go.set_scale(scale, id)
+								end)
+							else
+								msg.post(id, "disable")
+							end
+						end
+
 					end
 
 					if MainState.FACTORY_TYPES.player == object_type then

@@ -17,6 +17,7 @@ local handle_client_disconnected = broadsock.handle_client_disconnected
 local handle_client_message = broadsock.handle_client_message
 
 local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOUT_4_BUT_IN_DOCKER_10_PERCENT_AT_MIN)
+local SERVER_ONE_SECOND = 1
 
 function init(self)
 	local enableLogs = false
@@ -39,6 +40,8 @@ function init(self)
 	self.screen_pos = vmath.vector3(0, 0, 0)
 	self.current_screen = collectionfactory.create("#collectionfactory-game-server", self.screen_pos)
 	defold_utils.SET_CURRENT_COLLECTION_IDS("default", self.current_screen)
+	self.update_rate = MainState.server_update_rate
+	self.update_rate_timeout = SERVER_ONE_SECOND
 
 	log("[GAME SERVER] started", self.port)
 
@@ -60,6 +63,15 @@ function update(self, dt)
 	--local current_time = os.date("%Y-%m-%d %H:%M:%S")
 	--log(current_time, "update", dt)
 	sleep()
+
+	if self.update_rate_timeout <= 0 then
+		self.update_rate_timeout = SERVER_ONE_SECOND
+		MainState.server_update_rate = self.update_rate
+		self.update_rate = 0
+	end
+	self.update_rate = self.update_rate + 1
+	self.update_rate_timeout = self.update_rate_timeout - dt
+
 	broadsock_update(dt)
 end
 
