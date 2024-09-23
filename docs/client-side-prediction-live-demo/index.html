@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=yes" name="viewport"/>
+    <title>Fast-Paced Multiplayer: Sample Code and Live Demo - Gabriel Gambetta</title>
+<!--    <base href="https://www.gabrielgambetta.com/" target="_blank">-->
+    <style>
+        code{white-space: pre-wrap;}
+        span.smallcaps{font-variant: small-caps;}
+        span.underline{text-decoration: underline;}
+        div.column{display: inline-block; vertical-align: top; width: 50%;}
+        div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+        ul.task-list{list-style: none;}
+    </style>
+    <link href="style.css" rel="stylesheet"/>
+    <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+    <![endif]-->
+    <script src="jquery-3.2.1.min.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-M38VSQ9GME"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-M38VSQ9GME');
+    </script>
+</head>
+<body>
+<div class="main">
+    <div class="nav">
+        <a href="https://www.gabrielgambetta.com/client-server-game-architecture.html">&lt;&lt; Series Start</a> <a class="homelink" href="https://www.gabrielgambetta.com/index.html">Gabriel Gambetta</a>
+    </div>
+    <div style="clear:both;"></div>
+    <header id="title-block-header">
+        <h1 class="title">Fast-Paced Multiplayer: Sample Code and Live Demo</h1>
+    </header>
+    <div class="prearticle">
+        <p><small><a href="https://www.gabrielgambetta.com/client-server-game-architecture.html">Client-Server Game Architecture</a> | <a href="https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html">Client-Side Prediction and Server Reconciliation</a> | <a href="https://www.gabrielgambetta.com/entity-interpolation.html">Entity Interpolation</a> | <a href="https://www.gabrielgambetta.com/lag-compensation.html">Lag Compensation</a> | <a href="client-side-prediction-live-demo.html">Live Demo</a></small></p>
+    </div>
+    <style>
+        canvas {
+            border: dotted 1px;
+            padding:0;
+            background: lightgray;
+        }</style>
+    <p>This is a sample implementation of a client-server architecture demonstrating the main concepts explained in my <a href="https://www.gabrielgambetta.com/client-server-game-architecture.html">Fast-Paced Multiplayer</a> series of articles. It won’t make much sense unless you’ve read the articles first.</p>
+    <p>The code is pure JavaScript and it’s fully contained in this page. It’s less than 500 lines of code, including a lot of comments, showing that once you really understand the concepts, implementing them is relatively straightforward.</p>
+    <p>Although it’s not production-quality code, you may use this code in your own applications. Credit is appreciated although not required.</p>
+    <div style="border: 5px solid blue; padding: 15px;">
+        <p><b>Player 1 view</b> - move with LEFT and RIGHT arrow keys<br/> Lag = <input id="player1_lag" onchange="updateParameters();" size="5" type="text" value="250"/>ms · <input id="player1_prediction" onchange="updateParameters();" type="checkbox"/>Prediction · <input id="player1_reconciliation" onchange="updateParameters();" type="checkbox"/>Reconciliation · <input id="player1_interpolation" onchange="updateParameters();" type="checkbox"/>Interpolation</p>
+        <canvas height="75" id="player1_canvas" width="920">
+        </canvas>
+        <div id="player1_status" style="font-family:courier;">
+            Waiting for connection…
+        </div>
+    </div>
+    <div style="height: 1em;">
+    </div>
+    <div style="border: 2px solid grey; padding: 15px;">
+        <p><b>Server view</b> · Update <input id="server_fps" onchange="updateParameters();" size="5" type="text" value="3"/> times per second</p>
+        <canvas height="75" id="server_canvas" width="920">
+        </canvas>
+        <div id="server_status" style="font-family:courier;">
+        </div>
+    </div>
+    <div style="height: 1em;">
+    </div>
+    <div style="border: 5px solid red; padding: 15px;">
+        <p><b>Player 2 view</b> - move with A and D keys<br/> Lag = <input id="player2_lag" onchange="updateParameters();" size="5" type="text" value="150"/>ms · <input id="player2_prediction" onchange="updateParameters();" type="checkbox"/>Prediction · <input id="player2_reconciliation" onchange="updateParameters();" type="checkbox"/>Reconciliation · <input id="player2_interpolation" onchange="updateParameters();" type="checkbox"/>Interpolation</p>
+        <canvas height="75" id="player2_canvas" width="920">
+        </canvas>
+        <div id="player2_status" style="font-family:courier;">
+            Waiting for connection…
+        </div>
+    </div>
+    <script src="client-side-prediction-live-demo.js"></script>
+
+    <h1 id="guided-tour">Guided Tour</h1>
+    <p>The views above show the state of the game world according to the server, and what two clients are rendering. You can move the blue ball, controlled by Player 1, with the LEFT and RIGHT arrow keys; and the red ball, controlled by Player 2, with the A and D keys.</p>
+    <p>Move the blue ball. There’s considerable delay between pressing the arrow keys and the blue ball actually moving. Without client-side prediction, the client only renders the new position of the ball only after a round-trip to the server. Because of the 250ms lag, this takes a while.</p>
+    <p>Set the <strong>player 1 Lag to 0ms</strong>, and try again. Now the client and the server move in sync because there’s no delay between them, but the movement isn’t smooth, because the server only updates its internal state 3 times per second. If you increase the <strong>update rate of the server to 60</strong>, we get smooth movement.</p>
+    <p>But this is not a very realistic scenario. Set the <strong>player 1 lag back to 250ms</strong>, and the <strong>server update rate back to 3</strong>. This is closer to the awful conditions where a real game still needs to work.</p>
+    <p>Client-side prediction and server reconciliation to the rescue! Enable both of them for Player 1 and move the blue ball. Now the movement is very smooth, and there’s no perceptible delay between pressing the arrow keys and moving the ball.</p>
+    <p>This still works if you make the conditions even worse - try setting the <strong>player 1 lag to 500ms</strong> and the <strong>server update rate to 1</strong>.</p>
+    <p>Now things look fantastic for player 1’s own entity, the blue ball. However, player 2’s view of this same entity looks terrible. Because the low update rate of the server, player 2 only gets a new position for player 1’s entity once per second, so the movement is very jumpy.</p>
+    <p>Enabling client-side prediction and server reconciliation for player 2 do nothing to smooth the movement of the blue ball, because these techniques only affect how a player renders its own entity. It does make a difference if you move the red ball, but now we have the same jumpiness in player 1’s view.</p>
+    <p>To solve this, we use entity interpolation. Enable <strong>entity interpolation for player 2</strong> and move the blue ball. Now it moves smoothly, but is always rendered “in the past” compared to player 1 and to the server.</p>
+    <p>You may notice the speed of the interpolated entities may vary. This is an artifact of the interpolation, caused by setting the server update rate too low in relationship with the speeds. This effect should disappear almost entirely if you set the <strong>server update rate to 10</strong>, which is still pretty low.</p>
+    <h1 id="summary">Summary</h1>
+    <p>Client-Side Prediction and Server Reconciliation are very powerful techniques to make multiplayer games feel responsive even under extremely bad network conditions. Therefore, they are a fundamental part of almost any client/server multiplayer network architecture.</p>
+    <div class="centered">
+        <a href="client-server-game-architecture.html">Series Start</a>
+    </div>
+    <div class="signup" id="signup">
+    </div>
+    <script>$("#signup").load("/signup.php?m=csp&r=fpm_live");</script>
+</div>
+<div class="copyright">© Gabriel Gambetta 2024</div>
+</body>
+</html>
