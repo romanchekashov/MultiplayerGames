@@ -408,7 +408,7 @@ function update(self, dt)
 		return
 	end
 
-	if self.remote or not self.is_action_active or self.touch == nil then
+	if not self.isServer and (self.remote or not self.is_action_active or self.touch == nil) then
 		-- Find the two authoritative positions surrounding the rendering timestamp.
 		local buffer = MainState.server_state_buffer:get(self.uid)
 		if buffer == nil then
