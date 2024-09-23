@@ -194,12 +194,14 @@ local function input_controls(self)
 
 		--log("input_controls", self.velocity.x, self.velocity.y)
 	else
+		self.is_action_active = true
 		if input.is_pressed(ACTION_IDS.LEFT) then
 			self.velocity.x = -PLAYER_SPEED
 		elseif input.is_pressed(ACTION_IDS.RIGHT) then
 			self.velocity.x = PLAYER_SPEED
 		else
 			self.velocity.x = 0
+			self.is_action_active = false
 		end
 
 		if input.is_pressed(ACTION_IDS.UP) then
@@ -208,6 +210,7 @@ local function input_controls(self)
 			self.velocity.y = -PLAYER_SPEED
 		else
 			self.velocity.y = 0
+			self.is_action_active = false
 		end
 	end
 end
@@ -278,6 +281,27 @@ local function check_hit_wall(self, pos)
 	return false
 end
 
+local function update_camera_position(self, pos, rotation)
+	self.camera_pos = pos + vmath.vector3(-568, - 320, 0)
+
+	if not self.isServer then
+		-- update camera position
+		go.set_position(self.camera_pos, "camera")
+		go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
+	end
+end
+
+local function update_cooldown(self, dt)
+	self.stairs_change_cooldown = self.stairs_change_cooldown - dt
+	self.fire_cooldown = self.fire_cooldown - dt
+
+	if self.hit_cooldown < 0 then
+		self.bullet_id = nil
+	end
+	self.hit_cooldown = self.hit_cooldown - dt
+	self.zombie_hit_cooldown = self.zombie_hit_cooldown - dt
+end
+
 function init(self)
 	log("player init", msg.url())
 	local go_id = go.get_id()
@@ -299,6 +323,7 @@ function init(self)
 	self.btn_use_pressed = false
 	self.camera_pos = vmath.vector3()
 	self.is_hit_wall = false
+	self.is_action_active = true
 
 	label.set_text("#name", MainState.player.username)
 
@@ -383,7 +408,7 @@ function update(self, dt)
 		return
 	end
 
-	if self.remote then
+	if self.remote or not self.is_action_active or self.touch == nil then
 		-- Find the two authoritative positions surrounding the rendering timestamp.
 		local buffer = MainState.server_state_buffer:get(self.uid)
 		if buffer == nil then
@@ -400,10 +425,15 @@ function update(self, dt)
 		if buffer.length >= 2 and buffer:get(1).ts <= render_timestamp and render_timestamp <= buffer:get(2).ts and self.t <= 1 then
 			local pos = vmath.lerp(self.t, buffer:get(1).pos, buffer:get(2).pos)
 			go.set_position(pos)
-			local rot = vmath.slerp(self.t, buffer:get(1).rot, buffer:get(2).rot)
-			go.set_rotation(rot)
+			local rotation = vmath.slerp(self.t, buffer:get(1).rot, buffer:get(2).rot)
+			go.set_rotation(rotation)
 			local scale = vmath.slerp(self.t, buffer:get(1).scale, buffer:get(2).scale)
 			go.set_scale(scale)
+
+			if not self.remote then
+				update_camera_position(self, pos, rotation)
+				update_cooldown(self, dt)
+			end
 		end
 
 		return
@@ -440,26 +470,11 @@ function update(self, dt)
 
 	if not self.is_hit_wall then
 		go.set_position(pos)
-
-		self.camera_pos = pos + vmath.vector3(-568, - 320, 0)
-
-		if not self.isServer then
-			-- update camera position
-			go.set_position(self.camera_pos, "camera")
-			go.set_position(pos + vmath.rotate(rotation, CROSSHAIR_OFFSET), "crosshair")
-		end
+		update_camera_position(self, pos, rotation)
 	end
 
 	input_controls(self)
-
-	self.stairs_change_cooldown = self.stairs_change_cooldown - dt
-	self.fire_cooldown = self.fire_cooldown - dt
-
-	if self.hit_cooldown < 0 then
-		self.bullet_id = nil
-	end
-	self.hit_cooldown = self.hit_cooldown - dt
-	self.zombie_hit_cooldown = self.zombie_hit_cooldown - dt
+	update_cooldown(self, dt)
 end
 
 function on_input(self, action_id, action)

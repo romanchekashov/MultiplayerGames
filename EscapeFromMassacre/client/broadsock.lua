@@ -374,20 +374,20 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						local update_pos = true
 
 						if MainState.FACTORY_TYPES.player == object_type then
-							if remote then
-								local server_state_buffer = MainState.server_state_buffer:get(uid)
-								if server_state_buffer == nil then
-									server_state_buffer = Collections.createList()
-									MainState.server_state_buffer:put(uid, server_state_buffer)
-								end
-								server_state_buffer:add({ts = get_timestamp_in_ms(), pos = pos, rot = rot, scale = scale})
-								if server_state_buffer.length > 1 then
-									update_pos = false
-								end
-							else
-								--update_pos = false
-								update_pos = player_commands.commands.length == 0
+							local server_state_buffer = MainState.server_state_buffer:get(uid)
+							if server_state_buffer == nil then
+								server_state_buffer = Collections.createList()
+								MainState.server_state_buffer:put(uid, server_state_buffer)
 							end
+							server_state_buffer:add({ts = get_timestamp_in_ms(), pos = pos, rot = rot, scale = scale})
+							if server_state_buffer.length > 1 then
+								update_pos = false
+							end
+							--if remote then
+							--else
+							--	--update_pos = false
+							--	--update_pos = player_commands.commands.length == 0
+							--end
 						end
 
 						if update_pos then
