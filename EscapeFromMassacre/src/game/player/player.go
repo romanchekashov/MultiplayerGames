@@ -73,7 +73,7 @@ embedded_components {
   "}\n"
   "line_break: true\n"
   "text: \"user-32!kjhas nqwe qweokk adsa\"\n"
-  "font: \"/builtins/fonts/default.font\"\n"
+  "font: \"/builtins/fonts/debug/always_on_top.font\"\n"
   "material: \"/builtins/fonts/label.material\"\n"
   ""
   position {
