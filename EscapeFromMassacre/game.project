@@ -65,4 +65,7 @@ max_component_count = 64
 [html5]
 htmlfile = /client/engine_template.html
 archive_location_suffix = ?v=0.2.8
+scale_mode = fit
+show_made_with_defold = 0
+show_fullscreen_button = 0
 
