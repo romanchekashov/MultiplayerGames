@@ -335,14 +335,19 @@ function init(self)
 		-- go.set_rotation(vmath.quat_rotation_z(math.rad(-90)))
 	end
 
-	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.player_type, self.map_level)
-	MainState.players:put(obj.uid, obj)
+	local player = MainState.players:get(self.uid)
+	local score = player and player.score or 0
 
-	if MainState.playerUidToScore[tostring(obj.uid)] == nil then
-		MainState.playerUidToScore[tostring(obj.uid)] = 0
+	if player == nil then
+		local prev_deleted_player = MainState.game_over_players:get(self.uid)
+		score = prev_deleted_player and prev_deleted_player.score or 0
 	end
 
-	label.set_text("#scale-level", string.format("%d", MainState.playerUidToScore[tostring(obj.uid)] + 1))
+	local obj = MainState.createGameObject(self.uid, self.username, go_id, self.player_type, self.map_level, score)
+
+	MainState.players:put(obj.uid, obj)
+
+	label.set_text("#scale-level", string.format("%d", score + 1))
 
 	msg.post("/gui#menu", "set_online_players", {online_players = MainState.players.length})
 	log("player joined: " .. self.username .. " remote: " .. tostring(self.remote))

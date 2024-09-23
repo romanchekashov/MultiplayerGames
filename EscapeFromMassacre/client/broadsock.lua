@@ -567,11 +567,13 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				local uid = sr.number()
 				local player = MainState.game_over_players:get(uid)
 				player.type = sr.number()
-				local map_level = sr.number()
-				local health = sr.number()
+				player.map_level = sr.number()
+				player.health = sr.number()
 				player.score = sr.number()
 			end
+
 			remove_client(uid)
+
 			msg.post("/gui#menu", "game_over", {won_player_type = won_player_type})
 			msg.post("/spawner-player#script", "remove_player", {uid = uid})
 		elseif msg_id == MSG_IDS.PLAYER_LEAVE_ROOM then

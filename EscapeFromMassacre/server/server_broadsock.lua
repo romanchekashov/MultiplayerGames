@@ -245,14 +245,16 @@ function M.sendGameOver(won_player_type)
 	sw.number(-1)
 	sw.string(MSG_IDS.GAME_OVER)
 	sw.number(won_player_type)
-	for _, client in pairs(clients_map) do
+
+	MainState.players:for_each(function (uid, player)
 		sw.string("player")
-		sw.number(client.uid)
-		sw.number(client.type)
-		sw.number(client.map_level)
-		sw.number(client.health)
-		sw.number(client.score)
-	end
+		sw.number(uid)
+		sw.number(player.type)
+		sw.number(player.map_level)
+		sw.number(player.health)
+		sw.number(player.score)
+	end)
+
 	M.send(sw.tostring())
 end
 

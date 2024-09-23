@@ -121,6 +121,7 @@ local M = {
     go_uid_sequence = 10000,
     gameTime = 0,
     isGateOpen = false,
+    pause = true,
 
     INITIAL_FUZES_CREATE = {},
     FACTORY_TYPES = FACTORY_TYPES,
@@ -179,10 +180,6 @@ local M = {
     },
     fuzeColorToPlayerUid = Collections.createMap(),
 
-    pause = true,
-    players = Collections.createMap(),
-    game_over_players = Collections.createMap(),
-
     zombies = Collections.createMap(),
     zombieIdToUid = {},
 
@@ -195,7 +192,8 @@ local M = {
     bulletUidBelongToPlayerUid = Collections.createMap(),
     bulletUidBelongToMapLevel = {},
 
-    playerUidToScore = {},
+    players = Collections.createMap(),
+    game_over_players = Collections.createMap(),
     playerSlots = {},
     player = {
         uid = 0,
@@ -254,12 +252,12 @@ function M.insidePauseBound(action)
         and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
 end
 
-function M.createGameObject(uid, username, go_id, player_type, map_level)
+function M.createGameObject(uid, username, go_id, player_type, map_level, score)
     local obj = {
         uid = uid or nil,
         username = username or nil,
         go_id = go_id or nil,
-        score = 0,
+        score = score or 0,
         map_level = map_level or M.MAP_LEVELS.HOUSE,
         health = 100,
         manna = 100,
@@ -426,8 +424,8 @@ function M.delete_player(uid)
     local player = M.players:remove(uid)
     if player ~= nil then
         go.delete(player.go_id)
+        M.game_over_players:put(uid, player)
     end
-    M.playerUidToScore[uid] = nil
     M.playerSlots[uid] = nil
 end
 
