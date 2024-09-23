@@ -1,6 +1,7 @@
 local Collections = require "src.utils.collections"
 local player_commands = require "client.player_commands"
 local debugUtils = require "src.utils.debug-utils"
+local MainState = require "src.main_state"
 local log = debugUtils.createLog("[MULTIPLAYER_INPUT]").log
 
 local ACT_CODE = {
@@ -42,6 +43,11 @@ local M = {
 
         log("touched", uid, x, y)
 
+        local player = MainState.players:get(uid)
+        if player ~= nil then
+            player.last_processed_input_ts = last_command.ts
+        end
+
         return {x = x, y = y}
     end,
     is_pressed = function (self, uid, action_id)
@@ -54,6 +60,11 @@ local M = {
 
         local isPressed = last_command[player_commands.ActionIdToCode[action_id]] == 1
         log("is_pressed", action_id, isPressed)
+
+        local player = MainState.players:get(uid)
+        if player ~= nil then
+            player.last_processed_input_ts = last_command.ts
+        end
 
         return isPressed
     end,

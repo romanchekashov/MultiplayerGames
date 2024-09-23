@@ -6,6 +6,7 @@ local performance_utils = require "server.performance_utils"
 local MSG = require "src.utils.messages"
 local Collections = require "src.utils.collections"
 local Utils = require "src.utils.utils"
+local player_commands = require "client.player_commands"
 
 local get_timestamp_in_ms = Utils.get_timestamp_in_ms
 local log = debugUtils.createLog("[BROADSOCK CLIENT]").log
@@ -234,6 +235,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 					local scale = sr.vector3()
 
 					local player_type
+					local last_processed_input_ts
 
 					local fuze_box_color
 					local fuze_box_state = 0
@@ -255,11 +257,14 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						local player_map_level = sr.number()
 						local player_health = sr.number()
 						local player_score = sr.number()
+						local last_processed_input_ts = sr.number()
+						player_commands:server_reconciliation(last_processed_input_ts)
 
 						local player = MainState.players:get(uid)
 						if player ~= nil then
 							player.map_level = player_map_level
 							player.score = player_score
+							player.last_processed_input_ts = last_processed_input_ts
 
 							if player.health ~= player_health then
 								player.health = player_health
@@ -366,19 +371,26 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							end
 						end
 					else
-						local server_state_buffer_is_small = true
-						if remote and MainState.FACTORY_TYPES.player == object_type then
+						local update_pos = true
 
-							local server_state_buffer = MainState.server_state_buffer:get(uid)
-							if server_state_buffer == nil then
-								server_state_buffer = Collections.createList()
-								MainState.server_state_buffer:put(uid, server_state_buffer)
+						if MainState.FACTORY_TYPES.player == object_type then
+							if remote then
+								local server_state_buffer = MainState.server_state_buffer:get(uid)
+								if server_state_buffer == nil then
+									server_state_buffer = Collections.createList()
+									MainState.server_state_buffer:put(uid, server_state_buffer)
+								end
+								server_state_buffer:add({ts = get_timestamp_in_ms(), pos = pos, rot = rot, scale = scale})
+								if server_state_buffer.length > 1 then
+									update_pos = false
+								end
+							else
+								--update_pos = false
+								update_pos = player_commands.commands.length == 0
 							end
-							server_state_buffer:add({ts = get_timestamp_in_ms(), pos = pos, rot = rot, scale = scale})
-							server_state_buffer_is_small = server_state_buffer.length < 2
 						end
 
-						if MainState.FACTORY_TYPES.player ~= object_type or server_state_buffer_is_small then
+						if update_pos then
 							local id = game_object.id
 							if enable then
 								msg.post(id, "enable")

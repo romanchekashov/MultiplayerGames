@@ -194,20 +194,21 @@ local function input_controls(self)
 
 		--log("input_controls", self.velocity.x, self.velocity.y)
 	else
-		--if input.is_pressed(ACTION_IDS.LEFT) then
-		--	self.velocity.x = -PLAYER_SPEED
-		--elseif input.is_pressed(ACTION_IDS.RIGHT) then
-		--	self.velocity.x = PLAYER_SPEED
-		--else
-		--	self.velocity.x = 0
-		--end
-		--if input.is_pressed(ACTION_IDS.UP) then
-		--	self.velocity.y = PLAYER_SPEED
-		--elseif input.is_pressed(ACTION_IDS.DOWN) then
-		--	self.velocity.y = -PLAYER_SPEED
-		--else
-		--	self.velocity.y = 0
-		--end
+		if input.is_pressed(ACTION_IDS.LEFT) then
+			self.velocity.x = -PLAYER_SPEED
+		elseif input.is_pressed(ACTION_IDS.RIGHT) then
+			self.velocity.x = PLAYER_SPEED
+		else
+			self.velocity.x = 0
+		end
+
+		if input.is_pressed(ACTION_IDS.UP) then
+			self.velocity.y = PLAYER_SPEED
+		elseif input.is_pressed(ACTION_IDS.DOWN) then
+			self.velocity.y = -PLAYER_SPEED
+		else
+			self.velocity.y = 0
+		end
 	end
 end
 
@@ -647,7 +648,10 @@ function on_message(self, message_id, message, sender)
 				hit(self, self.killer_uid)
 			end
 		elseif message.group == MSG_GROUPS.ZOMBIE then
-			local player_on_level = MainState.players:get(self.uid).map_level
+			local player = MainState.players:get(self.uid)
+			if player == nil then return end
+
+			local player_on_level = player.map_level
 			local zombie_uid = MainState.zombieIdToUid[message.other_id]
 			local zombie = MainState.zombies:get(zombie_uid)
 

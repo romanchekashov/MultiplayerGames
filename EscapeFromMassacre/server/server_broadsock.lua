@@ -156,6 +156,7 @@ function M.handle_client_disconnected(client_uid)
 
 	remove_client(client_uid)
 	MainState.delete_player(client_uid)
+	multiplayer_input.playerCommands:remove(client_uid)
 end
 
 function M.handle_client_connected(uid, player_type)

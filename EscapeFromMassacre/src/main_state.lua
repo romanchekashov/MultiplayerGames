@@ -2,7 +2,6 @@ local Collections = require "src.utils.collections"
 local MSG = require "src.utils.messages"
 local utils = require "src.utils.utils"
 local stream = require "client.stream"
-local multiplayer_input = require "server.multiplayer_input"
 local debugUtils = require "src.utils.debug-utils"
 local log = debugUtils.createLog("[MAIN_STATE]").log
 
@@ -129,7 +128,7 @@ local M = {
     RECREATE_PLAYER_TIMEOUT_IN_SEC = 2,
     GAME_START_TIMEOUT_IN_SEC = 5,
     -- GAME_TIMEOUT_IN_SEC = 60 * 15,
-    GAME_TIMEOUT_IN_SEC = 60 * 15,
+    GAME_TIMEOUT_IN_SEC = 60 * 2,
     FIXED_FUZE_BOX_COUNT_MAX = 4, -- 4
     PLAYER_STATUS = PLAYER_STATUS,
     PLAYER_TYPE = PLAYER_TYPE,
@@ -203,7 +202,8 @@ local M = {
         username = "N/A",
         type = PLAYER_TYPE.SURVIVOR,
         room = nil,
-        status = PLAYER_STATUS.CONNECTED
+        status = PLAYER_STATUS.CONNECTED,
+        use_entity_interpolation = false
     },
 
     playerUidToScoreSortedForEach = function(self, fn)
@@ -224,6 +224,7 @@ local M = {
         end
     end,
 
+    client_update_rate = 10,
     server_update_rate = 10,
     server_state_buffer = Collections.createMap()
 }
@@ -266,6 +267,7 @@ function M.createGameObject(uid, username, go_id, player_type, map_level)
         xp = 0,
         ws_latency = 0,
         wt_latency = 0,
+        last_processed_input_ts = 0,
         type = player_type or M.PLAYER_TYPE.SURVIVOR,
 
         is_family = function (self)
@@ -421,8 +423,6 @@ end
 function M.delete_player(uid)
     log("delete_player", uid)
 
-    multiplayer_input.playerCommands:remove(uid)
-
     local player = M.players:remove(uid)
     if player ~= nil then
         go.delete(player.go_id)
@@ -478,6 +478,7 @@ function M.tostring(self)
             sw.number(player and player.map_level or 0)
             sw.number(player and player.health or 100)
             sw.number(player and player.score or 0)
+            sw.number(player and player.last_processed_input_ts or 0)
             --sw.number(0) -- 0: disconnected, 1: connected
         elseif M.FACTORY_TYPES.fuze_box == v.type then
             local color = v and v.id and M.fuzeBoxIdsToColor[v.id] or 0

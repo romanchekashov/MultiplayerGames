@@ -1,9 +1,7 @@
 local debugUtils = require "src.utils.debug-utils"
 local stream = require "client.stream"
-local player_commands = require "client.player_commands"
 
 local log = debugUtils.createLog("[MESSAGES]").log
-local commands = player_commands.create()
 
 local M = {
     BASE_MSG_IDS = {
@@ -136,13 +134,8 @@ M.BROADSOCK = {
         })
     end,
     send_command = function (self, data)
-        local sendData = commands:build(data.player_uid, data)
-        if sendData == nil then
-            return
-        end
-
         msg.post(self.URL, "player_commands", {
-            data = sendData
+            data = data
         })
     end,
 }
