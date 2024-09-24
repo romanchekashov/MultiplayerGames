@@ -80,6 +80,7 @@ local function register(self, node, fn)
 end
 
 function init(self)
+	log("init")
 	msg.post(".", "acquire_input_focus")
 	local rightStickNode = gui.get_node("analog")
 	register(self, rightStickNode, on_analog)
@@ -89,13 +90,16 @@ function init(self)
 end
 
 function final(self)
+	log("final")
 	msg.post(".", "release_input_focus")
 end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("register") then
+		log("register", sender)
 		self.listener = sender
 	elseif message_id == hash("unregister") then
+		log("unregister", sender)
 		self.listener = nil
 	end
 end

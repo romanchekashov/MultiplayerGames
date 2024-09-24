@@ -192,6 +192,11 @@ local function input_controls(self)
 			end)
 		end
 
+		local analog = multiplayer_input:analog_used(self.uid)
+		if analog ~= nil then
+			go.set_rotation(vmath.quat_rotation_z(math.atan2(analog.y, analog.x) + rad_minus90))
+		end
+
 		--log("input_controls", self.velocity.x, self.velocity.y)
 	else
 		self.is_action_active = true
@@ -364,12 +369,12 @@ function init(self)
 		msg.post(".", "acquire_input_focus")
 		msg.post("/camera", "acquire_camera_focus")
 		input.acquire()
-		msg.post("/virtual_gamepad", "register")
-
+		
 		msg.post("/levels#change", "load_level", {map_level = obj.map_level})
 
 		if IS_MOBILE then
 			msg.post("/virtual_gamepad", "enable")
+			msg.post("/virtual_gamepad", "register")
 		else
 			msg.post("/virtual_gamepad", "disable")
 		end
@@ -380,7 +385,7 @@ function init(self)
 	self.virtual_gamepad_right_pressed = false
 	self.virtual_gamepad_up_pressed = false
 	self.virtual_gamepad_down_pressed = false
-	self.virtual_gamepad_player_rotation = false
+	self.virtual_gamepad_player_rotation = true
 end
 
 function final(self)
@@ -735,8 +740,8 @@ function on_message(self, message_id, message, sender)
 			-- 2. Perhaps do some prediction using ray casts to know if you are about to collide (and do “something”)
 			-- 3. And apply an opposite force on collision to fight tunneling
 			if self.velocity.x ~= 0 and self.velocity.y ~= 0 then
-				self.velocity.x, self.velocity.y = 20, 20
-				-- self.velocity.y = 0
+				-- self.velocity.x, self.velocity.y = 20, 20
+				self.velocity.y = 0
 			end
 			go.set_position(go.get_position() + message.normal * message.distance)
 		end
@@ -814,7 +819,7 @@ function on_message(self, message_id, message, sender)
 
 		if self.virtual_gamepad_player_rotation then
 			if message.x ~= 0 or message.y ~= 0 then
-				-- MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG, action = action})
+				MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG, action = action})
 				--print(message.x, message.y, math.atan2(message.y, message.x), math.rad(-90))
 				--go.set_rotation(get_rotation(message))
 				go.set_rotation(vmath.quat_rotation_z(math.atan2(message.y, message.x) + rad_minus90))

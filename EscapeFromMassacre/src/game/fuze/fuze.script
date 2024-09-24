@@ -22,7 +22,7 @@ local function enable(self, enabled)
 	msg.post("#fuze_blue", "disable")
 	msg.post("#fuze_yellow", "disable")
 
-	log("enable", enabled, self.color, colorToSpriteId[self.color])
+	-- log("enable", enabled, self.color, colorToSpriteId[self.color])
 	self.enable = enabled
 
 	if enabled then

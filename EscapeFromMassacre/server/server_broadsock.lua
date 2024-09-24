@@ -241,6 +241,8 @@ function M.send(data)
 end
 
 function M.sendGameOver(won_player_type)
+	MainState.currentGameState = MainState.GAME_STATES.END
+	
 	local sw = stream.writer()
 	sw.number(-1)
 	sw.string(MSG_IDS.GAME_OVER)

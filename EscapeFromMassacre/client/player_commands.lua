@@ -91,15 +91,21 @@ local M = {
         end
 
         local is_touch = action_id == ACTION_IDS.TOUCH
-        if is_touch then
+        local is_analog = action_id == ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG
+
+        if is_touch or is_analog then
             local x = math.floor(action.x * 1000)
             local y = math.floor(action.y * 1000)
     
-            copy[ActionIdToCode[ACTION_IDS.TOUCH_X]] = x
-            copy[ActionIdToCode[ACTION_IDS.TOUCH_Y]] = y
+            if is_touch then
+                copy[ActionIdToCode[ACTION_IDS.TOUCH_X]] = x
+                copy[ActionIdToCode[ACTION_IDS.TOUCH_Y]] = y
+            end
             
-            copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X]] = x
-            copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y]] = y
+            if is_analog then
+                copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X]] = x
+                copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y]] = y
+            end
         end
 
         if not compareTables(last_command, copy) then
