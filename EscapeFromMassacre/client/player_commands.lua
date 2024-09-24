@@ -77,10 +77,10 @@ local M = {
         local copy = table.shallow_copy(last_command)
         copy.ts = get_timestamp_in_ms()
 
-        if action.pressed ~= nil and action.released ~= nil then
+        if action.pressed ~= nil or action.released ~= nil then
             local num_action_id = ActionIdToCode[action_id]
             local num_action_state = last_command[num_action_id]
-            
+
             if action.pressed then
                 num_action_state = 1
             elseif action.released then

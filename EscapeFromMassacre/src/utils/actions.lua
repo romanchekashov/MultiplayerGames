@@ -37,6 +37,8 @@ local ACTION_IDS = {
         ANALOG = hash("analog"),
         ANALOG_X = hash("analog_x"),
         ANALOG_Y = hash("analog_y"),
+        BUTTON_A = hash("button_a"),
+        BUTTON_B = hash("button_b"),
     }
 }
 

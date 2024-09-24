@@ -134,4 +134,43 @@ function M.insideVirtualGamepadLeftStickBound(action)
         and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
 end
 
+function M.createBounds()
+    return {
+        x1 = 0,
+        x2 = 0,
+        y1 = 0,
+        y2 = 0,
+        set = function (self, pos, size)
+            local diffX = size.x / 2
+            local diffY = size.y / 2
+            self.x1 = pos.x - diffX
+            self.x2 = pos.x + diffX
+            self.y1 = pos.y - diffY
+            self.y2 = pos.y + diffY
+            return self
+        end,
+        inside = function (self, action)
+            return action.screen_x >= self.x1 and action.screen_x <= self.x2
+                and action.screen_y >= self.y1 and action.screen_y <= self.y2
+        end
+    }
+end
+
+local virtualGamepadButtonsBounds = Collections.createList()
+
+function M.addVirtualGamepadButtonBound(pos, size)
+    virtualGamepadButtonsBounds:add(M.createBounds():set(pos, size))
+end
+
+function M.insideVirtualGamepadButtonsBounds(action)
+    local result = false
+    virtualGamepadButtonsBounds:for_each(function (bound)
+        if bound:inside(action) then
+            result = true
+            return true
+        end
+    end)
+    return result
+end
+
 return M

@@ -39,11 +39,13 @@ local function on_analog(self, touch, control)
 	end
 end
 
-local function on_control_a(self, touch, control)
-	if touch.pressed then
-		post_to_listener(self, "button_a", { pressed = true })
-	elseif touch.released then
-		post_to_listener(self, "button_a", { released = true })
+local function on_control(self, btn_name)
+	return function (self, touch, control)
+		if touch.pressed then
+			post_to_listener(self, btn_name, { pressed = true })
+		elseif touch.released then
+			post_to_listener(self, btn_name, { released = true })
+		end
 	end
 end
 
@@ -82,16 +84,25 @@ end
 
 function init(self)
 	log("init")
+
 	msg.post(".", "acquire_input_focus")
+
 	local rightStickNode = gui.get_node("analog")
+	local buttonANode = gui.get_node("button_a")
+	local buttonBNode = gui.get_node("button_b")
+
 	register(self, rightStickNode, on_analog)
-	register(self, gui.get_node("button_a"), on_control_a)
+	register(self, buttonANode, on_control(self, "button_a"))
+	register(self, buttonBNode, on_control(self, "button_b"))
 
 	defoldUtils.setVirtualGamepadLeftStickBound(gui.get_screen_position(rightStickNode), gui.get_size(rightStickNode))
+	defoldUtils.addVirtualGamepadButtonBound(gui.get_screen_position(buttonANode), gui.get_size(buttonANode))
+	defoldUtils.addVirtualGamepadButtonBound(gui.get_screen_position(buttonBNode), gui.get_size(buttonBNode))
 end
 
 function final(self)
 	log("final")
+
 	msg.post(".", "release_input_focus")
 end
 
