@@ -14,15 +14,46 @@ local ACT_CODE = {
     TOUCH = 7,
     TOUCH_X = 8,
     TOUCH_Y = 9,
-    TRIGGER = 10
+    TRIGGER = 10,
+    ANALOG = 11,
+    ANALOG_X = 12,
+    ANALOG_Y = 13
 }
 local M = {
     playerCommands = Collections.createMap(),
+    last_analog_x = 0,
+    last_analog_y = 0,
     last_touch_x = 0,
     last_touch_y = 0,
     last_command = function (self, uid)
         local playerCommands = self.playerCommands:get(uid)
         return playerCommands and playerCommands.commands and playerCommands.commands:getLast()
+    end,
+    analog_used = function (self, uid)
+        local last_command = self:last_command(uid)
+
+        if last_command == nil then
+            return nil
+        end
+
+        local x = last_command[ACT_CODE.ANALOG_X]
+        local y = last_command[ACT_CODE.ANALOG_Y]
+
+        if (x == self.last_analog_x and y == self.last_analog_y) or (x == 0 and y == 0) then
+            return nil
+        end
+
+        self.last_analog_x = x
+        self.last_analog_y = y
+
+        log("analog_used", uid, x, y)
+
+        local player = MainState.players:get(uid)
+        if player ~= nil then
+            player.last_processed_input_ts = last_command.ts
+        end
+
+        return {x = x, y = y}
     end,
     touched = function (self, uid)
         local last_command = self:last_command(uid)
@@ -34,7 +65,7 @@ local M = {
         local x = last_command[ACT_CODE.TOUCH_X]
         local y = last_command[ACT_CODE.TOUCH_Y]
 
-        if x == self.last_touch_x or y == self.last_touch_y then
+        if (x == self.last_touch_x and y == self.last_touch_y) or (x == 0 and y == 0) then
             return nil
         end
 
@@ -51,7 +82,7 @@ local M = {
         return {x = x, y = y}
     end,
     is_pressed = function (self, uid, action_id)
-        log("is_pressed", uid, action_id)
+        -- log("is_pressed", uid, action_id)
         local last_command = self:last_command(uid)
 
         if last_command == nil then
@@ -59,7 +90,7 @@ local M = {
         end
 
         local isPressed = last_command[player_commands.ActionIdToCode[action_id]] == 1
-        log("is_pressed", action_id, isPressed)
+        -- log("is_pressed", action_id, isPressed)
 
         local player = MainState.players:get(uid)
         if player ~= nil then
@@ -87,7 +118,9 @@ local M = {
                 [ACT_CODE.DOWN] = streamReader.number(),
                 [ACT_CODE.TOUCH_X] = streamReader.double(),
                 [ACT_CODE.TOUCH_Y] = streamReader.double(),
-                [ACT_CODE.TRIGGER] = streamReader.number()
+                [ACT_CODE.TRIGGER] = streamReader.number(),
+                [ACT_CODE.ANALOG_X] = streamReader.number(),
+                [ACT_CODE.ANALOG_Y] = streamReader.number()
             }
 
             playerCommands.commands:add(command)

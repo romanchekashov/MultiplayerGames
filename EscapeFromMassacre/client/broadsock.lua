@@ -197,7 +197,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		local sr = stream.reader(data, data_length)
 		local from_uid = sr.number()
 		local msg_id = sr.string()
-		log("on_data: from:", from_uid, "msg_id:", msg_id, "data:", data)
+		--log("on_data: from:", from_uid, "msg_id:", msg_id, "data:", data)
 
 		if msg_id == "GAME_STATE" then
 			MainState.server_update_rate = sr.number()

@@ -31,6 +31,12 @@ local ACTION_IDS = {
             UP = hash("ls_up"),
             DOWN = hash("ls_down")
         }
+    },
+
+    VIRTUAL_GAMEPAD = {
+        ANALOG = hash("analog"),
+        ANALOG_X = hash("analog_x"),
+        ANALOG_Y = hash("analog_y"),
     }
 }
 

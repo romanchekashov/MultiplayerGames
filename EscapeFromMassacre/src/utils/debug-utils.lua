@@ -173,10 +173,10 @@ function M.createLog(prefix)
             msg = msg .. tostring(v)
         end
 
-        if not prev_msgs:has(msg) then
-            print(_prefix, ...)
-            prev_msgs:add(msg)
-        end
+        print(_prefix, ...)
+        -- if not prev_msgs:has(msg) then
+        --     prev_msgs:add(msg)
+        -- end
     end
 
     return instance

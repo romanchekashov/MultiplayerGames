@@ -20,9 +20,8 @@ local sleep = performance_utils.create_sleep_fn(performance_utils.CPU_USAGE.ABOU
 local SERVER_ONE_SECOND = 1
 
 function init(self)
-	local enableLogs = false
 	debugUtils.isProd = true
-	debugUtils.debug(enableLogs)
+	debugUtils.debug(false)
 
 	MainState.isServer = true
 

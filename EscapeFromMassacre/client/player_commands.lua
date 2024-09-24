@@ -18,7 +18,10 @@ local ActionIdToCode = {
     [ACTION_IDS.TOUCH] = 7,
     [ACTION_IDS.TOUCH_X] = 8,
     [ACTION_IDS.TOUCH_Y] = 9,
-    [ACTION_IDS.TRIGGER] = 10
+    [ACTION_IDS.TRIGGER] = 10,
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG] = 11,
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X] = 12,
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y] = 13
 }
 
 local CodeToActionId = {
@@ -31,7 +34,10 @@ local CodeToActionId = {
     [7] = ACTION_IDS.TOUCH,
     [8] = ACTION_IDS.TOUCH_X,
     [9] = ACTION_IDS.TOUCH_Y,
-    [10] = ACTION_IDS.TRIGGER
+    [10] = ACTION_IDS.TRIGGER,
+    [11] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG,
+    [12] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X,
+    [13] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y
 }
 
 local ActionState = {
@@ -46,6 +52,8 @@ local M = {
     commands = Collections.createList(),
     --MAX_COMMANDS_BUFFER_SIZE = 100,
     build = function (self, player_uid, data)
+        local action_id, action = data.action_id, data.action
+        print("PLAYER_COMMAND:", action_id, " x = ", action.x, " y = ", action.y, " pressed = ", action.pressed, " released = ", action.released)
         --log("build", data.action_id, data.action.pressed, data.action.released, data.action.x, data.action.y)
         --log("commands.length", tostring(self.commands.length))
         local last_command = self.commands:getLast()
@@ -60,24 +68,39 @@ local M = {
                 [ActionIdToCode[ACTION_IDS.DOWN]] = ActionState.released,
                 [ActionIdToCode[ACTION_IDS.TOUCH_X]] = 0,
                 [ActionIdToCode[ACTION_IDS.TOUCH_Y]] = 0,
-                [ActionIdToCode[ACTION_IDS.TRIGGER]] = ActionState.released
+                [ActionIdToCode[ACTION_IDS.TRIGGER]] = ActionState.released,
+                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X]] = 0,
+                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y]] = 0
             }
-        end
-
-        local num_action_id = ActionIdToCode[data.action_id]
-        local num_action_state = last_command[num_action_id]
-        if data.action.pressed then
-            num_action_state = 1
-        end
-        if data.action.released then
-            num_action_state = 0
         end
 
         local copy = table.shallow_copy(last_command)
         copy.ts = get_timestamp_in_ms()
-        copy[num_action_id] = num_action_state
-        copy[ActionIdToCode[ACTION_IDS.TOUCH_X]] = math.floor(data.action.x * 1000)
-        copy[ActionIdToCode[ACTION_IDS.TOUCH_Y]] = math.floor(data.action.y * 1000)
+
+        if action.pressed ~= nil and action.released ~= nil then
+            local num_action_id = ActionIdToCode[action_id]
+            local num_action_state = last_command[num_action_id]
+            
+            if action.pressed then
+                num_action_state = 1
+            elseif action.released then
+                num_action_state = 0
+            end
+
+            copy[num_action_id] = num_action_state
+        end
+
+        local is_touch = action_id == ACTION_IDS.TOUCH
+        if is_touch then
+            local x = math.floor(action.x * 1000)
+            local y = math.floor(action.y * 1000)
+    
+            copy[ActionIdToCode[ACTION_IDS.TOUCH_X]] = x
+            copy[ActionIdToCode[ACTION_IDS.TOUCH_Y]] = y
+            
+            copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X]] = x
+            copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y]] = y
+        end
 
         if not compareTables(last_command, copy) then
             self.commands:add(copy)
@@ -103,6 +126,8 @@ local M = {
                     .number(command[ActionIdToCode[ACTION_IDS.TOUCH_X]])
                     .number(command[ActionIdToCode[ACTION_IDS.TOUCH_Y]])
                     .number(command[ActionIdToCode[ACTION_IDS.TRIGGER]])
+                    .number(command[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X]])
+                    .number(command[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y]])
         end)
 
         return sendData.tostring()
