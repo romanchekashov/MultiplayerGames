@@ -6,6 +6,7 @@ local debugUtils = require "src.utils.debug-utils"
 local log = debugUtils.createLog("[VIRTUAL_GAMEPAD]").log
 
 local function post_to_listener(self, message_id, message)
+	log("post_to_listener", message_id, message.x, message.y)
 	if self.listener then
 		msg.post(self.listener, message_id, message or {})
 	end
@@ -131,7 +132,7 @@ local function handle_touch(self, touch, touch_index)
 end
 
 function on_input(self, action_id, action)
-	log(action_id, action.value, action.pressed, action.released, action.gamepad)
+	-- log(action_id, action.value, action.pressed, action.released, action.gamepad)
 
 	if action.touch then
 		for i,tp in pairs(action.touch) do

@@ -774,11 +774,19 @@ function on_message(self, message_id, message, sender)
 		local action = {pressed = false, released = false, x = message.x, y = message.y}
 
 		if message.x < 0 then
+			if self.virtual_gamepad_right_pressed then
+				send_command(self, ACTION_IDS.RIGHT, {pressed = false, released = true, x = message.x, y = message.y})
+				self.virtual_gamepad_right_pressed = false
+			end
 			self.virtual_gamepad_left_pressed = true
 			action.pressed = true
 			send_command(self, ACTION_IDS.LEFT, action)
 			self.velocity.x = -PLAYER_SPEED
 		elseif message.x > 0 then
+			if self.virtual_gamepad_left_pressed then
+				send_command(self, ACTION_IDS.LEFT, {pressed = false, released = true, x = message.x, y = message.y})
+				self.virtual_gamepad_left_pressed = false
+			end
 			self.virtual_gamepad_right_pressed = true
 			action.pressed = true
 			send_command(self, ACTION_IDS.RIGHT, action)
@@ -787,20 +795,23 @@ function on_message(self, message_id, message, sender)
 			action.released = true
 			send_command(self, ACTION_IDS.LEFT, action)
 			send_command(self, ACTION_IDS.RIGHT, action)
-			if self.virtual_gamepad_left_pressed then
-				self.virtual_gamepad_left_pressed = false
-			else
-				self.virtual_gamepad_right_pressed = false
-			end
 			self.velocity.x = 0
 		end
 
 		if message.y > 0 then
+			if self.virtual_gamepad_down_pressed then
+				send_command(self, ACTION_IDS.DOWN, {pressed = false, released = true, x = message.x, y = message.y})
+				self.virtual_gamepad_down_pressed = false
+			end
 			self.virtual_gamepad_up_pressed = true
 			action.pressed = true
 			send_command(self, ACTION_IDS.UP, action)
 			self.velocity.y = PLAYER_SPEED
 		elseif message.y < 0 then
+			if self.virtual_gamepad_up_pressed then
+				send_command(self, ACTION_IDS.UP, {pressed = false, released = true, x = message.x, y = message.y})
+				self.virtual_gamepad_up_pressed = false
+			end
 			self.virtual_gamepad_down_pressed = true
 			action.pressed = true
 			send_command(self, ACTION_IDS.DOWN, action)
@@ -809,11 +820,6 @@ function on_message(self, message_id, message, sender)
 			action.released = true
 			send_command(self, ACTION_IDS.UP, action)
 			send_command(self, ACTION_IDS.DOWN, action)
-			if self.virtual_gamepad_up_pressed then
-				self.virtual_gamepad_up_pressed = false
-			else
-				self.virtual_gamepad_down_pressed = false
-			end
 			self.velocity.y = 0
 		end
 
