@@ -531,9 +531,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 		elseif msg_id == MSG_IDS.DISCONNECT then
 			log("DISCONNECT")
 			remove_client(from_uid)
-		elseif msg_id == MSG_IDS.GAME_TIME then
-			log("SERVER: TIMER GAME_TIME: " .. data)
-			msg.post("/gui#menu", "update_timer", {time = sr.number()})
 		elseif msg_id == MSG_IDS.GAME_OVER then
 			log("SERVER: TIMER GAME_OVER", "go_id_set.length:", go_id_set.length)
 			local won_player_type = sr.number()
