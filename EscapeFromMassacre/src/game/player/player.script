@@ -38,7 +38,7 @@ local KNIFE = hash("knife")
 
 local STICK_MAX_DISTANCE = 30
 local PLAYER_SPEED = 275
-local PLAYER_SPEED_CLOSE_TO_WALL = 50
+local PLAYER_SPEED_CLOSE_TO_WALL = 30
 local STAIRS_CHANGE_COOLDOWN = 1
 local HIT_COOLDOWN = 0.2
 local ZOMBIE_HIT_COOLDOWN = 0.6
@@ -775,7 +775,7 @@ function on_message(self, message_id, message, sender)
 			-- 2. Perhaps do some prediction using ray casts to know if you are about to collide (and do “something”)
 			-- 3. And apply an opposite force on collision to fight tunneling
 			if self.velocity.x ~= 0 and self.velocity.y ~= 0 then
-				self.velocity.x, self.velocity.y = 10, 10
+				-- self.velocity.x, self.velocity.y = 10, 10
 				-- self.velocity.y = 0
 			end
 			go.set_position(go.get_position() + message.normal * message.distance)
