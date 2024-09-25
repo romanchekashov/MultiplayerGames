@@ -13,7 +13,6 @@ class ClientGameMessages:
     WS_PONG = 'WS_PONG'
 
 class GameServerMessages:
-    GO = 'GO'
     PLAYER_LEAVE_ROOM = 'PLAYER_LEAVE_ROOM'
     CONNECT_ME = 'CONNECT_ME'
     CONNECT_SELF = 'CONNECT_SELF'

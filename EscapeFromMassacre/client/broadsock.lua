@@ -321,7 +321,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						local factory_url = MainState.factories[object_type]
 						if factory_url then
 							local factory_data = {remote = remote, uid = uid}
-							log("GO create obj", uid, MainState.player.uid, tostring(object_type), factory_url, "remote:", factory_data.remote)
+							log("create obj", uid, MainState.player.uid, tostring(object_type), factory_url, "remote:", factory_data.remote)
 
 							if object_type == FACTORY_TYPE_PLAYER then
 								factory_data.player_type = player_type
@@ -352,7 +352,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 							if factory_data ~= nil then
 								local id = factory.create(factory_url, pos, rot, factory_data, scale)
 								assert(id, factory_url .. " should return non nil id")
-								log("GO obj created", uid, tostring(object_type), id)
+								log("obj created", uid, tostring(object_type), id)
 
 								add_game_object(uid, object_type, id)
 								game_object = remote_gameobjects:get(uid)
@@ -400,78 +400,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						end
 
 					end
-
-					if MainState.FACTORY_TYPES.player == object_type then
-
-						--local player_type = sr.number()
-						--local player_map_level = sr.number()
-						--local player = MainState.players:get(from_uid)
-						--if player ~= nil then
-						--	player.map_level = player_map_level
-						--end
-						--
-						--local enable = player_map_level == MainState.playerOnMapLevel
-						--
-						--local remote_gameobjects_for_user = remote_gameobjects[from_uid]
-						--local count = sr.number()
-						--log("remote GO", tostring(count))
-						--for _=1,count do
-						--	local gouid = sr.string()
-						--	local type = sr.string()
-						--
-						--	local pos = sr.vector3()
-						--	local rot = sr.quat()
-						--	local scale = sr.vector3()
-						--
-						--	if from_uid ~= uid then
-						--		if not remote_gameobjects_for_user[gouid] then
-						--			local factory_url = factories[type]
-						--			if factory_url then
-						--				log("GO create obj", from_uid, tostring(type))
-						--				local factory_data = {remote = true, uid = from_uid}
-						--				if type == FACTORY_TYPE_PLAYER then
-						--					factory_data.player_type = player_type
-						--				end
-						--				local id = factory.create(factory_url, pos, rot, factory_data, scale)
-						--				--assert(id, factory_url .. " should return non nil id")
-						--				remote_gameobjects_for_user[gouid] = { id = id, type = type }
-						--				if enable then
-						--					msg.post(id, "enable")
-						--				else
-						--					msg.post(id, "disable")
-						--				end
-						--			end
-						--		else
-						--			local id = remote_gameobjects_for_user[gouid].id
-						--			if enable then
-						--				msg.post(id, "enable")
-						--				local ok, err = pcall(function()
-						--					go.set_position(pos, id)
-						--					go.set_rotation(rot, id)
-						--					go.set_scale(scale, id)
-						--				end)
-						--			else
-						--				msg.post(id, "disable")
-						--			end
-						--		end
-						--	end
-						--end
-						--
-						--local new_health = sr.number()
-						--local new_score = sr.number()
-						--if from_uid ~= uid and player ~= nil then
-						--	if player.health ~= new_health then
-						--		msg.post(player.go_id, "update_health", {uid = player.uid, health = new_health})
-						--		player.health = new_health
-						--	end
-						--	if player.score ~= new_score then
-						--		msg.post(player.go_id, "update_score", {uid = player.uid, score = new_score})
-						--		player.score = new_score
-						--	end
-						--end
-						--MainState.playerUidToWsLatency[from_uid] = sr.number()
-					end
-
 				end
 
 				-- remove game objects that are not in the message
@@ -559,70 +487,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			log("CUSTOM MESSAGE", msg_id)
 			local message_data, message_length = sr.rest()
 			on_custom_message(msg_id, from_uid, stream.reader(message_data, message_length))
-		end
-	end
-
-	--- Update the broadsock client instance
-	-- Any registered game objects will send their transforms
-	-- This will also send any other queued data
-	function instance.update(dt)
-		if uid == nil or MainState.currentGameState ~= MainState.GAME_STATES.RUNNING then
-			return
-		end
-
-		if connection.connected then
-			if rateLimiter(dt) then
-				return
-			end
-			log("update - sending game objects", instance.gameobject_count(), "gameobjects.length:", #MainState.gameobjects)
-			local player = MainState.players:get(uid)
-			local sw = stream.writer()
-			sw.string("GO")
-			sw.number(MainState.players:get(MainState.player.uid).map_level)
-			sw.number(MainState.player.type)
-			sw.number(MainState.gameobject_count)
-			for gouid,gameobject in pairs(MainState.gameobjects) do
-				local pos = go.get_position(gameobject.id)
-				local rot = go.get_rotation(gameobject.id)
-				local scale = go.get_scale(gameobject.id)
-				sw.string(gouid)
-				sw.string(gameobject.type)
-				sw.vector3(pos)
-				sw.quat(rot)
-				sw.vector3(scale)
-				-- log(gameobject_count, gouid, tostring(gameobject.type), pos, rot, scale, tostring(sw.tostring()))
-			end
-			sw.number(player and player.health or 100)
-			sw.number(player and player.score or 0)
-			instance.send(sw.tostring())
-
-			-- check if the socket is ready for reading and/or writing
-			-- local receivet, sendt = socket.select(connection.socket_table, connection.socket_table, 0)
-
-			-- if sendt[connection.socket] then
-			-- 	log("ready to send")
-			-- 	if not connection.writer.empty() then
-			-- 		log("update - sending from writer")
-			-- 	end
-			-- 	local ok, err = connection.writer.send()
-			-- 	if not ok and err == "closed" then
-			-- 		instance.destroy()
-			-- 		on_disconnect()
-			-- 		return
-			-- 	end
-			-- end
-
-			-- if receivet[connection.socket] then
-			-- 	log("update - receiving from reader")
-			-- 	local ok, err = connection.reader.receive()
-			-- 	if not ok then
-			-- 		instance.destroy()
-			-- 		on_disconnect()
-			-- 		return
-			-- 	end
-			-- end
-		else
-			log("not connected")
 		end
 	end
 

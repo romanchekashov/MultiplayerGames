@@ -53,7 +53,7 @@ local M = {
     --MAX_COMMANDS_BUFFER_SIZE = 100,
     build = function (self, player_uid, data)
         local action_id, action = data.action_id, data.action
-        print("PLAYER_COMMAND:", action_id, " x = ", action.x, " y = ", action.y, " pressed = ", action.pressed, " released = ", action.released)
+        log("PLAYER_COMMAND:", action_id, " x = ", action.x, " y = ", action.y, " pressed = ", action.pressed, " released = ", action.released)
         --log("build", data.action_id, data.action.pressed, data.action.released, data.action.x, data.action.y)
         --log("commands.length", tostring(self.commands.length))
         local last_command = self.commands:getLast()

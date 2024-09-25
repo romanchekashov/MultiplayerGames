@@ -210,7 +210,7 @@ function on_message(self, message_id, message, sender)
 			end
 		end
 	elseif message_id == hash("set_username") then
-		MainState.player.username = message.username
+		MainState.player.username = message.username or "Uknown"
 		self.input_username:set_text(string.format("%.30s", MainState.player.username))
 	elseif message_id == hash("game_pre_start") then
 		MainState.currentGameState = MainState.GAME_STATES.START

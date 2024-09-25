@@ -60,8 +60,8 @@ class ReliableConnection:
                 if ClientGameMessages.WS_PING in msg:
                     client.wsPingSentTime = datetime.now()
                     await client.reliableWS.send(msg)
-                elif GameServerMessages.GO in msg:
-                    await client.reliableWS.send(f'{msg}.{get_ws_latency_in_ms(client.reliableWS)}')
+                # elif GameServerMessages.GO in msg:
+                #     await client.reliableWS.send(f'{msg}.{get_ws_latency_in_ms(client.reliableWS)}')
                 else:
                     await client.reliableWS.send(msg)
             except Exception as e:
@@ -85,10 +85,10 @@ class FastUnreliableConnection:
 
     async def send_msg_to(self, client: Client, msg):
         if client.unreliableFastWT is not None:
-            if GameServerMessages.GO in msg:
-                client.unreliableFastWT.send_datagram(f'{msg}.{client.wt_latency}')
-            else:
-                client.unreliableFastWT.send_datagram(msg)
+            # if GameServerMessages.GO in msg:
+            #     client.unreliableFastWT.send_datagram(f'{msg}.{client.wt_latency}')
+            # else:
+            client.unreliableFastWT.send_datagram(msg)
         else:
             await self.reliable_con.send_msg_to(client, msg)
 

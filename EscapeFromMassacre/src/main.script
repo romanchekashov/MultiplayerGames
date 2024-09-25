@@ -38,7 +38,7 @@ function init(self)
 	self.loading = false
 	self.map_level = MainState.GAME_SCREENS.LOBBY
 	local state = Storage.load()
-	MainState.player.username = state.username
+	MainState.player.username = state.username or "Uknown"
 	msg.post("#", "load_screen", {map_level = MainState.GAME_SCREENS.LOBBY})
 	print("main init")
 end

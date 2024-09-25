@@ -253,7 +253,7 @@ local prev_pressed = {
 }
 
 local function send_command(self, action_id, action)
-	print("send_command", action_id, action.pressed, action.released)
+	log("send_command", action_id, action.pressed, action.released)
 	--action.pressed, action.released
 	local need_send = not self.is_hit_wall
 

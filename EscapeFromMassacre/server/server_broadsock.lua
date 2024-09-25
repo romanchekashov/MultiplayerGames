@@ -246,38 +246,7 @@ local function on_data(data, data_length)
 	local msg_id = sr.string()
 	--log("on_data from:", from_uid, "msg_id:", msg_id, "count", tostring(count))
 
-	if msg_id == MSG_IDS.GO then
-		-- M.send_message_others(data, from_uid)
-		-- if cannotUpdate(0) then
-		-- 	return
-		-- end
-		M.send(data)
-
-		--local player_map_level = sr.number()
-		--local player_type = sr.number()
-		--local player = clients_map[from_uid]
-		--if player ~= nil then
-		--	player.map_level = player_map_level
-		--	player.type = player_type
-		--end
-		--
-		--local count = sr.number()
-		----log("remote GO", tostring(count))
-		--for _=1,count do
-		--	local gouid = sr.string()
-		--	local type = sr.string()
-		--
-		--	local pos = sr.vector3()
-		--	local rot = sr.quat()
-		--	local scale = sr.vector3()
-		--end
-		--
-		--if player ~= nil then
-		--	player.health = sr.number()
-		--	player.score = sr.number()
-		--	player.ws_latency = sr.number()
-		--end
-	elseif msg_id == CLIENT_MSG_IDS.PLAYER_COMMANDS then
+	if msg_id == CLIENT_MSG_IDS.PLAYER_COMMANDS then
 		multiplayer_input:consumeCommands(from_uid, sr)
 	elseif msg_id == CLIENT_MSG_IDS.LEAVE_ROOM then
 		M.send(stream.writer()

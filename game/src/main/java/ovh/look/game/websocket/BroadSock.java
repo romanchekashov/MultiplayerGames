@@ -188,8 +188,7 @@ public class BroadSock {
             return;
         }
 
-        if (!msg.contains(GameServerMessages.GO.getValue()))
-            Log.info("TO-SERVER: " + msg + ", client: " + (client != null ? client.getUsername() : null));
+        Log.info("TO-SERVER: " + msg + ", client: " + (client != null ? client.getUsername() : null));
 
         boolean sendToServer = true;
 

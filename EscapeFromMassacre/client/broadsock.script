@@ -115,12 +115,6 @@ function final(self)
 	end
 end
 
-function update(self, dt)
-	if self.client then
-		--self.client.update(dt)
-	end
-end
-
 function on_message(self, message_id, message, sender)
 	if not self.client then
 		if message_id == MSG.BROADSOCK.msg_ids.connect then

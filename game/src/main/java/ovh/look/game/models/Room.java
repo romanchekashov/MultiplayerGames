@@ -55,9 +55,7 @@ public class Room {
         Log.info(String.format("TO-CLIENT[%d]: %s", toClientCounter++, msg));
 
         try {
-            if (msg.contains(GameServerMessages.GO.getValue())) {
-                this.fastUnreliableConnection.sendMessageAll(msg);
-            } else if (msg.contains(GameServerMessages.CONNECT_SELF.getValue())) {
+            if (msg.contains(GameServerMessages.CONNECT_SELF.getValue())) {
                 int uid = getUidFromMsg(msg);
                 for (Client client : this.clients) {
                     if (client.getUid() == uid) {

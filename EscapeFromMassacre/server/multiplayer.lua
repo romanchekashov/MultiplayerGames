@@ -5,7 +5,6 @@ local M = {
         PLAYER_COMMANDS = "NOT_GS_PLAYER_COMMANDS",
     },
     MSG_IDS = {
-        GO = "GO",
         GAME_JOIN = "GAME_JOIN",
         GAME_LEAVE = "GAME_LEAVE",
         PLAYER_LEAVE_ROOM = "PLAYER_LEAVE_ROOM",

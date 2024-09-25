@@ -21,9 +21,9 @@ public class ReliableConnection {
     public void sendMsgTo(Client client, String msg) {
         if (client.getReliableWS() != null) {
             try {
-                if (msg.contains(GameServerMessages.GO.getValue())) {
-                    msg += "." + getWsLatencyInMs(client);
-                }
+                // if (msg.contains(GameServerMessages.GO.getValue())) {
+                //     msg += "." + getWsLatencyInMs(client);
+                // }
                 Log.info(String.format("sendMsgTo to %s: %s", client.getUsername(), msg.substring(0, Math.min(msg.length(), 50))));
                 WebSocketMessage webSocketMessage = client.getReliableWS().textMessage(msg);
                 client.getReliableWS().send(Mono.just(webSocketMessage)).subscribe();
