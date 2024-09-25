@@ -729,7 +729,6 @@ function on_message(self, message_id, message, sender)
 
 			if player_uid == nil and MainState.fuzeColorToMapLevel[fuze_color] == player_on_level and MainState.fuzeBoxColorToState[fuze_color] == 0 then
 				--update_fuzes(self)
-				--MSG.BROADSOCK:send_reliable_god({player_uid = self.uid, fuze_color = message.color})
 				-- msg.post("/factory#fuze", MSG.FUZE_FACTORY.pick_fuze.name, {color = fuze_color, player_uid = self.uid})
 				MainState.fuzeColorToPlayerUid:put(fuze_color, self.uid)
 				msg.post("/gui#player", "update_fuzes", {fuze_color = fuze_color})

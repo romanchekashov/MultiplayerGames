@@ -515,8 +515,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 			end
 		elseif msg_id == MSG.BASE_MSG_IDS.RELIABLE_GO then
 			--msg.post("/factory#fuze", MSG.FUZE_FACTORY.throw_fuze.name, {map_level = sr.number(), color = sr.number(), pos = sr.vector3()})
-		elseif msg_id == MSG.BASE_MSG_IDS.RELIABLE_GOD then
-			--msg.post("/factory#fuze", MSG.FUZE_FACTORY.pick_fuze.name, {color = sr.number()})
 		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")
 			add_client(from_uid)

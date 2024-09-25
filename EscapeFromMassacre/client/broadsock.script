@@ -27,7 +27,6 @@ local msgs_with_data = {
 	[MSG.BROADSOCK.msg_ids.player_ready] = true,
 	[MSG.BROADSOCK.msg_ids.set_player_username] = true,
 	[MSG.BROADSOCK.msg_ids.send_reliable_go] = true,
-	[MSG.BROADSOCK.msg_ids.send_reliable_god] = true,
 }
 
 local function sendToReliableConnection(msg)
