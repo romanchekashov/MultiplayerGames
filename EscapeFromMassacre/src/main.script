@@ -40,7 +40,7 @@ function init(self)
 	local state = Storage.load()
 	MainState.player.username = state.username or "Uknown"
 	msg.post("#", "load_screen", {map_level = MainState.GAME_SCREENS.LOBBY})
-	print("main init")
+	log("main init")
 end
 
 function on_message(self, message_id, message, sender)
