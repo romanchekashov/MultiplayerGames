@@ -72,22 +72,6 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == MSG.LEVEL_CHANGE.map_level_change.hash then
 		use_map_level_visibility(self, message.map_level)
-	elseif message_id == MSG.FUZE_FACTORY.create_fuzes.hash then
-		self.fuzeOnMapLevel = {
-			[MainState.FUZE.RED] = {
-				map = MainState.MAP_LEVELS.HOUSE,
-				fuze = create_fuze(message.color_red, message.color_red_pos)},
-			[MainState.FUZE.GREEN] = {
-				map = MainState.MAP_LEVELS.HOUSE,
-				fuze = create_fuze(message.color_green, message.color_green_pos)},
-			[MainState.FUZE.BLUE] = {
-				map = MainState.MAP_LEVELS.BASEMENT,
-				fuze = create_fuze(message.color_blue, message.color_blue_pos)},
-			[MainState.FUZE.YELLOW] = {
-				map = MainState.MAP_LEVELS.BASEMENT,
-				fuze = create_fuze(message.color_yellow, message.color_yellow_pos)},
-		}
-		use_map_level_visibility(self, MainState.playerOnMapLevel)
 	elseif message_id == MSG.FUZE_FACTORY.pick_fuze.hash then
 		MainState.fuzeColorToPlayerUid:put(message.color, message.player_uid)
 		-- go.delete(self.fuzeOnMapLevel[message.color].fuze)

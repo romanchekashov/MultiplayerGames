@@ -242,7 +242,7 @@ end
 
 function M.sendGameOver(won_player_type)
 	MainState.currentGameState = MainState.GAME_STATES.END
-	
+
 	local sw = stream.writer()
 	sw.number(-1)
 	sw.string(MSG_IDS.GAME_OVER)
@@ -352,19 +352,6 @@ function M.start(port)
 	timer.delay(MainState.GAME_START_TIMEOUT_IN_SEC, false, function ()
 		MainState.currentGameState = MainState.GAME_STATES.RUNNING
 		M.send(MSG_IDS.GAME_START)
-		--M.send(stream.writer()
-		--			 .number(-1)
-		--			 .string(MSG_IDS.CREATE_FUZES)
-		--			 .number(MainState.FUZE.RED)
-		--			 .vector3(Utils.random_position())
-		--			 .number(MainState.FUZE.GREEN)
-		--			 .vector3(Utils.random_position())
-		--			 .number(MainState.FUZE.BLUE)
-		--			 .vector3(Utils.random_position())
-		--			 .number(MainState.FUZE.YELLOW)
-		--			 .vector3(Utils.random_position())
-		--			 .tostring())
-
 		msg.post("/server-gui#server-gui", "game_start")
 	end)
 

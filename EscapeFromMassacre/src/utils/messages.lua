@@ -51,10 +51,6 @@ local M = {
         }
     },
     FUZE_FACTORY = {
-        create_fuzes = {
-            name = "create_fuzes",
-            hash = hash("create_fuzes"),
-        },
         pick_fuze = {
             name = "pick_fuze",
             hash = hash("pick_fuze"),
