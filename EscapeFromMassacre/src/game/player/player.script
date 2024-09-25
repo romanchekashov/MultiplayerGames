@@ -38,7 +38,7 @@ local KNIFE = hash("knife")
 
 local STICK_MAX_DISTANCE = 30
 local PLAYER_SPEED = 275
-local PLAYER_SPEED_CLOSE_TO_WALL = 30
+local PLAYER_SPEED_CLOSE_TO_WALL = 150
 local STAIRS_CHANGE_COOLDOWN = 1
 local HIT_COOLDOWN = 0.2
 local ZOMBIE_HIT_COOLDOWN = 0.6
@@ -255,13 +255,14 @@ local prev_pressed = {
 local function send_command(self, action_id, action)
 	log("send_command", action_id, action.pressed, action.released)
 	--action.pressed, action.released
-	local need_send = not self.is_hit_wall
+	local need_send = true
 
 	if prev_pressed[action_id] ~= nil then
 		if action.released then
 			need_send = true
 			prev_pressed[action_id] = false
 		elseif action.pressed then
+			need_send = action.pressed and not prev_pressed[action_id]
 			prev_pressed[action_id] = true
 		end
 	end
@@ -276,36 +277,45 @@ local MAP_LEVEL_TO_MSG_GROUP = {
 	[MainState.MAP_LEVELS.BASEMENT] = MSG_GROUPS.WALL_BASEMENT,
 }
 
-local function check_hit_wall(self, pos)
+-- https://forum.defold.com/t/dynamic-physics-gos-occasionally-passing-through-static-gos/74617
+local function check_hit_wall(self, from)
 	local player = MainState.players:get(self.uid)
 	if player == nil then
 		return false
 	end
 
 	local collision_object_hash = MAP_LEVEL_TO_MSG_GROUP[player.map_level]
-	local offset = 1
+	local offset = 20
 	local multiply = 1
-	local hit_left = physics.raycast(pos, pos + vmath.vector3(offset, 0, 0), { collision_object_hash })
+	local to = from + vmath.vector3(offset, 0, 0)
+	local hit_left = physics.raycast(from, to, { collision_object_hash })
+	-- msg.post("@render:", "draw_line", { start_point = from, end_point = to, color = vmath.vector4(1,0,0,1) })
 	if hit_left then
-		go.set_position(pos - vmath.vector3(offset * multiply, 0, 0))
+		-- go.set_position(from - vmath.vector3(offset * multiply, 0, 0))
 		return true
 	end
 
-	local hit_right = physics.raycast(pos, pos + vmath.vector3(-offset, 0, 0), { collision_object_hash })
+	to = from + vmath.vector3(-offset, 0, 0)
+	local hit_right = physics.raycast(from, to, { collision_object_hash })
+	-- msg.post("@render:", "draw_line", { start_point = from, end_point = to, color = vmath.vector4(1,0,0,1) })
 	if hit_right then
-		go.set_position(pos - vmath.vector3(-offset * multiply, 0, 0))
+		-- go.set_position(from - vmath.vector3(-offset * multiply, 0, 0))
 		return true
 	end
 
-	local hit_up = physics.raycast(pos, pos + vmath.vector3(0, offset * multiply, 0), { collision_object_hash })
+	to = from + vmath.vector3(0, offset * multiply, 0)
+	local hit_up = physics.raycast(from, to, { collision_object_hash })
+	-- msg.post("@render:", "draw_line", { start_point = from, end_point = to, color = vmath.vector4(1,0,0,1) })
 	if hit_up then
-		go.set_position(pos - vmath.vector3(0, offset * multiply, 0))
+		-- go.set_position(from - vmath.vector3(0, offset * multiply, 0))
 		return true
 	end
 
-	local hit_down = physics.raycast(pos, pos + vmath.vector3(0, -offset, 0), { collision_object_hash })
+	to = from + vmath.vector3(0, -offset, 0)
+	local hit_down = physics.raycast(from, to, { collision_object_hash })
+	-- msg.post("@render:", "draw_line", { start_point = from, end_point = to, color = vmath.vector4(1,0,0,1) })
 	if hit_down then
-		go.set_position(pos - vmath.vector3(0, -offset, 0))
+		-- go.set_position(from - vmath.vector3(0, -offset, 0))
 		return true
 	end
 
@@ -398,7 +408,7 @@ function init(self)
 		msg.post(".", "acquire_input_focus")
 		msg.post("/camera", "acquire_camera_focus")
 		input.acquire()
-		
+
 		msg.post("/levels#change", "load_level", {map_level = obj.map_level})
 
 		if IS_MOBILE then
@@ -458,6 +468,18 @@ function update(self, dt)
 		msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
 	end
 
+	local pos = go.get_position()
+	pos = pos + self.velocity * dt
+
+	if not self.remote then
+		self.is_hit_wall = check_hit_wall(self, pos)
+		if self.is_hit_wall then
+			self.player_speed = PLAYER_SPEED_CLOSE_TO_WALL
+		else
+			self.player_speed = PLAYER_SPEED
+		end
+	end
+
 	if not self.isServer and (self.remote or not self.is_action_active or self.touch == nil) then
 		-- Find the two authoritative positions surrounding the rendering timestamp.
 		local buffer = MainState.server_state_buffer:get(self.uid)
@@ -508,18 +530,8 @@ function update(self, dt)
 	end
 
 	-- move in direction of rotation
-	local pos = go.get_position()
-	pos = pos + self.velocity * dt
-
-	self.is_hit_wall = check_hit_wall(self, pos)
-
-	if not self.is_hit_wall then
-		self.player_speed = PLAYER_SPEED
-		go.set_position(pos)
-		update_camera_position(self, pos, rotation)
-	else
-		self.player_speed = PLAYER_SPEED_CLOSE_TO_WALL
-	end
+	go.set_position(pos)
+	update_camera_position(self, pos, rotation)
 
 	input_controls(self)
 	update_cooldown(self, dt)
@@ -767,16 +779,13 @@ function on_message(self, message_id, message, sender)
 		local player_hit_wall_basement = player_on_level == MainState.MAP_LEVELS.BASEMENT and message.group == MSG_GROUPS.WALL_BASEMENT
 
 		if player_hit_wall_house or player_hit_wall_basement then
-			-- log("contact_point_response", message.group, message.normal, message.distance)
+			log("contact_point_response", message.group, message.normal, message.distance, self.is_hit_wall, self.player_speed, "x=", self.velocity.x, "y=", self.velocity.y)
 			-- https://forum.defold.com/t/there-is-a-bug-with-collisions-in-my-game/77002/14
 			-- Some things I’d try to do:
+			-- 0. Enable Physics Debugging in game.project!
 			-- 1. Put a limit to the velocity. Do not apply more force if your linear velocity is above a certain treshold
 			-- 2. Perhaps do some prediction using ray casts to know if you are about to collide (and do “something”)
 			-- 3. And apply an opposite force on collision to fight tunneling
-			if self.velocity.x ~= 0 and self.velocity.y ~= 0 then
-				-- self.velocity.x, self.velocity.y = 10, 10
-				-- self.velocity.y = 0
-			end
 			go.set_position(go.get_position() + message.normal * message.distance)
 		end
 
