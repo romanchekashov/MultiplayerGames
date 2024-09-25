@@ -37,15 +37,15 @@
             "scaleInDock": 1
         },
         "basement.tmx": {
-            "scale": 0.3214,
-            "selectedLayer": 1,
+            "scale": 0.3142,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": -746.7330429371499,
-                "y": 171.12632233976353
+                "x": 1308.0840229153407,
+                "y": 1392.4252068746025
             }
         },
         "basement.tmx#topdown_tilesheet_complete2": {
-            "scaleInDock": 1.0839
+            "scaleInDock": 0.5319
         },
         "bg.tmx": {
             "scale": 0.33,
@@ -70,15 +70,15 @@
             "scaleInDock": 1
         },
         "house.tmx": {
-            "scale": 0.1864,
-            "selectedLayer": 0,
+            "scale": 0.5581,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 1850.8583690987123,
-                "y": 1469.9570815450643
+                "x": 1592.9044974018993,
+                "y": 1514.9614764379144
             }
         },
         "house.tmx#topdown_tilesheet_complete2": {
-            "scaleInDock": 0.5
+            "scaleInDock": 0.456
         }
     },
     "last.exportedFilePath": "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeFromMassacre/src/game/levels",
