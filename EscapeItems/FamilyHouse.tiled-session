@@ -29,7 +29,7 @@
             "scale": 0.0637,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 7409.733124018838,
+                "x": 7425.431711145996,
                 "y": 4317.1114599686025
             }
         },
@@ -37,22 +37,22 @@
             "scaleInDock": 1
         },
         "basement.tmx": {
-            "scale": 0.3142,
-            "selectedLayer": 2,
+            "scale": 0.8752,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1308.0840229153407,
-                "y": 1392.4252068746025
+                "x": 997.4862888482634,
+                "y": 1659.0493601462522
             }
         },
         "basement.tmx#topdown_tilesheet_complete2": {
-            "scaleInDock": 0.5319
+            "scaleInDock": 0.4034
         },
         "bg.tmx": {
             "scale": 0.33,
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 1854.5454545454545,
-                "y": 1469.6969696969695
+                "y": 1472.7272727272725
             }
         },
         "bg.tmx#topdown_tilesheet_complete2": {
@@ -73,8 +73,8 @@
             "scale": 0.5581,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 1592.9044974018993,
-                "y": 1514.9614764379144
+                "x": 1856.298154452607,
+                "y": 1472.8543271815086
             }
         },
         "house.tmx#topdown_tilesheet_complete2": {
