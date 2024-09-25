@@ -21,7 +21,7 @@ local SERVER_ONE_SECOND = 1
 
 function init(self)
 	debugUtils.isProd = true
-	debugUtils.debug(false)
+	debugUtils.debug(true)
 
 	MainState.isServer = true
 
