@@ -18,7 +18,6 @@ local M = {
         START_GAME = "NOT_GS_START_GAME",
 
         CREATE_PLAYER = "CREATE_PLAYER",
-        RELIABLE_GO = "GAO",
     },
     BROADSOCK = {
         connect = {
@@ -77,7 +76,6 @@ M.BROADSOCK = {
         get_usernames = hash("get_usernames"),
         set_player_username = hash("set_player_username"),
         create_player = hash("create_player"),
-        send_reliable_go = hash("send_reliable_go"),
     },
     connect = function (self, data)
         msg.post(self.URL, "connect", data)
@@ -108,16 +106,6 @@ M.BROADSOCK = {
     end,
     create_player = function (self)
         msg.post(self.URL, "create_player", {})
-    end,
-    send_reliable_go = function (self, data)
-        msg.post(self.URL, "send_reliable_go", {
-            data = stream.writer()
-                    .number(data.player_uid)
-                    .string(M.BASE_MSG_IDS.RELIABLE_GO)
-                    .number(data.map_level)
-                    .number(data.fuze_color)
-                    .vector3(data.pos)
-        })
     end,
     send_command = function (self, data)
         msg.post(self.URL, "player_commands", {
