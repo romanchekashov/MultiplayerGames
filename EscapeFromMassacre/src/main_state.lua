@@ -406,12 +406,6 @@ function M.unregister_gameobject(message)
         if gameobject.id == id then
             M.gameobjects[gouid] = nil
             M.gameobject_count = M.gameobject_count - 1
-
-            --local sw = stream.writer().string("GOD").string(gouid)
-            --if killer_uid ~= nil then
-            --    sw.string(killer_uid)
-            --end
-            --instance.send(sw.tostring())
             return
         end
     end

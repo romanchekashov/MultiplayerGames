@@ -131,12 +131,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 				MainState.gameobject_count = MainState.gameobject_count - 1
 				go_id_set:remove(id)
 				log("unregister_gameobject", id, gameobject.type, "go_id_set.length = ", go_id_set.length)
-
-				--local sw = stream.writer().string("GOD").string(gouid)
-				--if killer_uid ~= nil then
-				--	sw.string(killer_uid)
-				--end
-				--instance.send(sw.tostring())
 				return
 			end
 		end
@@ -496,22 +490,6 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 						go_id_set:remove(v.id)
 					end
 				end)
-			end
-		elseif msg_id == MSG_IDS.GOD then
-			log("GOD")
-			if clients[from_uid] and from_uid ~= uid then
-				local gouid = sr.string()
-				local killer_uid = sr.number()
-				--MainState.increasePlayerScore(killer_uid)
-
-				--local remote_gameobjects_for_user = remote_gameobjects[from_uid]
-				--if remote_gameobjects_for_user[gouid] ~= nil then
-				--	local id = remote_gameobjects_for_user[gouid].id
-				--	local ok, err = pcall(function()
-				--		go.delete(id)
-				--	end)
-				--	remote_gameobjects_for_user[gouid] = nil
-				--end
 			end
 		elseif msg_id == MSG_IDS.CONNECT_OTHER then
 			log("CONNECT_OTHER")

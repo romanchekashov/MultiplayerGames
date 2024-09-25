@@ -14,7 +14,6 @@ class ClientGameMessages:
 
 class GameServerMessages:
     GO = 'GO'
-    GOD = 'GOD'
     PLAYER_LEAVE_ROOM = 'PLAYER_LEAVE_ROOM'
     CONNECT_ME = 'CONNECT_ME'
     CONNECT_SELF = 'CONNECT_SELF'

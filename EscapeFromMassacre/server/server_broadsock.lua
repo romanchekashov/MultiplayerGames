@@ -187,18 +187,11 @@ end
 
 function M.unregister_gameobject(message)
 	local id = message.id
-	local killer_uid = message.killer_uid
 	log("unregister_gameobject", id)
 	for gouid,gameobject in pairs(MainState.gameobjects) do
 		if gameobject.id == id then
 			MainState.gameobjects[gouid] = nil
 			MainState.gameobject_count = MainState.gameobject_count - 1
-
-			local sw = stream.writer().string("GOD").string(gouid)
-			if killer_uid ~= nil then
-				sw.string(killer_uid)
-			end
-			M.send(sw.tostring())
 			return
 		end
 	end
@@ -284,8 +277,6 @@ local function on_data(data, data_length)
 		--	player.score = sr.number()
 		--	player.ws_latency = sr.number()
 		--end
-	elseif msg_id == MSG_IDS.GOD then
-		M.send(data)
 	elseif msg_id == CLIENT_MSG_IDS.PLAYER_COMMANDS then
 		multiplayer_input:consumeCommands(from_uid, sr)
 	elseif msg_id == CLIENT_MSG_IDS.LEAVE_ROOM then

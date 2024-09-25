@@ -2,7 +2,6 @@ package ovh.look.game.models;
 
 public enum GameServerMessages {
     GO("GO"),
-    GOD("GOD"),
     CONNECT_ME("CONNECT_ME"),
     CONNECT_SELF("CONNECT_SELF"),
     CONNECT_OTHER("CONNECT_OTHER"),

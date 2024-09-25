@@ -60,10 +60,7 @@ class Room:
     async def to_game_client(self, msg):
         await self.check_latency()
 
-        if GameServerMessages.GOD in msg:
-            # await self.reliable_connection.send_message_others(msg, get_uid_from_msg(msg))
-            await self.reliable_connection.send_message_all(msg)
-        elif GameServerMessages.GO in msg:
+        if GameServerMessages.GO in msg:
             # await fast_unreliable_connection.send_message_others(msg, get_uid_from_msg(msg))
             await self.fast_unreliable_connection.send_message_all(msg)
         elif GameServerMessages.CONNECT_SELF in msg:

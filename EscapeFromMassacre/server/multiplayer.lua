@@ -6,7 +6,6 @@ local M = {
     },
     MSG_IDS = {
         GO = "GO",
-        GOD = "GOD",
         GAME_JOIN = "GAME_JOIN",
         GAME_LEAVE = "GAME_LEAVE",
         PLAYER_LEAVE_ROOM = "PLAYER_LEAVE_ROOM",
