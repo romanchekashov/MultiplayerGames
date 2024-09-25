@@ -46,10 +46,7 @@ local rad_minus90 = math.rad(-90)
 
 local CROSSHAIR_OFFSET = vmath.vector3(10,200,0)
 
-local SURVIVOR_IMGS = {
-	MAN_1 = "surv-man-1",
-	WOMAN_1 = "surv-woman-1"
-}
+local SURVIVOR_IMGS = {"surv-man-1", "surv-woman-1"}
 
 local FUZE_COLOR_IMGS = {
 	[MainState.FUZE.RED] = "fuze_red",
@@ -85,6 +82,15 @@ local function trigger(self, action)
 end
 
 local function update_fuzes(self)
+	-- TODO sometimes players sprites are not visible
+	msg.post("#sprite", "enable")
+	msg.post("#name", "enable")
+	msg.post("#scale", "enable")
+	msg.post("#scale-fill", "enable")
+	msg.post("#scale-health", "enable")
+	msg.post("#scale-level", "enable")
+	msg.post("#scale-manna", "enable")
+
 	for i=1,#FUZE_COLOR_IMGS do msg.post(string.format("#sprite-fuze-%d", i), "disable") end
 
 	local i = 1
@@ -351,13 +357,16 @@ function init(self)
 
 	label.set_text("#name", MainState.player.username)
 
-	for i=1,#FUZE_COLOR_IMGS do msg.post(string.format("#sprite-fuze-%d", i), "disable") end
-
 	-- print(self.map_level, self.player_type, MainState.PLAYER_TYPE.SURVIVOR)
 	if self.player_type == MainState.PLAYER_TYPE.SURVIVOR then
-		sprite.play_flipbook("#sprite", SURVIVOR_IMGS.WOMAN_1)
+		-- math.randomseed(os.time())
+        -- self.index = math.random(1, 2)
+        self.index = 1
+		sprite.play_flipbook("#sprite", SURVIVOR_IMGS[self.index])
 		-- go.set_rotation(vmath.quat_rotation_z(math.rad(-90)))
 	end
+
+	for i=1,#FUZE_COLOR_IMGS do msg.post(string.format("#sprite-fuze-%d", i), "disable") end
 
 	local player = MainState.players:get(self.uid)
 	local score = player and player.score or 0

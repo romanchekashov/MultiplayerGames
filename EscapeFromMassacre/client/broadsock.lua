@@ -193,7 +193,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 	local count = 0
 	function instance.on_data(data, data_length)
 		count = count + 1
-		--log("on_data: data:", data_length, data)
+		-- log("on_data: data:", data_length, data)
 		local sr = stream.reader(data, data_length)
 		local from_uid = sr.number()
 		local msg_id = sr.string()
@@ -400,6 +400,7 @@ function M.create(server_ip, server_port, on_custom_message, on_connected, on_di
 									go.set_scale(scale, id)
 								end)
 							else
+								-- log("disable", id, uid, object_type)
 								msg.post(id, "disable")
 							end
 						end
