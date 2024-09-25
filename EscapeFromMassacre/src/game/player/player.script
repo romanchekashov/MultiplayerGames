@@ -91,7 +91,7 @@ local function update_fuzes(self)
 	local sprite_url
 	MainState.fuzeColorToPlayerUid:for_each(function(key_fuze_color, p_uid)
 		if p_uid == self.uid then
-			log("update_fuzes", key_fuze_color, p_uid)
+			-- log("update_fuzes", key_fuze_color, p_uid)
 			sprite_url = string.format("#sprite-fuze-%d", i)
 			msg.post(sprite_url, "enable")
 			sprite.play_flipbook(sprite_url, FUZE_COLOR_IMGS[key_fuze_color])
@@ -442,6 +442,11 @@ function update(self, dt)
 		return
 	end
 
+	if not self.isServer then
+		update_fuzes(self)
+		msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
+	end
+
 	if not self.isServer and (self.remote or not self.is_action_active or self.touch == nil) then
 		-- Find the two authoritative positions surrounding the rendering timestamp.
 		local buffer = MainState.server_state_buffer:get(self.uid)
@@ -475,11 +480,6 @@ function update(self, dt)
 	--if not self.isServer then
 	--	return
 	--end
-
-	if not self.isServer then
-		update_fuzes(self)
-		msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
-	end
 
 	local rotation = go.get_rotation()
 	if not MainState.HAS_GAMEPAD then
