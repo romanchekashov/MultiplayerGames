@@ -57,8 +57,8 @@ function on_message(self, message_id, message, sender)
 		end
 
 		self.map_level = message.map_level
-		msg.post("/factory#fuze", MSG.LEVEL_CHANGE.map_level_change.name, {map_level = self.map_level})
-		msg.post("/factory#fuze-box", MSG.LEVEL_CHANGE.map_level_change.name, {map_level = self.map_level})
+		-- msg.post("/factory#fuze", MSG.LEVEL_CHANGE.map_level_change.name, {map_level = self.map_level})
+		-- msg.post("/factory#fuze-box", MSG.LEVEL_CHANGE.map_level_change.name, {map_level = self.map_level})
 	elseif message_id == hash("gate_open") then
 		if self.map_level == MainState.MAP_LEVELS.HOUSE and MainState:fixedFuzeBoxCount() == MainState.FIXED_FUZE_BOX_COUNT_MAX then
 			msg.post("/gate-main", "disable")

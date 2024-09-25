@@ -54,10 +54,11 @@ function init(self)
 		MainState.register_gameobject(0, id, MainState.FACTORY_TYPES.fuze)
 	else
 		msg.post("/broadsock", "register_gameobject", { id = id, type = MainState.FACTORY_TYPES.fuze })
+		enable(self, true)
 	end
 
-	enable(self, true)
 	MainState.fuzesIdToColor[id] = self.color
+	MainState.fuzeColorToMapLevel[self.color] = self.map_level
 end
 
 function final(self)
@@ -111,13 +112,17 @@ function on_message(self, message_id, message, sender)
 			end
 			go.set_position(pos)
 		end
-	elseif message_id == MSG_GROUPS.ENABLE then
-		if not self.enable then
-			enable(self, true)
-		end
-	elseif message_id == MSG_GROUPS.DISABLE then
-		if self.enable then
-			enable(self, false)
+	end
+	
+	if not self.isServer then 
+		if message_id == MSG_GROUPS.ENABLE then
+			if not self.enable then
+				enable(self, true)
+			end
+		elseif message_id == MSG_GROUPS.DISABLE then
+			if self.enable then
+				enable(self, false)
+			end
 		end
 	end
 end

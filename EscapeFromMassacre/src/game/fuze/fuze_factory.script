@@ -6,8 +6,8 @@ local log = debugUtils.createLog("[FUZE_FACTORY]").log
 
 local random_position = Utils.random_position
 
-local function create_fuze(color, pos)
-	return factory.create("#factory-fuze", pos or random_position(), nil, {remote = false, color = color})
+local function create_fuze(color, pos, map_level)
+	return factory.create("#factory-fuze", pos or random_position(), nil, {remote = false, color = color, map_level = map_level})
 end
 
 local function use_map_level_visibility(self, map_level)
@@ -33,19 +33,9 @@ function init(self)
 
 
 	if self.isServer then
-		MainState.INITIAL_FUZES_CREATE = {}
-		table.insert(MainState.INITIAL_FUZES_CREATE, {color = MainState.FUZE.RED, pos = Utils.random_position()})
-		table.insert(MainState.INITIAL_FUZES_CREATE, {color = MainState.FUZE.GREEN, pos = Utils.random_position()})
-		table.insert(MainState.INITIAL_FUZES_CREATE, {color = MainState.FUZE.BLUE, pos = Utils.random_position()})
-		table.insert(MainState.INITIAL_FUZES_CREATE, {color = MainState.FUZE.YELLOW, pos = Utils.random_position()})
-
-		for _, v in ipairs(MainState.INITIAL_FUZES_CREATE) do
-			log(v.color, v.pos)
-			self.fuzeOnMapLevel[v.color] = {
-				map = MainState.fuzeColorToMapLevel[v.color],
-				fuze = create_fuze(v.color, v.pos)}
+		for color, map_level in pairs(MainState.fuzeColorToMapLevel) do
+			self.fuzeOnMapLevel[color] = {map = map_level, fuze = create_fuze(color, random_position(), map_level)}
 		end
-
 		--use_map_level_visibility(self, MainState.playerOnMapLevel)
 	end
 
@@ -71,7 +61,7 @@ end
 
 function on_message(self, message_id, message, sender)
 	if message_id == MSG.LEVEL_CHANGE.map_level_change.hash then
-		use_map_level_visibility(self, message.map_level)
+		-- use_map_level_visibility(self, message.map_level)
 	elseif message_id == MSG.FUZE_FACTORY.pick_fuze.hash then
 		MainState.fuzeColorToPlayerUid:put(message.color, message.player_uid)
 		-- go.delete(self.fuzeOnMapLevel[message.color].fuze)
