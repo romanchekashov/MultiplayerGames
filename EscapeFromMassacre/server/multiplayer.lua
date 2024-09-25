@@ -9,7 +9,6 @@ local M = {
         GOD = "GOD",
         GAME_JOIN = "GAME_JOIN",
         GAME_LEAVE = "GAME_LEAVE",
-        PLAYER_CREATE_POS = "PLAYER_CREATE_POS",
         PLAYER_LEAVE_ROOM = "PLAYER_LEAVE_ROOM",
         CONNECT_OTHER = "CONNECT_OTHER",
         CONNECT_SELF = "CONNECT_SELF",

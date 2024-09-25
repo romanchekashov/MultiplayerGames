@@ -172,23 +172,6 @@ function M.handle_client_connected(uid, player_type)
 		pos = Utils.random_position(),
 		remote = false
 	})
-	--local pos = Utils.random_position()
-
-	--local _other = stream.writer()
-	--		.number(client.uid)
-	--		.string(MSG_IDS.CONNECT_OTHER)
-	--		.vector3(pos)
-	--		.tostring()
-	--log("handle_client_connected: ", _other)
-	--M.send_message_others(tomessage(_other), client.uid)
-
-	--local _self = stream.writer()
-	--		.number(client.uid)
-	--		.string(MSG_IDS.PLAYER_CREATE_POS)
-	--		.vector3(pos)
-	--		.tostring()
-	--log("handle_client_connected: ", _self)
-	--M.send_message(client.uid, tomessage(_self))
 	return client
 end
 
@@ -305,12 +288,6 @@ local function on_data(data, data_length)
 		M.send(data)
 	elseif msg_id == CLIENT_MSG_IDS.PLAYER_COMMANDS then
 		multiplayer_input:consumeCommands(from_uid, sr)
-	--elseif msg_id == CLIENT_MSG_IDS.CREATE_PLAYER then
-	--	M.send(stream.writer()
-	--				 .number(from_uid)
-	--				 .string(MSG_IDS.PLAYER_CREATE_POS)
-	--				 .vector3(Utils.random_position())
-	--				 .tostring())
 	elseif msg_id == CLIENT_MSG_IDS.LEAVE_ROOM then
 		M.send(stream.writer()
 					 .number(from_uid)
