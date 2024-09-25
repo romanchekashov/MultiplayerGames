@@ -5,8 +5,12 @@ textures {
 }
 nodes {
   position {
-    x: 100.0
-    y: 100.0
+    x: 150.0
+    y: 150.0
+  }
+  scale {
+    x: 1.5
+    y: 1.5
   }
   type: TYPE_BOX
   texture: "gamepad/shadedDark07"
@@ -16,8 +20,12 @@ nodes {
 }
 nodes {
   position {
-    x: 100.0
-    y: 100.0
+    x: 150.0
+    y: 150.0
+  }
+  scale {
+    x: 1.5
+    y: 1.5
   }
   type: TYPE_BOX
   texture: "gamepad/shadedDark01"
@@ -28,7 +36,11 @@ nodes {
 nodes {
   position {
     x: 1000.0
-    y: 60.0
+    y: 70.0
+  }
+  scale {
+    x: 1.5
+    y: 1.5
   }
   type: TYPE_BOX
   texture: "gamepad/shadedDark36"
@@ -39,7 +51,11 @@ nodes {
 nodes {
   position {
     x: 1070.0
-    y: 140.0
+    y: 190.0
+  }
+  scale {
+    x: 1.5
+    y: 1.5
   }
   type: TYPE_BOX
   texture: "gamepad/shadedDark37"
