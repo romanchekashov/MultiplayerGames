@@ -5,6 +5,7 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 
 import lombok.Data;
 
+import java.time.Duration;
 import java.time.Instant;
 
 @Data
@@ -20,6 +21,8 @@ public class Client {
     private Instant wsPingSentTime = Instant.now();
     private int wsLatency;
     private int wtLatency;
+    private boolean connected;
+    private Instant disconnectedTime;
 
     public Client(int uid, Object unreliableFastWT, WebSocketSession reliableWS, PlayerType type) {
         this.uid = uid;
@@ -27,5 +30,31 @@ public class Client {
         this.reliableWS = reliableWS;
         this.type = type;
         this.username = "user-" + uid;
+        connected = true;
+    }
+
+    public void calcWsLatency() {
+        Duration latency = Duration.between(wsPingSentTime, Instant.now());
+        setWsLatency((int) latency.toMillis());
+        setLastWsLatencyCheck(Instant.now());
+    }
+
+    public void connect() {
+        status = ClientStatus.ONLINE;
+        connected = true;
+        disconnectedTime = null;
+    }
+
+    public void disconnect() {
+        status = ClientStatus.OFFLINE;
+        connected = false;
+        disconnectedTime = Instant.now();
+    }
+
+    public boolean canConnect() {
+        if (disconnectedTime != null) {
+            return Duration.between(disconnectedTime, Instant.now()).toSeconds() < 10;
+        }
+        return false;
     }
 }

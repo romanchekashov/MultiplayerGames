@@ -1,4 +1,4 @@
-package ovh.look.game.models;
+package ovh.look.game.rooms;
 
 public enum RoomState {
     MATCHING,

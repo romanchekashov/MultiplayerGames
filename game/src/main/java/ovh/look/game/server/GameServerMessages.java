@@ -1,4 +1,4 @@
-package ovh.look.game.models;
+package ovh.look.game.server;
 
 public enum GameServerMessages {
     CONNECT_ME("CONNECT_ME"),
@@ -7,7 +7,8 @@ public enum GameServerMessages {
     DISCONNECT("DISCONNECT"),
     GAME_PRE_START("GAME_PRE_START"),
     GAME_START("GAME_START"),
-    GAME_OVER("GAME_OVER");
+    GAME_OVER("GAME_OVER"),
+    PLAYER_LEAVE_ROOM("PLAYER_LEAVE_ROOM");
 
     public final String value;
 

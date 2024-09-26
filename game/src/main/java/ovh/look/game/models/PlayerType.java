@@ -1,6 +1,10 @@
 package ovh.look.game.models;
 
 public enum PlayerType {
-    SURVIVOR,
-    FAMILY
+    FAMILY,
+    SURVIVOR;
+
+    public int getValue() {
+        return ordinal() + 1;
+    }
 }

@@ -1,4 +1,4 @@
-package ovh.look.game.models;
+package ovh.look.game.server;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import lombok.Data;
+import ovh.look.game.rooms.Room;
 
 @Data
 public class GameServer {
@@ -18,6 +19,7 @@ public class GameServer {
     private Room room;
     private boolean socketClosed = false;
     private long writeMsgCount = 1;
+    private SetToRoomClient toRoomClient;
 
     public GameServer(InputStream reader, OutputStream writer, int pid) {
         this.reader = reader;
@@ -25,6 +27,15 @@ public class GameServer {
         this.pid = pid;
         socketClosed = false;
         Log.info("SERVER connected: " + this);
+    }
+
+    public void toGameClient(String msg) {
+        this.toRoomClient.toRoomClient(room, msg);
+    }
+
+    public void setToRoomClient(Room room, SetToRoomClient toRoomClient) {
+        this.room = room;
+        this.toRoomClient = toRoomClient;
     }
 
     public void write(String msg) {

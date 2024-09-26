@@ -1,12 +1,22 @@
-package ovh.look.game.models;
+package ovh.look.game.rooms;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import lombok.Data;
+import ovh.look.game.models.Client;
+import ovh.look.game.models.ClientGameMessages;
+import ovh.look.game.models.FastUnreliableConnection;
+import ovh.look.game.models.PlayerType;
+import ovh.look.game.models.ReliableConnection;
+import ovh.look.game.server.GameServer;
+import ovh.look.game.server.GameServerMessages;
 
 @Data
 public class Room {
@@ -26,6 +36,7 @@ public class Room {
     private ReliableConnection reliableConnection;
     private FastUnreliableConnection fastUnreliableConnection;
     private long toClientCounter = 1;
+    private Instant wsLatencyCheckTime;
 
     public Room(String name) {
         this.name = name;
@@ -36,6 +47,14 @@ public class Room {
         this.clients = new ArrayList<>();
         this.reliableConnection = new ReliableConnection(this.clients);
         this.fastUnreliableConnection = new FastUnreliableConnection(this.reliableConnection);
+        wsLatencyCheckTime = Instant.now();
+    }
+
+    public Optional<Client> getClientByUid(int uid) {
+        for (var c: clients) {
+            if (c.getUid() == uid) return Optional.of(c);
+        }
+        return Optional.empty();
     }
 
     public void addClient(Client client) {
@@ -50,7 +69,22 @@ public class Room {
         this.fastUnreliableConnection.setClients(this.clients);
     }
 
+    public void checkLatency() {
+        if (Duration.between(wsLatencyCheckTime, Instant.now()).toSeconds() < 5) return;
+        
+        reliableConnection.sendMessageAll(ClientGameMessages.WS_PING.getValue());
+
+        wsLatencyCheckTime = Instant.now();
+        var msgBuilder = new StringBuilder("-1.LATENCY." + clients.size());
+        for (var c: clients) {
+            msgBuilder.append(String.format(".%d.%d.%d", c.getUid(), c.getWsLatency(), c.getWtLatency()));
+        }
+
+        reliableConnection.sendMessageAll(msgBuilder.toString());
+    }
+
     public void toGameClient(String msg) {
+        checkLatency();
 //        Log.info(String.format("TO-CLIENT[%d]: %s", toClientCounter++, msg.substring(0, Math.min(msg.length(), 50))));
         Log.info(String.format("TO-CLIENT[%d]: %s", toClientCounter++, msg));
 
@@ -68,10 +102,6 @@ public class Room {
                 this.reliableConnection.sendMessageOthers(msg, getUidFromMsg(msg));
             } else if (msg.contains(GameServerMessages.DISCONNECT.getValue())) {
                 this.reliableConnection.sendMessageAll(msg);
-            } else if (msg.contains(GameServerMessages.GAME_OVER.getValue())) {
-                Log.info("GAME OVER: " + msg);
-                this.reliableConnection.sendMessageAll(msg);
-                this.endGame();
             } else {
                 this.reliableConnection.sendMessageAll(msg);
             }
@@ -86,6 +116,7 @@ public class Room {
     }
 
     public void endGame() {
+        state = RoomState.MATCHING;
         for (Integer cUid : this.familyUids.keySet()) {
             this.familyUids.get(cUid).put("ready", false);
         }
@@ -190,7 +221,7 @@ public class Room {
     }
 
     // Placeholder methods for missing implementations
-    private int getUidFromMsg(String msg) {
+    public static int getUidFromMsg(String msg) {
         return Integer.parseInt(msg.substring(0, msg.indexOf('.')));
     }
 }

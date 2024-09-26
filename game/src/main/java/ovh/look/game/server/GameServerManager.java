@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import io.netty.channel.EventLoop;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ovh.look.game.models.GameServer;
 
 @Service
 public class GameServerManager implements IGameServerManager {

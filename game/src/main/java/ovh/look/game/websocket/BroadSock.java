@@ -1,19 +1,13 @@
 package ovh.look.game.websocket;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import ovh.look.game.models.*;
-import ovh.look.game.server.GameServerManager;
-import ovh.look.game.server.IGameServerManager;
-import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.time.Instant;
+import ovh.look.game.rooms.Room;
+import ovh.look.game.rooms.Rooms;
+import ovh.look.game.server.GameServerMessages;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 @Service
@@ -21,24 +15,15 @@ public class BroadSock {
 
     private static final Logger Log = Logger.getLogger(BroadSock.class.getName());
 
-    private static Queue<Room> gameServerStarRoomQueue = new LinkedBlockingQueue<>();
     private static int uidSequence = 0;
     private static List<Client> clients = new ArrayList<>();
+    private static List<Client> disconnectedClients = new ArrayList<>();
     private static ReliableConnection reliableConnection = new ReliableConnection(clients);
-    private static FastUnreliableConnection fastUnreliableConnection = new FastUnreliableConnection(reliableConnection);
-    private static Rooms rooms = new Rooms();
+    
+    private final Rooms rooms;
 
-    static {
-        for (int i = 0; i < GameServerManager.MAX_ROOMS; i++) {
-            rooms.add(new Room("Room " + (i + 1)));
-        }
-    }
-
-    private final IGameServerManager gameServerManager;
-
-    public BroadSock(IGameServerManager gameServerManager) {
-        this.gameServerManager = gameServerManager;
-        gameServerManager.terminateGameServer(0); // TODO: maybe bottleneck
+    public BroadSock(Rooms rooms) {
+        this.rooms = rooms;
     }
 
     public static int getNextUidSequence() {
@@ -100,7 +85,7 @@ public class BroadSock {
             }
         }
 
-        client.setStatus(ClientStatus.ONLINE);
+        client.connect();
 
         Log.info(String.format("client connected: %s, clients = %d", client, clients.size()));
 
@@ -112,37 +97,30 @@ public class BroadSock {
         if (clients.isEmpty()) return;
 
         Client client = getClientByWs(session);
-        client.setStatus(ClientStatus.OFFLINE);
-//        client.setReliableWS(null);
+
+        if (client.getUid() > 0) {
+            toGameServer(GameServerMessages.DISCONNECT.getValue(), client);
+        }
+
+        client.disconnect();
+        disconnectedClients.add(client);
         clients.remove(client);
+
         rooms.removePlayer(client);
 
         reliableConnection.sendMessageAll(rooms.toString());
+        reliableConnection.sendMessageAll("-1.ONLINE." + clients.size());
 
-        // Log.info(f'client disconected: {client}, clients = {len(clients)}')
+        Log.info(String.format("client disconected: %d, clients = %d", client.getUid(), clients.size()));
 
         if (clients.isEmpty()) {
-            // Log.info(f'clients = {len(clients)}: Need stop game server')
-        } else if (client.getUid() > 0) {
-            toGameServer(GameServerMessages.DISCONNECT.getValue(), client);
+            Log.info(String.format("clients = %d: Need stop game server", clients.size()));
         }
     }
 
     /*
      * Set client/server connection
      */
-    public Room setGameServerCommunication(GameServer gameServer) {
-        Room room = gameServerStarRoomQueue.poll();
-        Log.info(gameServer.getPid() + " " + room);
-        if (room != null) {
-            room.setGameServer(gameServer);
-            for (Client client : room.getClients()) {
-                gameServer.write(client.getUid() + ".CONNECT_ME." + client.getType());
-            }
-        }
-        return room;
-    }
-
     public Client setGameClientCommunicationWebSocket(WebSocketSession websocket, int uid) {
         Client client = handleClientConnected(websocket, uid);
         reliableConnection.sendMessageAll(rooms.toString());
@@ -172,52 +150,51 @@ public class BroadSock {
      */
     public void toServer(String msg, WebSocketSession session) {
         Client client = getClientByWs(session);
-        if (client != null) {
-            Duration latency = Duration.between(client.getLastWsLatencyCheck(), Instant.now());
-            if (latency.toSeconds() > 5) {
-                WebSocketMessage webSocketMessage = client.getReliableWS().textMessage("WS_PING");
-                client.setWsPingSentTime(Instant.now());
-                client.getReliableWS().send(Mono.just(webSocketMessage)).subscribe();
-            }
-        }
-        if (msg.equals("WS_PONG")) {
-            Duration latency = Duration.between(client.getWsPingSentTime(), Instant.now());
-            client.setWsLatency((int) latency.toMillis());
-            client.setLastWsLatencyCheck(Instant.now());
-//            System.out.println("Latency: " + latency.toMillis() + " ms");
-            return;
-        }
 
         Log.info("TO-SERVER: " + msg + ", client: " + (client != null ? client.getUsername() : null));
 
         boolean sendToServer = true;
 
-        if (msg.contains(GameServerMessages.CONNECT_ME.getValue())) {
+        if (client != null && msg.contains(GameServerMessages.CONNECT_ME.getValue())) {
             String[] parts = msg.split("\\.");
             int uid = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
-            if (client != null && client.getUid() != uid) {
-//                client = setGameClientCommunicationWebSocket(session, uid);
-            } else {
-                client = getClientByUid(uid);
-                if (client == null) {
-                    client = setGameClientCommunicationWebSocket(session, uid);
-                } else {
-                    client.setReliableWS(session);
-                    client.setStatus(ClientStatus.ONLINE);
+            Client disconnected = null;
+
+            if (uid > 0) {
+                for (var c: disconnectedClients) {
+                    if (c.getUid() == uid) {
+                        disconnected = c;
+                        break;
+                    }
+                }
+
+                if (disconnected != null) {
+                    disconnectedClients.remove(disconnected);
+                    if (disconnected.canConnect()) {
+                        client.setUid(uid);
+                        client.setUsername("user-" + uid);
+                    }
                 }
             }
+
             reliableConnection.sendMsgTo(client, client.getUid() + ".CONNECT_SELF." + client.getUsername());
             reliableConnection.sendMessageOthers(client.getUid() + ".CONNECT_OTHER", client.getUid());
+            reliableConnection.sendMessageAll("-1.ONLINE." + clients.size());
             sendUsernames();
+            return;
         }
 
         if (msg.contains(ClientGameMessages.GET_USERNAMES.getValue())) {
             sendUsernames();
+            return;
         }
 
-        if (msg.contains("NOT_GS_ROOMS_GET")) {
+        if (msg.contains(ClientGameMessages.ROOMS_GET.getValue())) {
             sendToServer = false;
-        } else if (msg.contains("NOT_GS_JOIN_ROOM")) {
+        } else if (msg.contains(ClientGameMessages.WS_PONG.getValue())) {
+            client.calcWsLatency();
+            return;
+        } else if (msg.contains(ClientGameMessages.JOIN_ROOM.getValue())) {
             String[] parts = msg.split("\\.");
             String roomName = parts[1];
             // int playerType = parts[2].equals("family") ? PlayerType.FAMILY.ordinal() : PlayerType.SURVIVOR.ordinal();
@@ -227,25 +204,11 @@ public class BroadSock {
         } else if (msg.contains(ClientGameMessages.PLAYER_READY.getValue())) {
             String[] parts = msg.split("\\.");
             rooms.playerReady(parts[1], client);
-            Room room = rooms.getRoomByClientUid(client.getUid());
-            if (room != null && room.canStartGame()) {
-                gameServerStarRoomQueue.add(room);
-                new Thread(() -> gameServerManager.startGameServer(gameServer -> {
-                    var gameServerRoom = setGameServerCommunication(gameServer);
-                    gameServer.setRoom(gameServerRoom);
-                })).start();
-//                gameServerManager.startGameServer(gameServer -> {
-//                    var gameServerRoom = setGameServerCommunication(gameServer);
-//                    gameServer.setRoom(gameServerRoom);
-//                });
-            }
             sendToServer = false;
         } else if (msg.contains(ClientGameMessages.SET_PLAYER_USERNAME.getValue())) {
             client.setUsername(msg.substring(27));
             sendUsernames();
-        } else if (msg.contains(ClientGameMessages.LEAVE_ROOM.getValue())) {
-            rooms.removePlayer(client);
-            sendToServer = false;
+            return;
         }
 
         if (sendToServer) {

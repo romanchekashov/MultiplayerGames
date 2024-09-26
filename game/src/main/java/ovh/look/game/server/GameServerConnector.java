@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import lombok.Getter;
-import ovh.look.game.models.*;
 
 class GameServerConnector {
     private static final Logger Log = Logger.getLogger(GameServerConnector.class.getName());
@@ -80,7 +79,7 @@ class GameServerConnector {
                         prevMsg = msg;
                     }
 
-                    gameServer.getRoom().toGameClient(msg);
+                    gameServer.toGameClient(msg);
                     if (msg.contains(GameServerMessages.GAME_OVER.getValue())) {
                         Log.info(msg);
                         new Thread(() -> terminateGameServer.terminateGameServer(pid)).start();
