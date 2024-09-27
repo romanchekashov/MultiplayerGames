@@ -15,38 +15,69 @@ local ACT_CODE = {
     TOUCH_X = 8,
     TOUCH_Y = 9,
     TRIGGER = 10,
-    ANALOG = 11,
-    ANALOG_X = 12,
-    ANALOG_Y = 13
+    ANALOG_LEFT = 11,
+    ANALOG_LEFT_X = 12,
+    ANALOG_LEFT_Y = 13,
+    ANALOG_RIGHT = 14,
+    ANALOG_RIGHT_X = 15,
+    ANALOG_RIGHT_Y = 16,
 }
 local M = {
     playerCommands = Collections.createMap(),
-    last_analog_x = 0,
-    last_analog_y = 0,
+    last_analog_left_x = 0,
+    last_analog_left_y = 0,
+    last_analog_right_x = 0,
+    last_analog_right_y = 0,
     last_touch_x = 0,
     last_touch_y = 0,
     last_command = function (self, uid)
         local playerCommands = self.playerCommands:get(uid)
         return playerCommands and playerCommands.commands and playerCommands.commands:getLast()
     end,
-    analog_used = function (self, uid)
+    analog_left_used = function (self, uid)
         local last_command = self:last_command(uid)
 
         if last_command == nil then
             return nil
         end
 
-        local x = last_command[ACT_CODE.ANALOG_X]
-        local y = last_command[ACT_CODE.ANALOG_Y]
+        local x = last_command[ACT_CODE.ANALOG_LEFT_X]
+        local y = last_command[ACT_CODE.ANALOG_LEFT_Y]
 
-        if (x == self.last_analog_x and y == self.last_analog_y) or (x == 0 and y == 0) then
+        if (x == self.last_analog_left_x and y == self.last_analog_left_y) or (x == 0 and y == 0) then
             return nil
         end
 
-        self.last_analog_x = x
-        self.last_analog_y = y
+        self.last_analog_left_x = x
+        self.last_analog_left_y = y
 
-        log("analog_used", uid, x, y)
+        log("analog_left_used", uid, x, y)
+
+        local player = MainState.players:get(uid)
+        if player ~= nil then
+            player.last_processed_input_ts = last_command.ts
+        end
+
+        return {x = x, y = y}
+    end,
+    analog_right_used = function (self, uid)
+        local last_command = self:last_command(uid)
+
+        if last_command == nil then
+            return nil
+        end
+
+        local x = last_command[ACT_CODE.ANALOG_RIGHT_X]
+        local y = last_command[ACT_CODE.ANALOG_RIGHT_Y]
+
+        if (x == self.last_analog_right_x and y == self.last_analog_right_y) or (x == 0 and y == 0) then
+            return nil
+        end
+
+        self.last_analog_right_x = x
+        self.last_analog_right_y = y
+
+        log("analog_right_used", uid, x, y)
 
         local player = MainState.players:get(uid)
         if player ~= nil then
@@ -119,8 +150,10 @@ local M = {
                 [ACT_CODE.TOUCH_X] = streamReader.double(),
                 [ACT_CODE.TOUCH_Y] = streamReader.double(),
                 [ACT_CODE.TRIGGER] = streamReader.number(),
-                [ACT_CODE.ANALOG_X] = streamReader.number(),
-                [ACT_CODE.ANALOG_Y] = streamReader.number()
+                [ACT_CODE.ANALOG_LEFT_X] = streamReader.number(),
+                [ACT_CODE.ANALOG_LEFT_Y] = streamReader.number(),
+                [ACT_CODE.ANALOG_RIGHT_X] = streamReader.number(),
+                [ACT_CODE.ANALOG_RIGHT_Y] = streamReader.number()
             }
 
             playerCommands.commands:add(command)

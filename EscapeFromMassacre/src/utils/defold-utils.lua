@@ -113,7 +113,13 @@ end
 
 M.virtualGamepadLeftStickPressed = false
 
-local pauseBound = {
+local leftStickBound = {
+    x1 = 0,
+    x2 = 0,
+    y1 = 0,
+    y2 = 0
+}
+local rightStickBound = {
     x1 = 0,
     x2 = 0,
     y1 = 0,
@@ -121,17 +127,17 @@ local pauseBound = {
 }
 
 function M.setVirtualGamepadLeftStickBound(pos, size)
-    local diffX = size.x / 2
-    local diffY = size.y / 2
-    pauseBound.x1 = pos.x - diffX
-    pauseBound.x2 = pos.x + diffX
-    pauseBound.y1 = pos.y - diffY
-    pauseBound.y2 = pos.y + diffY
+    leftStickBound = M.createBounds():set(pos, size)
+end
+function M.insideVirtualGamepadLeftStickBound(action)
+    return leftStickBound:inside(action)
 end
 
-function M.insideVirtualGamepadLeftStickBound(action)
-    return action.screen_x >= pauseBound.x1 and action.screen_x <= pauseBound.x2
-        and action.screen_y >= pauseBound.y1 and action.screen_y <= pauseBound.y2
+function M.setVirtualGamepadRightStickBound(pos, size)
+    rightStickBound = M.createBounds():set(pos, size)
+end
+function M.insideVirtualGamepadRightStickBound(action)
+    return rightStickBound:inside(action)
 end
 
 function M.createBounds()

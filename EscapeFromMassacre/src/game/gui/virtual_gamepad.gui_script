@@ -12,29 +12,31 @@ local function post_to_listener(self, message_id, message)
 	end
 end
 
-local function on_analog(self, touch, control)
-	local touch_position = vmath.vector3(touch.x, touch.y, 0)
-	if touch.pressed then
-		gui.cancel_animation(control.node, gui.PROP_POSITION)
-		control.analog_pos = touch_position
-		control.analog_offset = touch_position - control.node_start_position
-	elseif touch.released then
-		gui.animate(control.node, gui.PROP_POSITION, control.node_start_position, gui.EASING_OUTQUAD, 0.2)
-		post_to_listener(self, "analog", { x = 0, y = 0 })
-	else
-		local diff = control.analog_pos - touch_position
-		local dir = vmath.normalize(diff)
-		local distance = vmath.length(diff)
-		if distance > 0 then
-			local radius = 80
-			if distance > radius then
-				touch_position = control.node_start_position - dir * radius
-				distance = radius
-			else
-				touch_position = touch_position - control.analog_offset	
+local function on_analog(self, name)
+	return function (self, touch, control)
+		local touch_position = vmath.vector3(touch.x, touch.y, 0)
+		if touch.pressed then
+			gui.cancel_animation(control.node, gui.PROP_POSITION)
+			control.analog_pos = touch_position
+			control.analog_offset = touch_position - control.node_start_position
+		elseif touch.released then
+			gui.animate(control.node, gui.PROP_POSITION, control.node_start_position, gui.EASING_OUTQUAD, 0.2)
+			post_to_listener(self, name, { x = 0, y = 0 })
+		else
+			local diff = control.analog_pos - touch_position
+			local dir = vmath.normalize(diff)
+			local distance = vmath.length(diff)
+			if distance > 0 then
+				local radius = 80
+				if distance > radius then
+					touch_position = control.node_start_position - dir * radius
+					distance = radius
+				else
+					touch_position = touch_position - control.analog_offset	
+				end
+				gui.set_position(control.node, touch_position)
+				post_to_listener(self, name, { x = -dir.x * distance / radius, y = -dir.y * distance / radius })
 			end
-			gui.set_position(control.node, touch_position)
-			post_to_listener(self, "analog", { x = -dir.x * distance / radius, y = -dir.y * distance / radius })
 		end
 	end
 end
@@ -87,15 +89,18 @@ function init(self)
 
 	msg.post(".", "acquire_input_focus")
 
-	local rightStickNode = gui.get_node("analog")
+	local leftStickNode = gui.get_node("analog_left")
+	local rightStickNode = gui.get_node("analog_right")
 	local buttonANode = gui.get_node("button_a")
 	local buttonBNode = gui.get_node("button_b")
 
-	register(self, rightStickNode, on_analog)
+	register(self, leftStickNode, on_analog(self, "analog_left"))
+	register(self, rightStickNode, on_analog(self, "analog_right"))
 	register(self, buttonANode, on_control(self, "button_a"))
 	register(self, buttonBNode, on_control(self, "button_b"))
 
-	defoldUtils.setVirtualGamepadLeftStickBound(gui.get_screen_position(rightStickNode), gui.get_size(rightStickNode))
+	defoldUtils.setVirtualGamepadLeftStickBound(gui.get_screen_position(leftStickNode), gui.get_size(leftStickNode))
+	defoldUtils.setVirtualGamepadRightStickBound(gui.get_screen_position(rightStickNode), gui.get_size(rightStickNode))
 	defoldUtils.addVirtualGamepadButtonBound(gui.get_screen_position(buttonANode), gui.get_size(buttonANode))
 	defoldUtils.addVirtualGamepadButtonBound(gui.get_screen_position(buttonBNode), gui.get_size(buttonBNode))
 end

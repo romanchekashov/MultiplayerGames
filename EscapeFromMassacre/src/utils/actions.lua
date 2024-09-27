@@ -34,9 +34,12 @@ local ACTION_IDS = {
     },
 
     VIRTUAL_GAMEPAD = {
-        ANALOG = hash("analog"),
-        ANALOG_X = hash("analog_x"),
-        ANALOG_Y = hash("analog_y"),
+        ANALOG_LEFT = hash("analog_left"),
+        ANALOG_LEFT_X = hash("analog_left_x"),
+        ANALOG_LEFT_Y = hash("analog_left_y"),
+        ANALOG_RIGHT = hash("analog_right"),
+        ANALOG_RIGHT_X = hash("analog_right_x"),
+        ANALOG_RIGHT_Y = hash("analog_right_y"),
         BUTTON_A = hash("button_a"),
         BUTTON_B = hash("button_b"),
     }

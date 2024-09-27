@@ -14,8 +14,9 @@ nodes {
   }
   type: TYPE_BOX
   texture: "gamepad/shadedDark07"
-  id: "analog_bg"
+  id: "analog_bg_left"
   inherit_alpha: true
+  alpha: 0.3
   size_mode: SIZE_MODE_AUTO
 }
 nodes {
@@ -29,29 +30,30 @@ nodes {
   }
   type: TYPE_BOX
   texture: "gamepad/shadedDark01"
-  id: "analog"
+  id: "analog_left"
   inherit_alpha: true
   size_mode: SIZE_MODE_AUTO
 }
 nodes {
   position {
-    x: 1000.0
-    y: 70.0
+    x: 150.0
+    y: 500.0
   }
   scale {
-    x: 1.5
-    y: 1.5
+    x: 2.0
+    y: 2.0
   }
   type: TYPE_BOX
   texture: "gamepad/shadedDark36"
   id: "button_a"
   inherit_alpha: true
+  alpha: 0.3
   size_mode: SIZE_MODE_AUTO
 }
 nodes {
   position {
-    x: 1070.0
-    y: 190.0
+    x: 1050.0
+    y: 300.0
   }
   scale {
     x: 1.5
@@ -60,6 +62,30 @@ nodes {
   type: TYPE_BOX
   texture: "gamepad/shadedDark37"
   id: "button_b"
+  inherit_alpha: true
+  alpha: 0.3
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  position {
+    x: 1040.0
+    y: 100.0
+  }
+  type: TYPE_BOX
+  texture: "gamepad/shadedDark07"
+  id: "analog_bg_right"
+  inherit_alpha: true
+  alpha: 0.3
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  position {
+    x: 1040.0
+    y: 100.0
+  }
+  type: TYPE_BOX
+  texture: "gamepad/shadedDark01"
+  id: "analog_right"
   inherit_alpha: true
   size_mode: SIZE_MODE_AUTO
 }

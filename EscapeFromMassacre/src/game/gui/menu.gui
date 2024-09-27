@@ -135,6 +135,7 @@ nodes {
   type: TYPE_TEMPLATE
   id: "btn-exit-1"
   parent: "btn-exit"
+  alpha: 0.3
   template: "/assets/button.gui"
 }
 nodes {

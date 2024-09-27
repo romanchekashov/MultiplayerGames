@@ -19,9 +19,12 @@ local ActionIdToCode = {
     [ACTION_IDS.TOUCH_X] = 8,
     [ACTION_IDS.TOUCH_Y] = 9,
     [ACTION_IDS.TRIGGER] = 10,
-    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG] = 11,
-    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X] = 12,
-    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y] = 13
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT] = 11,
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_X] = 12,
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_Y] = 13,
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT] = 14,
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_X] = 15,
+    [ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_Y] = 16,
 }
 
 local CodeToActionId = {
@@ -35,9 +38,12 @@ local CodeToActionId = {
     [8] = ACTION_IDS.TOUCH_X,
     [9] = ACTION_IDS.TOUCH_Y,
     [10] = ACTION_IDS.TRIGGER,
-    [11] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG,
-    [12] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X,
-    [13] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y
+    [11] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT,
+    [12] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_X,
+    [13] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_Y,
+    [14] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT,
+    [15] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_X,
+    [16] = ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_Y,
 }
 
 local ActionState = {
@@ -69,8 +75,10 @@ local M = {
                 [ActionIdToCode[ACTION_IDS.TOUCH_X]] = 0,
                 [ActionIdToCode[ACTION_IDS.TOUCH_Y]] = 0,
                 [ActionIdToCode[ACTION_IDS.TRIGGER]] = ActionState.released,
-                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X]] = 0,
-                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y]] = 0
+                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_X]] = 0,
+                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_Y]] = 0,
+                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_X]] = 0,
+                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_Y]] = 0,
             }
         end
 
@@ -91,9 +99,10 @@ local M = {
         end
 
         local is_touch = action_id == ACTION_IDS.TOUCH
-        local is_analog = action_id == ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG
+        local is_analog_left = action_id == ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT
+        local is_analog_right = action_id == ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT
 
-        if is_touch or is_analog then
+        if is_touch or is_analog_left or is_analog_right then
             local x = math.floor(action.x * 1000)
             local y = math.floor(action.y * 1000)
     
@@ -102,9 +111,14 @@ local M = {
                 copy[ActionIdToCode[ACTION_IDS.TOUCH_Y]] = y
             end
             
-            if is_analog then
-                copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X]] = x
-                copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y]] = y
+            if is_analog_left then
+                copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_X]] = x
+                copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_Y]] = y
+            end
+
+            if is_analog_right then
+                copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_X]] = x
+                copy[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_Y]] = y
             end
         end
 
@@ -132,8 +146,10 @@ local M = {
                     .number(command[ActionIdToCode[ACTION_IDS.TOUCH_X]])
                     .number(command[ActionIdToCode[ACTION_IDS.TOUCH_Y]])
                     .number(command[ActionIdToCode[ACTION_IDS.TRIGGER]])
-                    .number(command[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_X]])
-                    .number(command[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_Y]])
+                    .number(command[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_X]])
+                    .number(command[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_Y]])
+                    .number(command[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_X]])
+                    .number(command[ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_Y]])
         end)
 
         return sendData.tostring()
