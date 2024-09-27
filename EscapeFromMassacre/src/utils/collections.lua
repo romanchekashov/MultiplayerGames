@@ -13,12 +13,12 @@ function M.createList()
 			if self.length == 0 then
 				return
 			end
-			table.remove(self.items, 1)
 			self.length = self.length - 1
+			return table.remove(self.items, 1)
 		end,
 		remove = function (self, index)
-			table.remove(self.items, index)
 			self.length = self.length - 1
+			return table.remove(self.items, index)
 		end,
 		get = function (self, index) -- 1-based
 			if index > self.length then
@@ -66,8 +66,10 @@ function M.createSet()
 		end,
 		remove = function (self, o)
 			if self.items[o] ~= nil then
+				local removed = self.items[o]
 				self.items[o] = nil
 				self.length = self.length - 1
+				return removed
 			end
 		end,
 		for_each = function (self, fn)

@@ -254,7 +254,7 @@ local prev_pressed = {
 }
 
 local function send_command(self, action_id, action)
-	log("send_command", action_id, action.pressed, action.released)
+	-- print("send_command", action_id, action.pressed, action.released)
 	--action.pressed, action.released
 	local need_send = true
 
@@ -269,6 +269,7 @@ local function send_command(self, action_id, action)
 	end
 
 	if need_send then
+		-- print("REAL: send_command", action_id, action.pressed, action.released)
 		MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
 	end
 end
@@ -851,10 +852,17 @@ function on_message(self, message_id, message, sender)
 			self.velocity.x = self.player_speed
 		elseif self.virtual_gamepad_left_pressed or self.virtual_gamepad_right_pressed then
 			action.released = true
-			send_command(self, ACTION_IDS.LEFT, action)
-			send_command(self, ACTION_IDS.RIGHT, action)
+			if self.virtual_gamepad_left_pressed then
+				send_command(self, ACTION_IDS.LEFT, action)
+				self.virtual_gamepad_left_pressed = false
+			elseif self.virtual_gamepad_right_pressed then
+				send_command(self, ACTION_IDS.RIGHT, action)
+				self.virtual_gamepad_right_pressed = false
+			end
 			self.velocity.x = 0
 		end
+
+		action = {pressed = false, released = false, x = message.x, y = message.y}
 
 		if message.y > 0 then
 			if self.virtual_gamepad_down_pressed then
@@ -876,8 +884,13 @@ function on_message(self, message_id, message, sender)
 			self.velocity.y = -self.player_speed
 		elseif self.virtual_gamepad_up_pressed or self.virtual_gamepad_down_pressed then
 			action.released = true
-			send_command(self, ACTION_IDS.UP, action)
-			send_command(self, ACTION_IDS.DOWN, action)
+			if self.virtual_gamepad_up_pressed then
+				send_command(self, ACTION_IDS.UP, action)
+				self.virtual_gamepad_up_pressed = false
+			elseif self.virtual_gamepad_down_pressed then
+				send_command(self, ACTION_IDS.DOWN, action)
+				self.virtual_gamepad_down_pressed = false
+			end
 			self.velocity.y = 0
 		end
 	elseif message_id == ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT then

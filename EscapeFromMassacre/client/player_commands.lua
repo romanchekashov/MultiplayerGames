@@ -56,38 +56,39 @@ local M = {
     CodeToActionId = CodeToActionId,
     ActionState = ActionState,
     commands = Collections.createList(),
+    last_command = {
+        ts = get_timestamp_in_ms(),
+        [ActionIdToCode[ACTION_IDS.JOIN]] = ActionState.released,
+        [ActionIdToCode[ACTION_IDS.USE]] = ActionState.released,
+        [ActionIdToCode[ACTION_IDS.LEFT]] = ActionState.released,
+        [ActionIdToCode[ACTION_IDS.RIGHT]] = ActionState.released,
+        [ActionIdToCode[ACTION_IDS.UP]] = ActionState.released,
+        [ActionIdToCode[ACTION_IDS.DOWN]] = ActionState.released,
+        [ActionIdToCode[ACTION_IDS.TOUCH_X]] = 0,
+        [ActionIdToCode[ACTION_IDS.TOUCH_Y]] = 0,
+        [ActionIdToCode[ACTION_IDS.TRIGGER]] = ActionState.released,
+        [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_X]] = 0,
+        [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_Y]] = 0,
+        [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_X]] = 0,
+        [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_Y]] = 0,
+    },
     --MAX_COMMANDS_BUFFER_SIZE = 100,
     build = function (self, player_uid, data)
         local action_id, action = data.action_id, data.action
         log("PLAYER_COMMAND:", action_id, " x = ", action.x, " y = ", action.y, " pressed = ", action.pressed, " released = ", action.released)
         --log("build", data.action_id, data.action.pressed, data.action.released, data.action.x, data.action.y)
         --log("commands.length", tostring(self.commands.length))
-        local last_command = self.commands:getLast()
-        if last_command == nil then
-            last_command = {
-                ts = get_timestamp_in_ms(),
-                [ActionIdToCode[ACTION_IDS.JOIN]] = ActionState.released,
-                [ActionIdToCode[ACTION_IDS.USE]] = ActionState.released,
-                [ActionIdToCode[ACTION_IDS.LEFT]] = ActionState.released,
-                [ActionIdToCode[ACTION_IDS.RIGHT]] = ActionState.released,
-                [ActionIdToCode[ACTION_IDS.UP]] = ActionState.released,
-                [ActionIdToCode[ACTION_IDS.DOWN]] = ActionState.released,
-                [ActionIdToCode[ACTION_IDS.TOUCH_X]] = 0,
-                [ActionIdToCode[ACTION_IDS.TOUCH_Y]] = 0,
-                [ActionIdToCode[ACTION_IDS.TRIGGER]] = ActionState.released,
-                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_X]] = 0,
-                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_LEFT_Y]] = 0,
-                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_X]] = 0,
-                [ActionIdToCode[ACTION_IDS.VIRTUAL_GAMEPAD.ANALOG_RIGHT_Y]] = 0,
-            }
+        local command = self.commands:getLast()
+        if command ~= nil then
+            self.last_command = command
         end
 
-        local copy = table.shallow_copy(last_command)
+        local copy = table.shallow_copy(self.last_command)
         copy.ts = get_timestamp_in_ms()
 
         if action.pressed ~= nil or action.released ~= nil then
             local num_action_id = ActionIdToCode[action_id]
-            local num_action_state = last_command[num_action_id]
+            local num_action_state = self.last_command[num_action_id]
 
             if action.pressed then
                 num_action_state = 1
@@ -122,7 +123,7 @@ local M = {
             end
         end
 
-        if not compareTables(last_command, copy) then
+        if not compareTables(self.last_command, copy) then
             self.commands:add(copy)
         end
 
@@ -157,7 +158,10 @@ local M = {
     server_reconciliation = function (self, last_processed_input_ts)
         self.commands:for_each(function (command)
             if command.ts <= last_processed_input_ts then
-                self.commands:removeFirst()
+                local removed = self.commands:removeFirst()
+                if self.commands.length == 0 then
+                    self.last_command = removed
+                end
             end
         end)
         log("server_reconciliation: unprocessed commands =", self.commands.length)

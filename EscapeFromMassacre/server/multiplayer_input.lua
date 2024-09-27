@@ -158,7 +158,7 @@ local M = {
 
             playerCommands.commands:add(command)
 
-            --log("command", command.ts, command[ACT_CODE.JOIN], command[ACT_CODE.USE], command[ACT_CODE.LEFT], command[ACT_CODE.RIGHT], command[ACT_CODE.UP], command[ACT_CODE.DOWN])
+            log("command", command.ts, "join", command[ACT_CODE.JOIN], "use", command[ACT_CODE.USE], "left", command[ACT_CODE.LEFT], "right", command[ACT_CODE.RIGHT], "up", command[ACT_CODE.UP], "down", command[ACT_CODE.DOWN])
 
             t = t - 1
         end
