@@ -41,6 +41,9 @@ end
 
 local function room_updateDataList(self)
 	local data = {}
+
+	table.insert(data, MainState.OFFLINE_ROOM)
+
 	MainState.rooms:for_each(function (room)
 		table.insert(data, room)
 	end)
@@ -50,13 +53,16 @@ local function room_updateDataList(self)
 		return
 	end
 
-	MainState.selectedRoom = MainState.rooms:find("name", MainState.selectedRoom.name)
+	if MainState.selectedRoom.name ~= MainState.OFFLINE_ROOM.name then
+		MainState.selectedRoom = MainState.rooms:find("name", MainState.selectedRoom.name)
+	end
+
 	local room = MainState.selectedRoom
 	-- survivors
 	local survivors = {}
 	room.survivors:for_each(function (c_uid)
 		print("survivors", c_uid, room.ready_players_map:get(c_uid), MainState.uid_to_username:get(c_uid))
-		table.insert(survivors, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = MainState.uid_to_username:get(c_uid)})
+		table.insert(survivors, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = MainState.uid_to_username:get(c_uid) or MainState.player.username})
 		if MainState.player.uid == c_uid then
 			enable_start_leave_btns(true)
 		end
@@ -68,7 +74,7 @@ local function room_updateDataList(self)
 	local family = {}
 	room.family:for_each(function (c_uid)
 		print("family", c_uid, room.ready_players_map:get(c_uid), MainState.uid_to_username:get(c_uid))
-		table.insert(family, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = MainState.uid_to_username:get(c_uid)})
+		table.insert(family, {uid = c_uid, ready = room.ready_players_map:get(c_uid), username = MainState.uid_to_username:get(c_uid) or MainState.player.username})
 		if MainState.player.uid == c_uid then
 			enable_start_leave_btns(true)
 		end
@@ -130,6 +136,18 @@ local function canStartGame(room)
 	return room.ready_players > half_players_count
 end
 
+local function game_pre_start(self)
+	MainState.currentGameState = MainState.GAME_STATES.START
+	gui.set_enabled(gui.get_node("survivors/btn"), false)
+	gui.set_enabled(gui.get_node("family/btn"), false)
+	gui.set_enabled(gui.get_node("btn-leave-game"), false)
+	gui.set_text(gui.get_node("btn-join-/text"), "Starting...")
+end
+
+local function game_start(self)
+	msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.GAME})
+end
+
 local function register_druid_extended_components(self)
 	druid.register("data_list", data_list)
 	druid.register("input", input)
@@ -169,6 +187,8 @@ function init(self)
 
 	self.enabled = true
 	self.update_timeout = UPDATE_TIMEOUT
+
+	room_updateDataList(self)
 end
 
 
@@ -213,32 +233,40 @@ function on_message(self, message_id, message, sender)
 		MainState.player.username = message.username or "Uknown"
 		self.input_username:set_text(string.format("%.30s", MainState.player.username))
 	elseif message_id == hash("game_pre_start") then
-		MainState.currentGameState = MainState.GAME_STATES.START
-		gui.set_enabled(gui.get_node("survivors/btn"), false)
-		gui.set_enabled(gui.get_node("family/btn"), false)
-		gui.set_enabled(gui.get_node("btn-leave-game"), false)
-		gui.set_text(gui.get_node("btn-join-/text"), "Starting...")
+		game_pre_start(self)
 	elseif message_id == hash("game_start") then
-		msg.post("/screens#main", "load_screen", {map_level = MainState.GAME_SCREENS.GAME})
+		game_start(self)
     end
 end
 
 
 function on_input(self, action_id, action)
+	local isOffline = MainState.selectedRoom ~= nil and MainState.selectedRoom.name == MainState.OFFLINE_ROOM.name
 	if action_id == hash("touch") and self.enabled then
 		btnAction(action, "btn-start-game", nil, nil, function ()
-			if not canStartGame(MainState.selectedRoom) then
+			if isOffline then
+				game_pre_start(self)
+				game_start(self)
+			elseif not canStartGame(MainState.selectedRoom) then
 				MSG.BROADSOCK:player_ready({room_name = MainState.selectedRoom.name})
 			end
 		end)
 		btnAction(action, "btn-leave-game", nil, nil, function ()
-			MSG.BROADSOCK:leave_room({})
+			if not isOffline then
+				MSG.BROADSOCK:leave_room({})
+			end
 			MainState.player.room = nil
 			enable_start_leave_btns(false)
 		end)
 		btnAction(action, "survivors/btn", nil, nil, function ()
 			if MainState.selectedRoom ~= nil and MainState.selectedRoom.survivors.length - MainState.selectedRoom.family.length < 1 then
-				MSG.BROADSOCK:join_room({room_name = MainState.selectedRoom.name, type = "survivors"})
+				if isOffline then
+					MainState.OFFLINE_ROOM:joinSurvivors(MainState.player.uid)
+					MainState.OFFLINE_ROOM.ready_players = 1
+					room_updateDataList(self)
+				else
+					MSG.BROADSOCK:join_room({room_name = MainState.selectedRoom.name, type = "survivors"})
+				end
 				MainState.player.type = MainState.PLAYER_TYPE.SURVIVOR
 				MainState.player.room = MainState.selectedRoom
 				enable_start_leave_btns(true)
@@ -248,7 +276,13 @@ function on_input(self, action_id, action)
 		end)
 		btnAction(action, "family/btn", nil, nil, function ()
 			if MainState.selectedRoom ~= nil and MainState.selectedRoom.family.length - MainState.selectedRoom.survivors.length < 1 then
-				MSG.BROADSOCK:join_room({room_name = MainState.selectedRoom.name, type = "family"})
+				if isOffline then
+					MainState.OFFLINE_ROOM:joinFamily(MainState.player.uid)
+					MainState.OFFLINE_ROOM.ready_players = 1
+					room_updateDataList(self)
+				else
+					MSG.BROADSOCK:join_room({room_name = MainState.selectedRoom.name, type = "family"})
+				end
 				MainState.player.type = MainState.PLAYER_TYPE.FAMILY
 				MainState.player.room = MainState.selectedRoom
 				enable_start_leave_btns(true)

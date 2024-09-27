@@ -7,6 +7,7 @@ local M = {
     COLORS = {
         GREEN = vmath.vector4(46 / 255, 209 / 255, 153 / 255, 0),
         RED = vmath.vector4(209 / 255, 46 / 255, 102 / 255, 0),
+        WHITE = vmath.vector4(255, 255, 255, 0)
     }
 }
 

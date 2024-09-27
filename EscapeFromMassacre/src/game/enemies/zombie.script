@@ -34,6 +34,8 @@ end
 
 function init(self)
 	self.isServer = MainState.isServer
+	self.isOffline = MainState.selectedRoom ~= nil and MainState.selectedRoom.name == MainState.OFFLINE_ROOM.name
+
 	if self.isServer then
 		local obj = MainState.register_gameobject(0, go.get_id(), MainState.FACTORY_TYPES.zombie)
 		self.gouid = obj.gouid
@@ -151,7 +153,7 @@ function on_message(self, message_id, message, sender)
 		-- 	local distance_to_collision = vmath.length(my_pos - other_pos)
 		-- 	print(string.format("zombie %s see wall %s in distance %s", go.get_id(), message.other_id, distance_to_collision))
 		elseif message.group == MSG_GROUPS.BULLET then
-			if self.isServer then
+			if self.isServer or self.isOffline then
 				msg.post("/spawner-zombie#script", "remove_zombie", {zombie_id = go.get_id()})
 			end
 		end

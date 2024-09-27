@@ -186,6 +186,7 @@ local M = {
     uid_to_username = Collections.createMap(),
     rooms = Collections.createList(),
     selectedRoom = nil,
+    OFFLINE_ROOM = nil,
 
     bulletBelongToPlayerUid = {},
     bulletIdToUid = {},
@@ -197,7 +198,7 @@ local M = {
     playerSlots = {},
     player = {
         uid = 0,
-        username = "N/A",
+        username = "user-0",
         type = PLAYER_TYPE.SURVIVOR,
         room = nil,
         status = PLAYER_STATUS.CONNECTED,
@@ -313,6 +314,8 @@ function M.createRoom(name, state)
         end
     }
 end
+
+M.OFFLINE_ROOM = M.createRoom("Room 0", "OFFLINE")
 
 -- NOT_GS_ROOMS.2.Room 1.family.15.survivors.ready.0.Room 2.family.survivors.ready.0
 function M.setRooms(str)

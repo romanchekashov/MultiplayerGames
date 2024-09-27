@@ -1,14 +1,14 @@
 local MainState = require "src.main_state"
 local Buttons = require "src.utils.buttons"
 local ACTION_IDS = require "src.utils.actions"
-local btnAction = Buttons.action
-local server_nakama = require "client.server_nakama"
 local debugUtils = require "src.utils.debug-utils"
-
 local MSG = require "src.utils.messages"
 local druid = require("druid.druid")
 local timer_component = require("druid.extended.timer")
+
+local btnAction = Buttons.action
 local log = debugUtils.createLog("[menu.gui_script]").log
+
 local function seconds_to_string(seconds)
 	local minutes = math.floor(seconds / 60)
 	local remaining_seconds = seconds % 60
@@ -83,12 +83,20 @@ local function onBtnJoin(self)
 	set_pause(false)
 end
 
-
 local function empty_callback(self, param)
 	print("CLIENT TIMER GAME OVER: Empty callback. Param", param)
+	local player = MainState.players:get(MainState.player.uid)
+	msg.post("/gui#menu", "game_over", {won_player_type = (player.type == MainState.PLAYER_TYPE.FAMILY) and MainState.PLAYER_TYPE.SURVIVOR or MainState.PLAYER_TYPE.FAMILY})
+	msg.post("/spawner-player#script", "remove_player", {uid = MainState.player.uid})
 end
 local function setup_timer(self)
 	self.timer = self.druid:new_timer("timer", MainState.GAME_TIMEOUT_IN_SEC, 0, empty_callback)
+    self.timer.on_tick:subscribe(function(self, value)
+        MainState.gameTime = value
+        if value > 0 and value % 60 == 0 then
+            msg.post("/spawner-zombie#script", "add_zombie", {size = 10})
+        end
+    end)
 end
 
 local function register_druid_extended_components(self)
@@ -96,11 +104,16 @@ local function register_druid_extended_components(self)
 end
 
 function init(self)
+	self.isOffline = MainState.selectedRoom ~= nil and MainState.selectedRoom.name == MainState.OFFLINE_ROOM.name
+
 	msg.post(".", "acquire_input_focus")
 
 	self.druid = druid.new(self)
 	register_druid_extended_components(self)
-	--setup_timer(self)
+
+	if self.isOffline then
+		setup_timer(self)
+	end
 
 	self.playersTextNodes = {}
 	self.update_stats_timeframe = UPDATE_STATS_INTERVAL

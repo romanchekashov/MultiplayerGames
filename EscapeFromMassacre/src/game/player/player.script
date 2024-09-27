@@ -347,9 +347,12 @@ end
 
 function init(self)
 	log("player init", msg.url())
-	local go_id = go.get_id()
 
 	self.isServer = MainState.isServer
+	self.isOffline = MainState.selectedRoom ~= nil and MainState.selectedRoom.name == MainState.OFFLINE_ROOM.name
+
+	local go_id = go.get_id()
+
 	self.stairs_change_cooldown = -1
 	self.move = 0		-- direction of movement (0 = standing still, 1 = forward, -1 = backward)
 	self.rotate = 0		-- direction of rotation (0 = no rotation, 1 = left, -1 = right)
@@ -468,7 +471,9 @@ function update(self, dt)
 
 	if not self.isServer then
 		update_fuzes(self)
-		msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
+		if not IS_MOBILE and not MainState.HAS_GAMEPAD then
+			msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix") .. " Arrows or WASD to move/turn. Mouse to turn. Left mouse button/Space to fire.", position = vmath.vector3(20, 20, 0) } )
+		end
 	end
 
 	local pos = go.get_position()
@@ -483,7 +488,7 @@ function update(self, dt)
 		end
 	end
 
-	if not self.isServer and (self.remote or not self.is_action_active or self.touch == nil) then
+	if not self.isOffline and not self.isServer and (self.remote or not self.is_action_active or self.touch == nil) then
 		-- Find the two authoritative positions surrounding the rendering timestamp.
 		local buffer = MainState.server_state_buffer:get(self.uid)
 		if buffer == nil then
@@ -621,13 +626,16 @@ function on_input(self, action_id, action)
 
 	if action_id == ACTION_IDS.USE then
 		-- print(action_id, action.value, action.pressed, action.released, action.x, action.y) -- a value between 0.0 an -1.0
-		MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
-		-- if action.pressed then
-		-- 	self.btn_use_pressed = true
-		-- elseif action.released then
-		-- 	self.btn_use_pressed = false
-		-- 	throw_fuzes(self)
-		-- end
+		if self.isOffline then
+			if action.pressed then
+				self.btn_use_pressed = true
+			elseif action.released then
+				self.btn_use_pressed = false
+				throw_fuzes(self)
+			end
+		else
+			MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
+		end
 	end
 
 	if IS_MOBILE then
@@ -687,8 +695,11 @@ function on_input(self, action_id, action)
 		-- handle touch/mouse movement by holding down the finger/mouse button
 		if (action_id == ACTION_IDS.TRIGGER or action_id == ACTION_IDS.TOUCH) then
 			-- print(go.get_position())
-			MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
-			--trigger(self, action)
+			if self.isOffline then
+				trigger(self, action)
+			else
+				MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = action_id, action = action})
+			end
 		end
 
 		if not action_id then
@@ -718,7 +729,7 @@ function on_message(self, message_id, message, sender)
 	end
 
 	--log(message_id, message.group, message.other_id, self.uid)
-	if message_id == MSG_GROUPS.COLLISION_RESPONSE and self.isServer then
+	if message_id == MSG_GROUPS.COLLISION_RESPONSE and (self.isServer or self.isOffline) then
 		if message.group == MSG_GROUPS.BULLET then
 			local player_on_level = MainState.players:get(self.uid).map_level
 			local bullet_uid = MainState.bulletIdToUid[message.other_id]
@@ -766,7 +777,7 @@ function on_message(self, message_id, message, sender)
 			local fuze_box_color = MainState.fuzeBoxIdsToColor[message.other_id]
 			log("contact_fuze_box", message.group, self.btn_use_pressed)
 
-			if self.btn_use_pressed and self.isServer and MainState.fuzeBoxColorToMapLevel[fuze_box_color] == player_on_level then
+			if self.btn_use_pressed and (self.isServer or self.isOffline) and MainState.fuzeBoxColorToMapLevel[fuze_box_color] == player_on_level then
 				log("fuze_box_hit", fuze_box_color, message_id, message.group)
 				
 				self.btn_use_pressed = false
@@ -783,8 +794,13 @@ function on_message(self, message_id, message, sender)
 				end
 			end
 		elseif message.group == MSG_GROUPS.EXIT then
-			broadsock.sendGameOver(MainState.PLAYER_TYPE.SURVIVOR)
-			--msg.post("/gui#menu", "player_exit", {})
+			if self.isOffline then
+				local player = MainState.players:get(MainState.player.uid)
+				msg.post("/gui#menu", "game_over", {won_player_type = player.type})
+				msg.post("/spawner-player#script", "remove_player", {uid = MainState.player.uid})
+			else
+				broadsock.sendGameOver(MainState.PLAYER_TYPE.SURVIVOR)
+			end
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
 		local player = MainState.players:get(self.uid)
@@ -904,8 +920,21 @@ function on_message(self, message_id, message, sender)
 			end
 		end
 	elseif message_id == ACTION_IDS.VIRTUAL_GAMEPAD.BUTTON_A then
-		MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.TRIGGER, action = message})
+		if self.isOffline then
+			trigger(self, message)
+		else
+			MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.TRIGGER, action = message})
+		end
 	elseif message_id == ACTION_IDS.VIRTUAL_GAMEPAD.BUTTON_B then
-		MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.USE, action = message})
+		if self.isOffline then
+			if message.pressed then
+				self.btn_use_pressed = true
+			elseif message.released then
+				self.btn_use_pressed = false
+				throw_fuzes(self)
+			end
+		else
+			MSG.BROADSOCK:send_command({player_uid = MainState.player.uid, action_id = ACTION_IDS.USE, action = message})
+		end
 	end
 end

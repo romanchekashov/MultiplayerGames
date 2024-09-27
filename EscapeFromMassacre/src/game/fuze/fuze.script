@@ -96,7 +96,7 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == MSG_GROUPS.COLLISION_RESPONSE then
 		if message.group == MSG_GROUPS.BOX then
-			print("I collided with", go.get_id(), message.other_id, message.other_group)
+			log("I collided with", go.get_id(), message.other_id, message.other_group)
 			go.delete(message.other_id)
 		end
 	elseif message_id == MSG_GROUPS.CONTACT_POINT_RESPONSE then
@@ -113,7 +113,7 @@ function on_message(self, message_id, message, sender)
 			go.set_position(pos)
 		end
 	end
-	
+
 	if not self.isServer then 
 		if message_id == MSG_GROUPS.ENABLE then
 			if not self.enable then

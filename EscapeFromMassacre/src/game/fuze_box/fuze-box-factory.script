@@ -30,11 +30,13 @@ end
 
 function init(self)
 	self.isServer = MainState.isServer
+	self.isOffline = MainState.selectedRoom ~= nil and MainState.selectedRoom.name == MainState.OFFLINE_ROOM.name
+
 	self.fuzeBoxOnMapLevel = {}
 	self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.BASEMENT] = {}
 	self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE] = {}
 
-	if self.isServer then
+	if self.isServer or self.isOffline then
 		local fuze_box = create_fuze(MainState.FUZE.GREEN, vmath.vector3(2206, 2400, 0), vmath.quat_rotation_z(math.rad(-90)))
 		table.insert(self.fuzeBoxOnMapLevel[MainState.MAP_LEVELS.HOUSE], fuze_box)
 		fuze_box = create_fuze(MainState.FUZE.YELLOW, vmath.vector3(224, 286, 0), nil)

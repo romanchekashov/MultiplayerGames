@@ -9,12 +9,13 @@ end
 
 function init(self)
 	self.isServer = MainState.isServer
+	self.isOffline = MainState.selectedRoom ~= nil and MainState.selectedRoom.name == MainState.OFFLINE_ROOM.name
 	self.last_zombie_speed = 50
 	self.last_zombie_map_level = MainState.MAP_LEVELS.BASEMENT
 end
 
 function on_message(self, message_id, message, sender)
-	if not self.isServer then
+	if not (self.isServer or self.isOffline) then
 		return
 	end
 

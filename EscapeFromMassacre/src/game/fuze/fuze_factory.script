@@ -28,11 +28,13 @@ end
 
 function init(self)
 	log("init", self.color, self.map_level)
+
 	self.isServer = MainState.isServer
+	self.isOffline = MainState.selectedRoom ~= nil and MainState.selectedRoom.name == MainState.OFFLINE_ROOM.name
+
 	self.fuzeOnMapLevel = {}
 
-
-	if self.isServer then
+	if self.isServer or self.isOffline then
 		for color, map_level in pairs(MainState.fuzeColorToMapLevel) do
 			self.fuzeOnMapLevel[color] = {map = map_level, fuze = create_fuze(color, random_position(), map_level)}
 		end

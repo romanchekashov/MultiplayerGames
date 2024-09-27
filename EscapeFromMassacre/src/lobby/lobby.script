@@ -1,4 +1,6 @@
 local debugUtils = require "src.utils.debug-utils"
+local assets = require "src.utils.assets"
+
 local bg_music = {"default:/music#rooms_intro", "default:/music#rooms_intro2"}
 
 function init(self)
@@ -24,6 +26,7 @@ function update(self, dt)
 	-- Add update code here
 	-- Learn more: https://defold.com/manuals/script/
 	-- Remove this function if not needed
+	msg.post("@render:", "draw_text", { text = sys.get_config("html5.archive_location_suffix"), position = vmath.vector3(20, 20, 0)} )
 end
 
 function fixed_update(self, dt)
