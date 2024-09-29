@@ -8,8 +8,25 @@
         "."
     ],
     "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "#battle": {
+            "scaleInDock": 1
+        },
         "#topdown_tilesheet_complete2": {
             "scaleInDock": 1
+        },
+        "BattleRoyale.tmx": {
+            "scale": 0.0841,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 4399.524375743163,
+                "y": 4607.609988109393
+            }
+        },
+        "BattleRoyale.tmx#battle": {
+            "scaleInDock": 0.5429
         },
         "FamilyHouse.tmx": {
             "scale": 0.0625,
@@ -37,11 +54,11 @@
             "scaleInDock": 1
         },
         "basement.tmx": {
-            "scale": 0.8752,
+            "scale": 0.4456,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 997.4862888482634,
-                "y": 1659.0493601462522
+                "x": 1678.6355475763016,
+                "y": 1345.3770197486538
             }
         },
         "basement.tmx#topdown_tilesheet_complete2": {
@@ -71,29 +88,29 @@
         },
         "house.tmx": {
             "scale": 0.5581,
-            "selectedLayer": 4,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 1856.298154452607,
-                "y": 1472.8543271815086
+                "x": 1707.5792868661529,
+                "y": 1473.750223974198
             }
         },
         "house.tmx#topdown_tilesheet_complete2": {
             "scaleInDock": 0.456
         }
     },
-    "last.exportedFilePath": "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeFromMassacre/src/game/levels",
+    "last.exportedFilePath": "/Users/romanchekashov/workspace/defold/BattleRoyale/src/game",
     "last.imagePath": "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeFromMassacre/assets/images",
     "last.worldFilePath": "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeItems",
     "loadedWorlds": [
         "/Users/romanchekashov/workspace/defold/MultiplayerGames/EscapeItems/FamilyHouse.world"
     ],
     "map.fixedSize": true,
-    "map.height": 34,
+    "map.height": 150,
     "map.lastUsedExportFilter": "Defold Tile Map (*.tilemap)",
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 64,
     "map.tileWidth": 64,
-    "map.width": 60,
+    "map.width": 150,
     "openFiles": [
         "FamilyHouse2.tmx",
         "bg.tmx",

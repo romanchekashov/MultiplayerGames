@@ -68,3 +68,6 @@ Left mouse button/Space to fire.
   - UDP client
   - HTTP server
   - [GitHub: Defold websocket extension](https://github.com/defold/extension-websocket)
+
+### References
+- [Fog rendering](https://forum.defold.com/t/fog-rendering/67365)
